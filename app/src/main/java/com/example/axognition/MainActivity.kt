@@ -29,10 +29,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.axognition.ui.theme.AxognitionTheme
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
+import com.example.axognition.ui.screens.BooksScreen
+import com.example.axognition.ui.screens.CallMessagesScreen
+import com.example.axognition.ui.screens.CoursesScreen
+import com.example.axognition.ui.screens.ExercisesScreen
+import com.example.axognition.ui.screens.GamesScreen
+import com.example.axognition.ui.screens.HomeworksScreen
+import com.example.axognition.ui.screens.LecturesScreen
+import com.example.axognition.ui.screens.MapScreen
+import com.example.axognition.ui.screens.PracticeScreen
+import com.example.axognition.ui.screens.TestScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,9 +65,15 @@ data class DashboardItem(
     val icon: ImageVector
 )
 
+sealed class Screen(val route: String) {
+    object Dashboard : Screen("dashboard")
+    object Detail : Screen("detail")
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainApp() {
+    val navController = rememberNavController()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
@@ -75,39 +94,56 @@ fun MainApp() {
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                     label = { Text("Profile") },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } }
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("${Screen.Detail.route}/Profile")
+                    }
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Star, contentDescription = "Performance") },
                     label = { Text("Performance") },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } }
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("${Screen.Detail.route}/Performance")
+                    }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Favorite") },
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Health") },
                     label = { Text("Health") },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } }
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("${Screen.Detail.route}/Health")
+                    }
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.DateRange, contentDescription = "Calendar") },
                     label = { Text("Calendar") },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } }
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("${Screen.Detail.route}/Calendar")
+                    }
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.AccessTime, contentDescription = "Time") },
                     label = { Text("Time") },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } }
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("${Screen.Detail.route}/Time")
+                    }
                 )
                 NavigationDrawerItem(
                     icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
                     label = { Text("Settings") },
                     selected = false,
-                    onClick = { scope.launch { drawerState.close() } }
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("${Screen.Detail.route}/Settings")
+                    }
                 )
-
             }
         }
     ) {
@@ -129,13 +165,59 @@ fun MainApp() {
                 )
             }
         ) { innerPadding ->
-            DashboardScreen(modifier = Modifier.padding(innerPadding))
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Dashboard.route,
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable(Screen.Dashboard.route) {
+                    DashboardScreen(
+                        onItemClick = { itemTitle ->
+                            navController.navigate("${Screen.Detail.route}/$itemTitle")
+                        }
+                    )
+                }
+                composable("${Screen.Detail.route}/{title}") { backStackEntry ->
+                    val title = backStackEntry.arguments?.getString("title") ?: "Page"
+                    DetailScreen(title = title, onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Books") {
+                    BooksScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Call-Messages") {
+                    CallMessagesScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Courses") {
+                    CoursesScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Exersies") {
+                    ExercisesScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Games") {
+                    GamesScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Homeworks") {
+                    HomeworksScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Lectures") {
+                    LecturesScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Map") {
+                    MapScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Practice") {
+                    PracticeScreen(onBack = { navController.popBackStack() })
+                }
+                composable("${Screen.Detail.route}/Test") {
+                    TestScreen(onBack = { navController.popBackStack() })
+                }
+            }
         }
     }
 }
 
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier) {
+fun DashboardScreen(modifier: Modifier = Modifier, onItemClick: (String) -> Unit) {
     var items by remember {
         mutableStateOf(
             listOf(
@@ -146,10 +228,10 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
                 DashboardItem(5, "Courses", Icons.Default.LibraryBooks),
                 DashboardItem(6, "Books", Icons.Default.MenuBook),
                 DashboardItem(7, "Exersies", Icons.Default.FitnessCenter),
-                DashboardItem(8, "Mini games", Icons.Default.PlayArrow),
-                DashboardItem(9, "Call/Messages", Icons.Default.Message),
+                DashboardItem(8, "Games", Icons.Default.PlayArrow),
+                DashboardItem(9, "Call-Messages", Icons.Default.Message),
                 DashboardItem(10, "Map", Icons.Default.LocationOn)
-                )
+            )
         )
     }
 
@@ -163,7 +245,6 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
 
-    // Check orientation to dynamically assign 3 columns (vertical) or 5 columns (horizontal)
     val configuration = LocalConfiguration.current
     val columnCount = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 5 else 3
 
@@ -217,7 +298,7 @@ fun DashboardScreen(modifier: Modifier = Modifier) {
                         elevation = elevation,
                         modifier = currentModifier
                     ) {
-                        // Click action for normal taps
+                        onItemClick(item.title)
                     }
                 }
             }
@@ -257,6 +338,23 @@ fun DashboardCard(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(title: String, onBack: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = title, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onBack) {
+            Text("Back to Dashboard")
         }
     }
 }
