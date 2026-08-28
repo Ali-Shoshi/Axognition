@@ -36,6 +36,8 @@ import com.example.axognition.ui.theme.AxognitionTheme
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
+
+// Dashboard feature screens (remains in ui.screens)
 import com.example.axognition.ui.screens.BooksScreen
 import com.example.axognition.ui.screens.CallMessagesScreen
 import com.example.axognition.ui.screens.CoursesScreen
@@ -46,6 +48,14 @@ import com.example.axognition.ui.screens.LecturesScreen
 import com.example.axognition.ui.screens.MapScreen
 import com.example.axognition.ui.screens.PracticeScreen
 import com.example.axognition.ui.screens.TestScreen
+
+// Side panel navigation destinations (moved to ui.panels)
+import com.example.axognition.ui.panels.ProfilePanelScreen
+import com.example.axognition.ui.panels.PerformancePanelScreen
+import com.example.axognition.ui.panels.HealthPanelScreen
+import com.example.axognition.ui.panels.CalendarPanelScreen
+import com.example.axognition.ui.panels.TimePanelScreen
+import com.example.axognition.ui.panels.SettingsPanelScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,7 +106,7 @@ fun MainApp() {
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate("${Screen.Detail.route}/Profile")
+                        navController.navigate("panel_profile")
                     }
                 )
                 NavigationDrawerItem(
@@ -105,7 +115,7 @@ fun MainApp() {
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate("${Screen.Detail.route}/Performance")
+                        navController.navigate("panel_performance")
                     }
                 )
                 NavigationDrawerItem(
@@ -114,7 +124,7 @@ fun MainApp() {
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate("${Screen.Detail.route}/Health")
+                        navController.navigate("panel_health")
                     }
                 )
                 NavigationDrawerItem(
@@ -123,7 +133,7 @@ fun MainApp() {
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate("${Screen.Detail.route}/Calendar")
+                        navController.navigate("panel_calendar")
                     }
                 )
                 NavigationDrawerItem(
@@ -132,7 +142,7 @@ fun MainApp() {
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate("${Screen.Detail.route}/Time")
+                        navController.navigate("panel_time")
                     }
                 )
                 NavigationDrawerItem(
@@ -141,7 +151,7 @@ fun MainApp() {
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
-                        navController.navigate("${Screen.Detail.route}/Settings")
+                        navController.navigate("panel_settings")
                     }
                 )
             }
@@ -177,10 +187,16 @@ fun MainApp() {
                         }
                     )
                 }
-                composable("${Screen.Detail.route}/{title}") { backStackEntry ->
-                    val title = backStackEntry.arguments?.getString("title") ?: "Page"
-                    DetailScreen(title = title, onBack = { navController.popBackStack() })
-                }
+
+                // Side Panel Destinations (from ui.panels folder)
+                composable("panel_profile") { ProfilePanelScreen(onBack = { navController.popBackStack() }) }
+                composable("panel_performance") { PerformancePanelScreen(onBack = { navController.popBackStack() }) }
+                composable("panel_health") { HealthPanelScreen(onBack = { navController.popBackStack() }) }
+                composable("panel_calendar") { CalendarPanelScreen(onBack = { navController.popBackStack() }) }
+                composable("panel_time") { TimePanelScreen(onBack = { navController.popBackStack() }) }
+                composable("panel_settings") { SettingsPanelScreen(onBack = { navController.popBackStack() }) }
+
+                // Dashboard Feature Routes
                 composable("${Screen.Detail.route}/Books") {
                     BooksScreen(onBack = { navController.popBackStack() })
                 }
@@ -338,23 +354,6 @@ fun DashboardCard(
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )
-        }
-    }
-}
-
-@Composable
-fun DetailScreen(title: String, onBack: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = title, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = onBack) {
-            Text("Back to Dashboard")
         }
     }
 }
