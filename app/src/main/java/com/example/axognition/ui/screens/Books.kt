@@ -1,6 +1,7 @@
 package com.example.axognition.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,12 +57,17 @@ fun BooksScreen(onBack: () -> Unit) {
 
     // Navigation state: null means showing category hub, non-null means inside that category view
     var selectedCategory by remember { mutableStateOf<BookCategory?>(null) }
-
     // View tab state: 0 = Server Catalog, 1 = Downloaded Library
     var selectedTab by remember { mutableIntStateOf(0) }
 
     // Search query state
     var searchQuery by remember { mutableStateOf("") }
+    BackHandler {
+        if (selectedCategory != null) {
+            selectedCategory = null
+            searchQuery = ""
+        } else onBack()
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -77,23 +83,6 @@ fun BooksScreen(onBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = {
-                        if (selectedCategory != null) {
-                            selectedCategory = null
-                            searchQuery = ""
-                        } else {
-                            onBack()
-                        }
-                    },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = selectedCategory?.title ?: "Digital Library Hub",
                     fontSize = 20.sp,

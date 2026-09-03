@@ -25,10 +25,6 @@ fun GamesScreen(onBack: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Put your custom exercise components, problem lists, or interactive cards here!
-
-        Button(onClick = onBack) {
-            Text("Back to Dashboard")
-        }
+        Text("Use Android's edge-back gesture to return to your learning hub.", style = MaterialTheme.typography.bodyLarge)
     }
 }

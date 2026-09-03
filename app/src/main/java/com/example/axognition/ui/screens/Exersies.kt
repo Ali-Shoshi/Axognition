@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.PlayCircle
@@ -200,7 +200,7 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedMuscle = null }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back to Muscles")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Muscles")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -241,7 +241,7 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedSport = null }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back to Sports")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Sports")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -299,7 +299,7 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedCardio = null }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back to Cardio List")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Cardio List")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -446,14 +446,6 @@ fun ExercisesScreen(onBack: () -> Unit) {
                             }
                         }
                     }
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = onBack,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Back to Dashboard")
                 }
             }
         }

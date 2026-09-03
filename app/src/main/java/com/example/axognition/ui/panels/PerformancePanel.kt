@@ -81,13 +81,6 @@ fun PerformancePanelScreen(onBack: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = "Academic Performance",
                     fontSize = 20.sp,

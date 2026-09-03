@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.axognition.ui.KioskTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,15 +31,7 @@ fun ProfilePanelScreen(onBack: () -> Unit) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Student Profile", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(20.dp))
-                    }
-                },
-                windowInsets = WindowInsets(0.dp)
-            )
+            KioskTopBar(title = "Student Profile", onBack = onBack)
         }
     ) { paddingValues ->
         LazyColumn(

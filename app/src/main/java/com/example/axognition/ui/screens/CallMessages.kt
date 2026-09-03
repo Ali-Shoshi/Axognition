@@ -9,7 +9,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -95,9 +97,6 @@ fun CallMessagesScreen(onBack: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { showAddContactDialog = true }) {
                         Icon(Icons.Default.PersonAdd, contentDescription = "Add Contact", tint = MaterialTheme.colorScheme.primary)
-                    }
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.Close, contentDescription = "Back to Dashboard")
                     }
                 }
             }
@@ -325,6 +324,7 @@ fun ContactListItem(contact: Contact, onCallClick: () -> Unit, onChatClick: () -
 
 @Composable
 fun ChatDetailScreen(contact: Contact, onBack: () -> Unit) {
+    BackHandler(onBack = onBack)
     var messageInput by remember { mutableStateOf("") }
     val chatMessages = remember {
         dummyMessages.getOrPut(contact.id) {
@@ -369,10 +369,6 @@ fun ChatDetailScreen(contact: Contact, onBack: () -> Unit) {
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(text = contact.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         Text(text = if (contact.isOnline) "Online" else "Offline", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)

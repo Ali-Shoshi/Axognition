@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.*
@@ -156,7 +156,7 @@ fun CoursesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedUnit = null }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back to Units")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Units")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -221,7 +221,7 @@ fun CoursesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedCourse = null }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back to Courses")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Courses")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
@@ -391,14 +391,6 @@ fun CoursesScreen(onBack: () -> Unit) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = onBack,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Back to Dashboard")
-                }
             }
         }
     }

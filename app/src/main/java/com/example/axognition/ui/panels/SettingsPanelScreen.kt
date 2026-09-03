@@ -11,27 +11,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.axognition.ui.KioskTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsPanelScreen(onBack: () -> Unit) {
+fun SettingsPanelScreen(
+    darkModeEnabled: Boolean,
+    onDarkModeChanged: (Boolean) -> Unit,
+    onBack: () -> Unit
+) {
     var notificationsEnabled by remember { mutableStateOf(true) }
-    var darkModeEnabled by remember { mutableStateOf(true) }
     var dataSyncEnabled by remember { mutableStateOf(false) }
     var selectedLanguage by remember { mutableStateOf("English") }
     var expandedLanguageMenu by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Settings", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", modifier = Modifier.size(20.dp))
-                    }
-                },
-                windowInsets = WindowInsets(0.dp)
-            )
+            KioskTopBar(title = "Settings", onBack = onBack)
         }
     ) { paddingValues ->
         LazyColumn(
@@ -74,12 +70,12 @@ fun SettingsPanelScreen(onBack: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Dark Mode", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text("Use dark color theme across app", style = MaterialTheme.typography.bodySmall)
+                                Text("Display", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(if (darkModeEnabled) "Dark Mode is on" else "Light Mode is on", style = MaterialTheme.typography.bodySmall)
                             }
                             Switch(
                                 checked = darkModeEnabled,
-                                onCheckedChange = { darkModeEnabled = it }
+                                onCheckedChange = onDarkModeChanged
                             )
                         }
 

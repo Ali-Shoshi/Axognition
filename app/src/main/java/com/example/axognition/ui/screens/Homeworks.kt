@@ -1,6 +1,7 @@
 package com.example.axognition.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -50,6 +51,9 @@ fun HomeworksScreen(onBack: () -> Unit) {
 
     // Navigation state: null means hub view, non-null means inside that specific category
     var selectedCategory by remember { mutableStateOf<HomeworkCategory?>(null) }
+    BackHandler {
+        if (selectedCategory != null) selectedCategory = null else onBack()
+    }
 
     // Computed statistics for the top summary bar
     val totalTasks = homeworkList.size
@@ -74,22 +78,6 @@ fun HomeworksScreen(onBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = {
-                        if (selectedCategory != null) {
-                            selectedCategory = null
-                        } else {
-                            onBack()
-                        }
-                    },
-                    modifier = Modifier.size(40.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = selectedCategory?.title ?: "Homework Hub",
                     fontSize = 20.sp,

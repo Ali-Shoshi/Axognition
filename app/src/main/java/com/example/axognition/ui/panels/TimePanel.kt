@@ -57,13 +57,6 @@ fun TimePanelScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "World Clock & Tools",
                 fontSize = 20.sp,

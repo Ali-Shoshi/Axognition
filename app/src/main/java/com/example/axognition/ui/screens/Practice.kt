@@ -123,9 +123,6 @@ fun PracticeScreen(onBack: () -> Unit) {
                         )
                     }
 
-                    Button(onClick = onBack) {
-                        Text("Dashboard")
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
