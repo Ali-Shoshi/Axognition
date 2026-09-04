@@ -1,5 +1,6 @@
 package com.example.axognition.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -83,6 +84,16 @@ fun LecturesScreen(onBack: () -> Unit) {
     var selectedSubject by remember { mutableStateOf<Subject?>(null) }
     var selectedUnit by remember { mutableStateOf<UnitData?>(null) }
     var playingVideo by remember { mutableStateOf<VideoLecture?>(null) }
+
+    // Keep back navigation inside the lecture flow before allowing NavController to leave it.
+    BackHandler(enabled = playingVideo != null || selectedUnit != null || selectedSubject != null) {
+        when {
+            playingVideo != null -> playingVideo = null
+            selectedUnit != null -> selectedUnit = null
+            selectedSubject != null -> selectedSubject = null
+            else -> onBack()
+        }
+    }
 
     when {
         playingVideo != null -> {

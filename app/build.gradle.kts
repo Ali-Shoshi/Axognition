@@ -1,7 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
+
+val mapsApiKey = providers.gradleProperty("MAPS_API_KEY").orNull
+    ?: providers.environmentVariable("MAPS_API_KEY").orNull
+    ?: Properties().run {
+        val secretsFile = rootProject.file("secrets.properties")
+        if (secretsFile.exists()) {
+            secretsFile.inputStream().use { load(it) }
+        }
+        getProperty("MAPS_API_KEY", "")
+    }
 
 android {
     namespace = "com.example.axognition"
@@ -17,6 +29,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
     }
 
     buildTypes {

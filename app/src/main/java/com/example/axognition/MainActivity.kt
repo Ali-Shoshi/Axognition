@@ -59,6 +59,7 @@ import com.example.axognition.ui.panels.HealthPanelScreen
 import com.example.axognition.ui.panels.CalendarPanelScreen
 import com.example.axognition.ui.panels.TimePanelScreen
 import com.example.axognition.ui.panels.SettingsPanelScreen
+import com.example.axognition.ui.panels.TasksPanelScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -150,6 +151,15 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
                     }
                 )
                 NavigationDrawerItem(
+                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = "Tasks") },
+                    label = { Text("Today's Tasks") },
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        navController.navigate("panel_tasks")
+                    }
+                )
+                NavigationDrawerItem(
                     icon = { Icon(Icons.Default.AccessTime, contentDescription = "Time") },
                     label = { Text("Time") },
                     selected = false,
@@ -206,6 +216,7 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
                 composable("panel_performance") { PerformancePanelScreen(onBack = { navController.popBackStack() }) }
                 composable("panel_health") { HealthPanelScreen(onBack = { navController.popBackStack() }) }
                 composable("panel_calendar") { CalendarPanelScreen(onBack = { navController.popBackStack() }) }
+                composable("panel_tasks") { TasksPanelScreen(onBack = { navController.popBackStack() }) }
                 composable("panel_time") { TimePanelScreen(onBack = { navController.popBackStack() }) }
                 composable("panel_settings") {
                     SettingsPanelScreen(
