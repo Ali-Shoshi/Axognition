@@ -91,6 +91,7 @@ fun MapScreen(onBack: () -> Unit) {
     var showSaveDialog by remember { mutableStateOf(false) }
     var areaName by remember { mutableStateOf("") }
     var locationPermissionGranted by remember { mutableStateOf(context.hasLocationPermission()) }
+    val hasMapsApiKey = remember(context) { context.hasMapsApiKey() }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -113,7 +114,9 @@ fun MapScreen(onBack: () -> Unit) {
         }
     }
 
-    LaunchedEffect(Unit) { if (locationPermissionGranted) moveToCurrentLocation(context, cameraPositionState) }
+    LaunchedEffect(hasMapsApiKey) {
+        if (hasMapsApiKey && locationPermissionGranted) moveToCurrentLocation(context, cameraPositionState)
+    }
 
     Scaffold(
         topBar = {
@@ -125,66 +128,70 @@ fun MapScreen(onBack: () -> Unit) {
         }
     ) { innerPadding ->
         Box(Modifier.fillMaxSize().padding(innerPadding)) {
-            GoogleMap(
+            if (hasMapsApiKey) {
+                GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(isMyLocationEnabled = locationPermissionGranted),
                 uiSettings = MapUiSettings(myLocationButtonEnabled = false, zoomControlsEnabled = false, compassEnabled = true)
-            ) {
-                savedAreas.forEach { area ->
-                    Marker(MarkerState(LatLng(area.latitude, area.longitude)), title = area.name, snippet = "Saved map area")
-                }
-            }
-
-            Column(
-                Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(16.dp)
-            ) {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
-                    placeholder = { Text("Search places, shops or addresses") },
-                    leadingIcon = { Icon(Icons.Default.Search, null) },
-                    trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Default.Close, "Clear search") } },
-                    singleLine = true,
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { search() })
-                )
-                if (isSearching) Text("Finding places…", Modifier.padding(start = 16.dp, top = 6.dp), style = MaterialTheme.typography.labelMedium)
-            }
-
-            Column(
-                Modifier.align(Alignment.CenterEnd).padding(end = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        if (locationPermissionGranted) moveToCurrentLocation(context, cameraPositionState)
-                        else permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
-                    },
-                    containerColor = MaterialTheme.colorScheme.surface
-                ) { Icon(Icons.Default.MyLocation, "Show my location") }
-                FloatingActionButton(
-                    onClick = { areaName = ""; showSaveDialog = true },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ) { Icon(Icons.Default.BookmarkAdd, "Save this map area") }
-            }
-
-            if (savedAreas.isNotEmpty()) Card(
-                modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
-            ) {
-                Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("Saved areas", style = MaterialTheme.typography.labelLarge)
-                    Spacer(Modifier.width(8.dp))
-                    savedAreas.take(2).forEach { area ->
-                        AssistChip(
-                            onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(LatLng(area.latitude, area.longitude), area.zoom)) } },
-                            label = { Text(area.name, maxLines = 1) },
-                            modifier = Modifier.padding(end = 4.dp)
-                        )
+                ) {
+                    savedAreas.forEach { area ->
+                        Marker(MarkerState(LatLng(area.latitude, area.longitude)), title = area.name, snippet = "Saved map area")
                     }
                 }
+
+                Column(
+                    Modifier.align(Alignment.TopCenter).fillMaxWidth().padding(16.dp)
+                ) {
+                    OutlinedTextField(
+                        value = query,
+                        onValueChange = { query = it },
+                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
+                        placeholder = { Text("Search places, shops or addresses") },
+                        leadingIcon = { Icon(Icons.Default.Search, null) },
+                        trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Default.Close, "Clear search") } },
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { search() })
+                    )
+                    if (isSearching) Text("Finding places…", Modifier.padding(start = 16.dp, top = 6.dp), style = MaterialTheme.typography.labelMedium)
+                }
+
+                Column(
+                    Modifier.align(Alignment.CenterEnd).padding(end = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    FloatingActionButton(
+                        onClick = {
+                            if (locationPermissionGranted) moveToCurrentLocation(context, cameraPositionState)
+                            else permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+                        },
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ) { Icon(Icons.Default.MyLocation, "Show my location") }
+                    FloatingActionButton(
+                        onClick = { areaName = ""; showSaveDialog = true },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ) { Icon(Icons.Default.BookmarkAdd, "Save this map area") }
+                }
+
+                if (savedAreas.isNotEmpty()) Card(
+                    modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
+                ) {
+                    Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Saved areas", style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.width(8.dp))
+                        savedAreas.take(2).forEach { area ->
+                            AssistChip(
+                                onClick = { scope.launch { cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(LatLng(area.latitude, area.longitude), area.zoom)) } },
+                                label = { Text(area.name, maxLines = 1) },
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+                        }
+                    }
+                }
+            } else {
+                MapApiKeyRequired(Modifier.fillMaxSize().padding(24.dp))
             }
         }
     }
@@ -214,6 +221,31 @@ fun MapScreen(onBack: () -> Unit) {
 private fun Context.hasLocationPermission() =
     ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
         ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+private fun Context.hasMapsApiKey(): Boolean {
+    val apiKey = runCatching {
+        packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            .metaData?.getString("com.google.android.geo.API_KEY")
+            ?.trim()
+    }.getOrNull()
+    return apiKey?.let { it.isNotBlank() && !it.contains("MAPS_API_KEY") } == true
+}
+
+@Composable
+private fun MapApiKeyRequired(modifier: Modifier = Modifier) {
+    Box(modifier, contentAlignment = Alignment.Center) {
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Map setup needed", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Add a Google Maps Android API key to secrets.properties, then rebuild the app.")
+                Text("MAPS_API_KEY=your_google_maps_android_key", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
 
 @SuppressLint("MissingPermission")
 private fun moveToCurrentLocation(context: Context, cameraPositionState: CameraPositionState) {
