@@ -1,0 +1,8 @@
+# Server-specific local configuration
+.env
+
+# Server build and IDE state
+/build/
+/.gradle/
+/.kotlin/
+/.idea/

@@ -38,46 +38,6 @@ data class Subject(
     val units: List<UnitData>
 )
 
-val dummySubjects = listOf(
-    Subject(
-        id = "math",
-        name = "Mathematics",
-        description = "Calculus, Algebra, and Geometry",
-        units = listOf(
-            UnitData("m_u1", "Unit 1: Limits & Continuity", listOf(
-                VideoLecture("v1", "Introduction to Limits", "12 min"),
-                VideoLecture("v2", "Calculating Limits Algebraically", "18 min"),
-                VideoLecture("v3", "Continuity at a Point", "15 min")
-            )),
-            UnitData("m_u2", "Unit 2: Derivatives", listOf(
-                VideoLecture("v4", "The Power Rule", "14 min"),
-                VideoLecture("v5", "Product and Quotient Rules", "22 min")
-            ))
-        )
-    ),
-    Subject(
-        id = "physics",
-        name = "Physics",
-        description = "Mechanics, Thermodynamics, and Waves",
-        units = listOf(
-            UnitData("p_u1", "Unit 1: Kinematics", listOf(
-                VideoLecture("v6", "Displacement and Velocity", "10 min"),
-                VideoLecture("v7", "Acceleration Vectors", "16 min")
-            ))
-        )
-    ),
-    Subject(
-        id = "chemistry",
-        name = "Chemistry",
-        description = "Atomic Structure and Bonding",
-        units = listOf(
-            UnitData("c_u1", "Unit 1: Periodic Table", listOf(
-                VideoLecture("v8", "Periodic Trends", "14 min"),
-                VideoLecture("v9", "Electron Configurations", "20 min")
-            ))
-        )
-    )
-)
 
 @Composable
 fun LecturesScreen(onBack: () -> Unit) {
@@ -95,8 +55,13 @@ fun LecturesScreen(onBack: () -> Unit) {
         }
     }
 
+    // Lazy list callbacks can run while the previous screen is being disposed.
+    // Capture this composition's values so Back cannot invalidate their data.
+    val subject = selectedSubject
+    val unit = selectedUnit
+    val video = playingVideo
     when {
-        playingVideo != null -> {
+        video != null -> {
             // Video Player Simulation Screen
             Box(
                 modifier = Modifier
@@ -122,8 +87,8 @@ fun LecturesScreen(onBack: () -> Unit) {
                         }
                     }
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = playingVideo!!.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "Duration: ${playingVideo!!.duration}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = video.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = "Duration: ${video.duration}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(onClick = { playingVideo = null }) {
                         Text("Close Video")
@@ -131,7 +96,7 @@ fun LecturesScreen(onBack: () -> Unit) {
                 }
             }
         }
-        selectedUnit != null -> {
+        unit != null -> {
             // Unit Detail: List of Lectures
             Column(
                 modifier = Modifier
@@ -147,7 +112,7 @@ fun LecturesScreen(onBack: () -> Unit) {
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedUnit!!.title,
+                        text = unit.title,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -155,7 +120,7 @@ fun LecturesScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "${selectedUnit!!.lectures.size} lectures available",
+                    text = "${unit.lectures.size} lectures available",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -165,7 +130,7 @@ fun LecturesScreen(onBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(selectedUnit!!.lectures) { lecture ->
+                    items(unit.lectures, key = { it.id }) { lecture ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -197,7 +162,7 @@ fun LecturesScreen(onBack: () -> Unit) {
                 }
             }
         }
-        selectedSubject != null -> {
+        subject != null -> {
             // Subject Detail: List of Units
             Column(
                 modifier = Modifier
@@ -213,7 +178,7 @@ fun LecturesScreen(onBack: () -> Unit) {
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedSubject!!.name,
+                        text = subject.name,
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -231,7 +196,7 @@ fun LecturesScreen(onBack: () -> Unit) {
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(selectedSubject!!.units) { unit ->
+                    items(subject.units, key = { it.id }) { unit ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -265,77 +230,6 @@ fun LecturesScreen(onBack: () -> Unit) {
                 }
             }
         }
-        else -> {
-            // Main Screen: Select Subject
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Video Lectures",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Choose a subject to get started",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(dummySubjects) { subject ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { selectedSubject = subject },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .padding(20.dp)
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = subject.name,
-                                        fontSize = 18.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Text(
-                                        text = subject.description,
-                                        fontSize = 13.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "${subject.units.size} Units",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
-                }
-
-            }
-        }
+        else -> LectureCollections(onSubject = { selectedSubject = it })
     }
 }

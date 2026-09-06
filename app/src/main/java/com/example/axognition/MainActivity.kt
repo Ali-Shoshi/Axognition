@@ -36,6 +36,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.axognition.ui.theme.AxognitionTheme
+import com.example.axognition.ui.AssistantChatButton
+import com.example.axognition.ui.AssistantChatPanel
 import kotlinx.coroutines.launch
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
@@ -100,7 +102,9 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
     val isDashboard = navBackStackEntry?.destination?.route == Screen.Dashboard.route
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    var assistantOpen by rememberSaveable { mutableStateOf(false) }
 
+    Box(modifier = Modifier.fillMaxSize()) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -258,6 +262,16 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
                     TestScreen(onBack = { navController.popBackStack() })
                 }
             }
+        }
+    }
+        AssistantChatButton(
+            onClick = { assistantOpen = true },
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = 66.dp, end = 20.dp)
+        )
+        if (assistantOpen) {
+            AssistantChatPanel(onDismiss = { assistantOpen = false })
         }
     }
 }

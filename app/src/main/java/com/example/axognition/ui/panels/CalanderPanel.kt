@@ -5,9 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,12 +13,15 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -42,45 +42,59 @@ fun CalendarPanelScreen(onBack: () -> Unit) {
         SchoolEvent("deadline", "Science project due", "Before 16:00", dayMillis(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH) + 2), EventKind.DEADLINE),
         SchoolEvent("event", "Debate club meeting", "15:30 – 16:30", dayMillis(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH) + 4), EventKind.EVENT)) }
     var showAddDialog by remember { mutableStateOf(false) }
+    var monthZoom by remember { mutableIntStateOf(1) }
     val selectedMillis = dayMillis(year, month, selectedDay)
     val monthTitle = remember(year, month) { SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(Date(dayMillis(year, month, 1))) }
-    val days = remember(year, month) { monthCells(year, month) }
+    val days = remember(year, month) {
+        monthCells(year, month).let { it + List((7 - it.size % 7) % 7) { null } }
+    }
+    val preferredCellSize = listOf(38.dp, 50.dp, 62.dp)[monthZoom]
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val largestCellThatFits = ((screenWidth.value - 80f) / 7f).coerceAtLeast(28f).dp
+    val cellSize = minOf(preferredCellSize, largestCellThatFits)
+    val calendarWidth = cellSize * 7 + 24.dp + 24.dp
     val selectedEvents = events.filter { it.date == selectedMillis }
     val upcoming = events.filter { it.date >= selectedMillis }.sortedBy { it.date }.take(4)
     Scaffold(topBar = { KioskTopBar(title = "School calendar", onBack = onBack) }, floatingActionButton = { ExtendedFloatingActionButton(onClick = { showAddDialog = true }, icon = { Icon(Icons.Default.Add, null) }, text = { Text("Add reminder") }) }) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp), contentPadding = PaddingValues(bottom = 92.dp)) {
             item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) { IconButton(onClick = { if (month == 0) { month = 11; year-- } else month-- }) { Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, "Previous month") }; Text(monthTitle, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold); IconButton(onClick = { if (month == 11) { month = 0; year++ } else month++ }) { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, "Next month") } } }
             item {
-                Card {
-                    Column(Modifier.padding(12.dp)) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-                            listOf("S", "M", "T", "W", "T", "F", "S").forEach {
-                                Text(it, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Card(modifier = Modifier.width(calendarWidth), shape = RoundedCornerShape(20.dp)) {
+                        Column(Modifier.padding(12.dp)) {
+                            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                Text("Month view", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                                IconButton(onClick = { if (monthZoom > 0) monthZoom-- }, enabled = monthZoom > 0) { Icon(Icons.Default.ZoomOut, "Zoom out") }
+                                IconButton(onClick = { if (monthZoom < 2) monthZoom++ }, enabled = monthZoom < 2) { Icon(Icons.Default.ZoomIn, "Zoom in") }
                             }
-                        }
-                        Spacer(Modifier.height(8.dp))
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(7), userScrollEnabled = false,
-                            modifier = Modifier.height(276.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            items(days, key = { it ?: -1 }) { day ->
-                                if (day == null) {
-                                    Spacer(Modifier.aspectRatio(1f))
-                                } else {
-                                    val date = dayMillis(year, month, day)
-                                    val isSelected = date == selectedMillis
-                                    val hasEvents = events.any { it.date == date }
-                                    Column(
-                                        Modifier.aspectRatio(1f).clip(CircleShape)
-                                            .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
-                                            .clickable { selectedDay = day },
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalArrangement = Arrangement.Center
-                                    ) {
-                                        Text(day.toString(), color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
-                                        if (hasEvents) Box(Modifier.size(4.dp).clip(CircleShape).background(if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.tertiary))
+                            Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+                                listOf("S", "M", "T", "W", "T", "F", "S").forEach { label ->
+                                    Box(Modifier.size(cellSize), contentAlignment = Alignment.Center) {
+                                        Text(label, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
+                            Spacer(Modifier.height(6.dp))
+                            days.chunked(7).forEach { week ->
+                                Row(horizontalArrangement = Arrangement.spacedBy(0.dp)) {
+                                    week.forEach { day ->
+                                        if (day == null) {
+                                            Spacer(Modifier.size(cellSize))
+                                        } else {
+                                            val date = dayMillis(year, month, day)
+                                            val isSelected = date == selectedMillis
+                                            val hasEvents = events.any { it.date == date }
+                                            Column(
+                                                Modifier.size(cellSize).clip(CircleShape)
+                                                    .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                                                    .clickable { selectedDay = day },
+                                                horizontalAlignment = Alignment.CenterHorizontally,
+                                                verticalArrangement = Arrangement.Center
+                                            ) {
+                                                Text(day.toString(), color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                                                if (hasEvents) Box(Modifier.size(4.dp).clip(CircleShape).background(if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.tertiary))
+                                            }
+                                        }
                                     }
                                 }
                             }

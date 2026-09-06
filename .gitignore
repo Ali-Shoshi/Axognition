@@ -1,16 +1,26 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# Operating system files
 .DS_Store
-/build
+Thumbs.db
+
+# IntelliJ IDEA / Android Studio local project files
+.idea/
+*.iml
+
+# Gradle and generated build output
+.gradle/
+**/.gradle/
+**/build/
+**/.kotlin/
+
+# Android local configuration and native build output
+local.properties
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+# Local secrets (never commit credentials)
 secrets.properties
+server/.env
+
+# Local development-service data
+minio-data/
