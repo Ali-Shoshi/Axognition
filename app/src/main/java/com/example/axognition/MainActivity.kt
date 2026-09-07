@@ -19,13 +19,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.unit.IntOffset
+import kotlin.math.roundToInt
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +46,21 @@ import androidx.navigation.compose.rememberNavController
 import com.example.axognition.ui.theme.AxognitionTheme
 import com.example.axognition.ui.AssistantChatButton
 import com.example.axognition.ui.AssistantChatPanel
+import com.example.axognition.ui.ChildLoginScreen
+import com.example.axognition.ui.WakeWordAssistant
+import com.example.axognition.ui.ChatMessage
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.ui.graphics.TransformOrigin
+import com.example.axognition.data.ChildAuthApi
+import com.example.axognition.data.ChildSession
+import com.example.axognition.data.ChildSessionStore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
 
@@ -97,14 +119,104 @@ sealed class Screen(val route: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
+    val context = LocalContext.current
+    var childSession by remember { mutableStateOf(ChildSessionStore.load(context)) }
+    var signingIn by rememberSaveable { mutableStateOf(false) }
+    var loginError by rememberSaveable { mutableStateOf<String?>(null) }
+    val loginScope = rememberCoroutineScope()
+
+    if (childSession == null) {
+        ChildLoginScreen(
+            isSigningIn = signingIn,
+            error = loginError,
+            onSignIn = { username, password ->
+                signingIn = true
+                loginError = null
+                loginScope.launch {
+                    val result = runCatching { withContext(Dispatchers.IO) { ChildAuthApi.login(username, password) } }
+                    result.onSuccess { session ->
+                        ChildSessionStore.save(context, session)
+                        childSession = session
+                    }.onFailure { failure ->
+                        loginError = failure.message ?: "Could not sign in."
+                    }
+                    signingIn = false
+                }
+            }
+        )
+        return
+    }
+
+    AuthenticatedMainApp(darkMode, onDarkModeChanged, childSession!!)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AuthenticatedMainApp(
+    darkMode: Boolean,
+    onDarkModeChanged: (Boolean) -> Unit,
+    childSession: ChildSession
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val isDashboard = navBackStackEntry?.destination?.route == Screen.Dashboard.route
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var assistantOpen by rememberSaveable { mutableStateOf(false) }
+    var wakeWordEnabled by rememberSaveable { mutableStateOf(false) }
+    val chatContext = LocalContext.current
+    val chatPreferences = remember(childSession.childId) {
+        chatContext.getSharedPreferences("assistant_chat_${childSession.childId}", Context.MODE_PRIVATE)
+    }
+    val chatMessages = remember(childSession.childId) {
+        mutableStateListOf<ChatMessage>().apply {
+            runCatching {
+                val saved = org.json.JSONArray(chatPreferences.getString("messages", "[]"))
+                for (index in 0 until saved.length()) {
+                    val message = saved.getJSONObject(index)
+                    add(ChatMessage(message.getString("text"), message.getBoolean("fromStudent")))
+                }
+            }
+        }
+    }
+    val appendChatMessage: (ChatMessage) -> Unit = { message ->
+        chatMessages.add(message)
+        val saved = org.json.JSONArray()
+        chatMessages.forEach { saved.put(org.json.JSONObject().put("text", it.text).put("fromStudent", it.fromStudent)) }
+        chatPreferences.edit().putString("messages", saved.toString()).apply()
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    val density = LocalDensity.current
+    val containerWidthPx = with(density) { maxWidth.toPx() }
+    val containerHeightPx = with(density) { maxHeight.toPx() }
+    val buttonSizePx = with(density) { 56.dp.toPx() }
+    val edgeMarginPx = with(density) { 16.dp.toPx() }
+    val topMarginPx = with(density) { 72.dp.toPx() }
+    val defaultButtonPosition = Offset(
+        x = (containerWidthPx - buttonSizePx - edgeMarginPx).coerceAtLeast(edgeMarginPx),
+        y = topMarginPx
+    )
+    var assistantButtonPosition by remember {
+        mutableStateOf<Offset?>(if (chatPreferences.contains("anchorX")) Offset(
+            chatPreferences.getFloat("anchorX", 0.9f) * containerWidthPx,
+            chatPreferences.getFloat("anchorY", 0.1f) * containerHeightPx
+        ) else null)
+    }
+    LaunchedEffect(assistantButtonPosition) {
+        assistantButtonPosition?.let {
+            chatPreferences.edit().putFloat("anchorX", it.x / containerWidthPx)
+                .putFloat("anchorY", it.y / containerHeightPx).apply()
+        }
+    }
+    LaunchedEffect(containerWidthPx, containerHeightPx) {
+        assistantButtonPosition = assistantButtonPosition?.let { position ->
+            Offset(
+                x = position.x.coerceIn(edgeMarginPx, (containerWidthPx - buttonSizePx - edgeMarginPx).coerceAtLeast(edgeMarginPx)),
+                y = position.y.coerceIn(edgeMarginPx, (containerHeightPx - buttonSizePx - edgeMarginPx).coerceAtLeast(edgeMarginPx))
+            )
+        }
+    }
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -188,7 +300,7 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 if (isDashboard) TopAppBar(
-                    title = { Text("Axognition Dashboard") },
+                    title = { Text("${childSession.displayName}'s Axognition") },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch { drawerState.open() }
@@ -209,6 +321,7 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
             ) {
                 composable(Screen.Dashboard.route) {
                     DashboardScreen(
+                        childName = childSession.displayName,
                         onItemClick = { itemTitle ->
                             navController.navigate("${Screen.Detail.route}/$itemTitle")
                         }
@@ -216,7 +329,13 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
                 }
 
                 // Side Panel Destinations (from ui.panels folder)
-                composable("panel_profile") { ProfilePanelScreen(onBack = { navController.popBackStack() }) }
+                composable("panel_profile") {
+                    ProfilePanelScreen(
+                        childName = childSession.displayName,
+                        grade = childSession.grade,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
                 composable("panel_performance") { PerformancePanelScreen(onBack = { navController.popBackStack() }) }
                 composable("panel_health") { HealthPanelScreen(onBack = { navController.popBackStack() }) }
                 composable("panel_calendar") { CalendarPanelScreen(onBack = { navController.popBackStack() }) }
@@ -264,20 +383,56 @@ fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
             }
         }
     }
-        AssistantChatButton(
-            onClick = { assistantOpen = true },
+        if (!assistantOpen) AssistantChatButton(
+            onClick = { assistantOpen = !assistantOpen },
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 66.dp, end = 20.dp)
+                .zIndex(2f)
+                .align(Alignment.TopStart)
+                .offset {
+                    val position = assistantButtonPosition ?: defaultButtonPosition
+                    IntOffset(
+                        position.x.roundToInt(),
+                        position.y.roundToInt()
+                    )
+                }
+                .pointerInput(containerWidthPx, containerHeightPx) {
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        val current = assistantButtonPosition ?: defaultButtonPosition
+                        assistantButtonPosition = Offset(
+                            x = (current.x + dragAmount.x).coerceIn(
+                                edgeMarginPx,
+                                (containerWidthPx - buttonSizePx - edgeMarginPx).coerceAtLeast(edgeMarginPx)
+                            ),
+                            y = (current.y + dragAmount.y).coerceIn(
+                                edgeMarginPx,
+                                (containerHeightPx - buttonSizePx - edgeMarginPx).coerceAtLeast(edgeMarginPx)
+                            )
+                        )
+                    }
+                }
         )
-        if (assistantOpen) {
-            AssistantChatPanel(onDismiss = { assistantOpen = false })
-        }
+            AssistantChatPanel(
+                expanded = assistantOpen,
+                anchor = assistantButtonPosition ?: defaultButtonPosition,
+                onMove = { assistantButtonPosition = it },
+                messages = chatMessages,
+                onMessage = appendChatMessage,
+                onDismiss = { assistantOpen = false },
+                wakeWordEnabled = wakeWordEnabled,
+                onWakeWordEnabledChange = { wakeWordEnabled = it }
+            )
+        WakeWordAssistant(
+            enabled = wakeWordEnabled,
+            conversation = { chatMessages.toList() },
+            onMessage = appendChatMessage,
+            onOpenChat = { assistantOpen = true }
+        )
     }
 }
 
 @Composable
-fun DashboardScreen(modifier: Modifier = Modifier, onItemClick: (String) -> Unit) {
+fun DashboardScreen(childName: String, modifier: Modifier = Modifier, onItemClick: (String) -> Unit) {
     var items by remember {
         mutableStateOf(
             listOf(
@@ -315,7 +470,7 @@ fun DashboardScreen(modifier: Modifier = Modifier, onItemClick: (String) -> Unit
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Welcome Back",
+            text = "Welcome back, $childName",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)

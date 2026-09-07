@@ -6,4 +6,5 @@ ktor:
     modules:
       - com.example.DatabaseKt.configureDatabase
       - com.example.ObjectStorageKt.configureObjectStorage
+      - com.example.ChildAuthenticationKt.configureChildAuthentication
       - com.example.RoutingKt.configureRouting

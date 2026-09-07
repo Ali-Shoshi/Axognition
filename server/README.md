@@ -1,5 +1,14 @@
 # ktor-sample
 
+## Local child authentication setup
+
+The server reads local secrets from `server/.env`, which is intentionally ignored by Git.
+Copy `.env.example` into your local `.env` values and add a random `JWT_SECRET` of at least
+32 characters. Do not commit that secret.
+
+Child credentials are stored in the `child_credentials` table as Argon2id password hashes.
+The server never stores the child's original password.
+
 This project was created using the [Ktor Project Generator](https://start.ktor.io).
 
 Here are some useful links to get you started:

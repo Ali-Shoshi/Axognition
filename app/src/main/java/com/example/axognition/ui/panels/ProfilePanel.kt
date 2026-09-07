@@ -4,11 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,15 +16,18 @@ import com.example.axognition.ui.KioskTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfilePanelScreen(onBack: () -> Unit) {
-    val studentName = "Alex Johnson"
-    val studentId = "STU-984210"
-    val personalNumber = "1205085290123"
-    val grade = "11th Grade (Junior)"
-    val school = "Metro High School & Technology Academy"
-    val academicTrack = "Computer Science & Engineering"
-    val email = "alex.johnson@axognition.edu"
-    val phone = "+1 (555) 382-9104"
+fun ProfilePanelScreen(
+    childName: String,
+    grade: Int?,
+    onBack: () -> Unit
+) {
+    val initials = childName
+        .split(Regex("\\s+"))
+        .filter { it.isNotBlank() }
+        .take(2)
+        .joinToString(separator = "") { it.first().uppercase() }
+        .ifBlank { "?" }
+    val gradeText = grade?.let { "Grade $it" } ?: "Grade not set"
 
     Scaffold(
         topBar = {
@@ -44,7 +44,6 @@ fun ProfilePanelScreen(onBack: () -> Unit) {
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                // Profile Picture Placeholder Box
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -52,21 +51,21 @@ fun ProfilePanelScreen(onBack: () -> Unit) {
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                    Text(
+                        text = initials,
+                        fontSize = 34.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = studentName,
+                    text = childName,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = school,
+                    text = gradeText,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -87,9 +86,8 @@ fun ProfilePanelScreen(onBack: () -> Unit) {
                             color = MaterialTheme.colorScheme.primary
                         )
                         Divider()
-                        ProfileDetailRow(label = "Grade Level", value = grade)
-                        ProfileDetailRow(label = "Academic Track", value = academicTrack)
-                        ProfileDetailRow(label = "Student ID", value = studentId)
+                        ProfileDetailRow(label = "Grade level", value = gradeText)
+                        ProfileDetailRow(label = "Learning path", value = "Compulsory subjects and chosen courses")
                     }
                 }
             }
@@ -103,15 +101,14 @@ fun ProfilePanelScreen(onBack: () -> Unit) {
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Personal Details",
+                            text = "About this tablet",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Divider()
-                        ProfileDetailRow(label = "Personal Number", value = personalNumber)
-                        ProfileDetailRow(label = "Email Address", value = email)
-                        ProfileDetailRow(label = "Phone Number", value = phone)
+                        ProfileDetailRow(label = "Student", value = childName)
+                        ProfileDetailRow(label = "Profile", value = "Personal learning tablet")
                     }
                 }
             }

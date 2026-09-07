@@ -12,6 +12,13 @@ application {
     mainClass = "io.ktor.server.netty.EngineMain"
 }
 
+tasks.register<JavaExec>("createChildAccount") {
+    group = "application"
+    description = "Creates a child account from CHILD_* environment variables."
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass = "com.example.ChildAccountProvisionerKt"
+}
+
 kotlin {
     jvmToolchain(21)
 }
@@ -21,7 +28,10 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:3.5.2")
     implementation("io.ktor:ktor-server-content-negotiation:3.5.2")
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
+    implementation("io.ktor:ktor-server-auth:3.5.2")
+    implementation("io.ktor:ktor-server-auth-jwt:3.5.2")
     implementation("ch.qos.logback:logback-classic:1.5.37")
+    implementation("de.mkammerer:argon2-jvm:2.12")
 
     implementation("org.jetbrains.exposed:exposed-core:1.5.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:1.5.0")

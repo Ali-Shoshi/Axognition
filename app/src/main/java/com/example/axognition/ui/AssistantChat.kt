@@ -11,8 +11,17 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,6 +30,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
@@ -45,6 +55,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -58,17 +69,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import com.example.axognition.data.AssistantApi
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.roundToInt
 
-private data class ChatMessage(val text: String, val fromStudent: Boolean)
+data class ChatMessage(val text: String, val fromStudent: Boolean)
 
 @Composable
 fun AssistantChatButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
@@ -86,15 +108,28 @@ fun AssistantChatButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-/** A local-only chat shell. Its response will be replaced by the server AI in the next step. */
 @Composable
-fun AssistantChatPanel(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun AssistantChatPanel(
+    expanded: Boolean,
+    anchor: Offset,
+    onMove: (Offset) -> Unit,
+    messages: List<ChatMessage>,
+    onMessage: (ChatMessage) -> Unit,
+    onDismiss: () -> Unit,
+    wakeWordEnabled: Boolean,
+    onWakeWordEnabledChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
-    val messages = remember {
-        mutableStateListOf(
-            ChatMessage("Hi! Ask me about what you are learning.", fromStudent = false)
-        )
+    val expansion by animateFloatAsState(if (expanded) 1f else 0f, tween(420, easing = FastOutSlowInEasing), label = "assistantExpansion")
+    val orientation = LocalConfiguration.current.orientation
+    val sizePreferences = remember { context.getSharedPreferences("assistant_window", android.content.Context.MODE_PRIVATE) }
+    var savedWidth by remember(orientation) { mutableStateOf(sizePreferences.getFloat("width_$orientation", 390f)) }
+    var savedHeight by remember(orientation) { mutableStateOf(sizePreferences.getFloat("height_$orientation", -1f)) }
+    LaunchedEffect(savedWidth, savedHeight, orientation) {
+        sizePreferences.edit().putFloat("width_$orientation", savedWidth).putFloat("height_$orientation", savedHeight).apply()
     }
+    var panelSize by remember { mutableStateOf(IntSize.Zero) }
     var draft by remember { mutableStateOf("") }
     var isSending by remember { mutableStateOf(false) }
     var isListening by remember { mutableStateOf(false) }
@@ -173,88 +208,172 @@ fun AssistantChatPanel(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
         if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex)
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.28f))
-            .clickable(onClick = onDismiss),
-        contentAlignment = Alignment.CenterEnd
-    ) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize()) {
+        val density = LocalDensity.current
+        val containerWidthPx = with(density) { maxWidth.toPx() }
+        val containerHeightPx = with(density) { maxHeight.toPx() }
+        val edgeMarginPx = with(density) { 16.dp.toPx() }
+        val maxPanelX = (containerWidthPx - panelSize.width - edgeMarginPx).coerceAtLeast(edgeMarginPx)
+        val maxPanelY = (containerHeightPx - panelSize.height - edgeMarginPx).coerceAtLeast(edgeMarginPx)
+        val panelPosition = Offset(anchor.x.coerceIn(edgeMarginPx, maxPanelX), anchor.y.coerceIn(edgeMarginPx, maxPanelY))
+        val buttonPixels = with(density) { 56.dp.toPx() }
+
+        fun movePanel(dragAmount: Offset) {
+            val current = panelPosition
+            onMove(Offset(
+                x = (current.x + dragAmount.x).coerceIn(edgeMarginPx, maxPanelX),
+                y = (current.y + dragAmount.y).coerceIn(edgeMarginPx, maxPanelY)
+            ))
+        }
+        // Read the latest bounds without restarting a gesture on every movement.
+        val dragPanel by rememberUpdatedState<(Offset) -> Unit>({ movePanel(it) })
+        val resizePanel by rememberUpdatedState<(Float) -> Unit>({ zoom ->
+            val maxWidthDp = (maxWidth.value - 32f).coerceAtLeast(1f)
+            val maxHeightDp = (maxHeight.value - 32f).coerceAtLeast(1f)
+            savedWidth = (with(density) { panelSize.width.toDp().value } * zoom)
+                .coerceIn(minOf(320f, maxWidthDp), maxWidthDp)
+            savedHeight = (with(density) { panelSize.height.toDp().value } * zoom)
+                .coerceIn(minOf(if (messages.isEmpty()) 200f else 360f, maxHeightDp), maxHeightDp)
+        })
+
+        if (expanded || expansion > 0f) {
         Card(
             modifier = Modifier
-                .padding(16.dp)
-                .widthIn(max = 390.dp)
-                .fillMaxWidth(0.92f)
-                .fillMaxHeight(0.76f)
-                .clickable(enabled = false) {},
+                .align(Alignment.TopStart)
+                .width(savedWidth.coerceIn(minOf(320f, (maxWidth.value - 32f).coerceAtLeast(1f)), (maxWidth.value - 32f).coerceAtLeast(1f)).dp)
+                .then(
+                    if (savedHeight > 0f) Modifier.height(savedHeight
+                        .coerceAtLeast(if (messages.isEmpty()) 200f else 360f)
+                        .coerceAtMost((maxHeight.value - 32f).coerceAtLeast(1f)).dp)
+                    else if (messages.isEmpty()) Modifier else Modifier.fillMaxHeight(0.76f)
+                )
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                        do {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            if (event.changes.count { it.pressed && it.previousPressed } >= 2) {
+                                val zoom = event.calculateZoom()
+                                if (zoom.isFinite() && zoom > 0f) resizePanel(zoom)
+                                event.changes.forEach { it.consume() }
+                            }
+                        } while (event.changes.any { it.pressed })
+                    }
+                }
+                .onSizeChanged { panelSize = it }
+                .offset {
+                    val position = anchor + (panelPosition - anchor) * expansion
+                    IntOffset(position.x.roundToInt(), position.y.roundToInt())
+                }
+                .graphicsLayer {
+                    transformOrigin = TransformOrigin(0f, 0f)
+                    scaleX = buttonPixels / panelSize.width.coerceAtLeast(1) * (1f - expansion) + expansion
+                    scaleY = buttonPixels / panelSize.height.coerceAtLeast(1) * (1f - expansion) + expansion
+                    alpha = expansion
+                },
             shape = RoundedCornerShape(28.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
         ) {
-            Column(Modifier.fillMaxSize().padding(18.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer) {
-                        Icon(
-                            Icons.Default.AutoAwesome,
-                            contentDescription = null,
-                            modifier = Modifier.padding(9.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
+            Column(
+                Modifier
+                    .then(if (messages.isEmpty()) Modifier.fillMaxWidth() else Modifier.fillMaxSize())
+                    .padding(18.dp)
+            ) {
+                if (messages.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.pointerInput(Unit) {
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
+                                dragPanel(dragAmount)
+                            }
+                        },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
+                            Icon(
+                                Icons.Default.SmartToy,
+                                contentDescription = "Drag assistant chat",
+                                modifier = Modifier.padding(9.dp),
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text("Learning assistant", fontWeight = FontWeight.Bold)
+                            Text("Hold and drag here to move", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = onDismiss) {
+                            Icon(Icons.Default.Close, contentDescription = "Close assistant")
+                        }
                     }
-                    Spacer(Modifier.width(10.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text("Learning assistant", fontWeight = FontWeight.Bold)
-                        Text("Ready to help", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close assistant")
-                    }
-                }
-
-                Spacer(Modifier.height(14.dp))
-
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(messages) { message ->
-                        Box(Modifier.fillMaxWidth(), contentAlignment = if (message.fromStudent) Alignment.CenterEnd else Alignment.CenterStart) {
-                            Surface(
-                                color = if (message.fromStudent) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.secondaryContainer,
-                                contentColor = if (message.fromStudent) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSecondaryContainer,
-                                shape = RoundedCornerShape(18.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(start = 14.dp, top = 7.dp, bottom = 7.dp, end = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically
+                    Spacer(Modifier.height(14.dp))
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        items(messages) { message ->
+                            Box(Modifier.fillMaxWidth(), contentAlignment = if (message.fromStudent) Alignment.CenterEnd else Alignment.CenterStart) {
+                                Surface(
+                                    color = if (message.fromStudent) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
+                                    contentColor = if (message.fromStudent) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary,
+                                    shape = RoundedCornerShape(18.dp)
                                 ) {
-                                    Text(message.text, modifier = Modifier.weight(1f))
-                                    if (!message.fromStudent) {
-                                        IconButton(
-                                            onClick = {
-                                                speaker?.speak(
-                                                    message.text,
-                                                    TextToSpeech.QUEUE_FLUSH,
-                                                    null,
-                                                    "assistant-response-${message.hashCode()}"
-                                                )
-                                            },
-                                            enabled = isSpeechReady,
-                                            modifier = Modifier.size(40.dp)
-                                        ) {
-                                            Icon(
-                                                Icons.Default.VolumeUp,
-                                                contentDescription = "Read this response aloud"
-                                            )
+                                    Row(
+                                        modifier = Modifier.padding(start = 14.dp, top = 7.dp, bottom = 7.dp, end = 5.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(message.text, modifier = Modifier.weight(1f))
+                                        if (!message.fromStudent) {
+                                            IconButton(onClick = {
+                                                speaker?.speak(message.text, TextToSpeech.QUEUE_FLUSH, null, "assistant-response-${message.hashCode()}")
+                                            }, enabled = isSpeechReady, modifier = Modifier.size(40.dp)) {
+                                                Icon(Icons.Default.VolumeUp, contentDescription = "Read this response aloud")
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    Spacer(Modifier.height(10.dp))
+                } else {
+                    Text(
+                        "Ask a question…",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .pointerInput(Unit) {
+                                detectDragGestures { change, dragAmount ->
+                                    change.consume()
+                                    dragPanel(dragAmount)
+                                }
+                            }
+                    )
+                    Spacer(Modifier.height(8.dp))
                 }
-
-                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Listen for “Hej AI”", style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            "Experimental · only while Axognition is open",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = wakeWordEnabled,
+                        onCheckedChange = onWakeWordEnabledChange
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Shrink assistant")
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = draft,
@@ -268,6 +387,7 @@ fun AssistantChatPanel(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
                     Spacer(Modifier.width(8.dp))
                     ElevatedButton(
                         onClick = {
+                            if (wakeWordEnabled) onWakeWordEnabledChange(false)
                             if (isListening) {
                                 recognizer?.stopListening()
                                 isListening = false
@@ -291,16 +411,17 @@ fun AssistantChatPanel(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
                         onClick = {
                             val question = draft.trim()
                             if (question.isNotEmpty()) {
-                                messages += ChatMessage(question, fromStudent = true)
+                                val history = messages.map { AssistantApi.HistoryMessage(it.text, it.fromStudent) }
+                                onMessage(ChatMessage(question, fromStudent = true))
                                 draft = ""
                                 isSending = true
                                 scope.launch {
                                     val response = runCatching {
-                                        withContext(Dispatchers.IO) { AssistantApi.sendQuestion(question) }
+                                        withContext(Dispatchers.IO) { AssistantApi.sendQuestion(question, history) }
                                     }.getOrElse { error ->
                                         "I could not reach the learning assistant. ${error.message ?: "Please try again."}"
                                     }
-                                    messages += ChatMessage(response, fromStudent = false)
+                                    onMessage(ChatMessage(response, fromStudent = false))
                                     isSending = false
                                 }
                             }
@@ -329,5 +450,6 @@ fun AssistantChatPanel(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
                 }
             }
         }
+    }
     }
 }

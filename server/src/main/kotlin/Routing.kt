@@ -1,6 +1,8 @@
 package com.example
 
 import com.example.db.BookRepository
+import com.example.db.ChildAccountRepository
+import com.example.db.ChildProfile
 import com.example.db.CourseRepository
 import com.example.db.NewBook
 import com.example.db.StoredBook
@@ -9,6 +11,9 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.server.application.*
+import io.ktor.server.auth.authenticate
+import io.ktor.server.auth.principal
+import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -61,10 +66,38 @@ data class BookResponse(
 )
 
 @Serializable
-data class AssistantChatRequest(val message: String)
+data class AssistantHistoryMessage(val role: String, val content: String)
+
+@Serializable
+data class AssistantChatRequest(val message: String, val history: List<AssistantHistoryMessage> = emptyList())
 
 @Serializable
 data class AssistantChatResponse(val reply: String)
+
+@Serializable
+data class ChildLoginRequest(
+    val username: String,
+    val password: String
+)
+
+@Serializable
+data class ChildProfileResponse(
+    val childId: String,
+    val displayName: String,
+    val grade: Int?
+)
+
+@Serializable
+data class ChildLoginResponse(
+    val accessToken: String,
+    val child: ChildProfileResponse
+)
+
+private fun ChildProfile.toResponse() = ChildProfileResponse(
+    childId = childId.toString(),
+    displayName = displayName,
+    grade = grade
+)
 
 private fun StoredBook.toResponse(coverUrl: String? = null) = BookResponse(
     id = id.toString(), title = title, author = author, description = description,
@@ -86,8 +119,40 @@ fun Application.configureRouting() {
             call.respond(mapOf("status" to "ok"))
         }
 
+        post("/auth/child/login") {
+            val request = call.receive<ChildLoginRequest>()
+            val username = request.username.trim()
+            if (username.length !in 3..50 || request.password.isBlank()) {
+                return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Enter a username and password."))
+            }
+            val account = withContext(Dispatchers.IO) { ChildAccountRepository.findByUsername(username) }
+            if (account == null || !PasswordHasher.matches(request.password, account.passwordHash)) {
+                return@post call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "The username or password is incorrect."))
+            }
+            withContext(Dispatchers.IO) { ChildAccountRepository.recordSuccessfulLogin(account.childId) }
+            call.respond(
+                ChildLoginResponse(
+                    accessToken = ChildJwt.createToken(account.childId.toString()),
+                    child = ChildProfile(account.childId, account.displayName, account.grade).toResponse()
+                )
+            )
+        }
+
+        authenticate(ChildAuthProvider) {
+            get("/me") {
+                val principal = call.principal<JWTPrincipal>()
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
+                val childId = childIdFrom(principal)?.let { runCatching { UUID.fromString(it) }.getOrNull() }
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
+                val profile = withContext(Dispatchers.IO) { ChildAccountRepository.findProfile(childId) }
+                    ?: return@get call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "The child account is unavailable."))
+                call.respond(profile.toResponse())
+            }
+        }
+
         post("/assistant/chat") {
-            val message = call.receive<AssistantChatRequest>().message.trim()
+            val request = call.receive<AssistantChatRequest>()
+            val message = request.message.trim()
             if (message.isBlank()) {
                 return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message must not be blank"))
             }
@@ -95,7 +160,10 @@ fun Application.configureRouting() {
                 return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message is too long"))
             }
 
-            val reply = runCatching { LmStudioClient.answer(message) }
+            val history = request.history
+                .filter { it.role in setOf("user", "assistant") && it.content.isNotBlank() }
+                .takeLast(12)
+            val reply = runCatching { LmStudioClient.answer(message, history) }
                 .getOrElse { error ->
                     application.log.warn("LM Studio chat request failed", error)
                     return@post call.respond(

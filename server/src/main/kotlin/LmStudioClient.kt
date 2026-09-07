@@ -30,15 +30,21 @@ object LmStudioClient {
     private val modelName: String
         get() = settingOrDefault("LM_STUDIO_MODEL", "BEST-qwen_qwen3.5-2b")
 
-    suspend fun answer(question: String): String = withContext(Dispatchers.IO) {
+    suspend fun answer(question: String, history: List<AssistantHistoryMessage> = emptyList()): String = withContext(Dispatchers.IO) {
         val requestJson = buildJsonObject {
             put("model", modelName)
             put("temperature", 0.4)
             put("messages", buildJsonArray {
                 add(buildJsonObject {
                     put("role", "system")
-                    put("content", "You are Axognition's friendly learning assistant. Give clear, age-appropriate answers. If you are unsure, say so.")
+                    put("content", "You are Axognition's friendly learning assistant. Give clear, age-appropriate answers. If you are unsure, say so. Make answers very short and direct to the question, max 3 sentences, never use symbol * on the response")
                 })
+                history.forEach { message ->
+                    add(buildJsonObject {
+                        put("role", message.role)
+                        put("content", message.content)
+                    })
+                }
                 add(buildJsonObject {
                     put("role", "user")
                     put("content", question)
