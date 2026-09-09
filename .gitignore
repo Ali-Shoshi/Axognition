@@ -14,6 +14,7 @@ Thumbs.db
 
 # Android local configuration and native build output
 local.properties
+/.android/
 /captures
 .externalNativeBuild
 .cxx

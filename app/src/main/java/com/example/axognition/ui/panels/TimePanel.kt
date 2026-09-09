@@ -1,5 +1,8 @@
 package com.example.axognition.ui.panels
 
+import com.example.axognition.ui.tr
+import com.example.axognition.ui.AppLanguage
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -38,8 +41,8 @@ fun TimePanelScreen(
         }
     }
 
-    val timeFormatter = remember { SimpleDateFormat("hh:mm:ss a", Locale.getDefault()) }
-    val dateFormatter = remember { SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault()) }
+    val timeFormatter = remember(AppLanguage.code) { SimpleDateFormat(if (AppLanguage.code == "sq") "HH:mm:ss" else "hh:mm:ss a", AppLanguage.locale) }
+    val dateFormatter = remember(AppLanguage.code) { SimpleDateFormat("EEEE, d MMMM yyyy", AppLanguage.locale) }
 
     // Mock states for alarms and timers
     var alarms by remember { mutableStateOf(listOf("07:00 AM", "08:30 AM")) }
@@ -58,7 +61,7 @@ fun TimePanelScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "World Clock & Tools",
+                text = tr("World Clock & Tools"),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -72,7 +75,7 @@ fun TimePanelScreen(
                 Tab(
                     selected = selectedTab == index,
                     onClick = { selectedTab = index },
-                    text = { Text(title) },
+                    text = { Text(tr(title)) },
                     icon = {
                         when (index) {
                             0 -> Icon(Icons.Default.Schedule, contentDescription = null)
@@ -96,14 +99,14 @@ fun TimePanelScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = timeFormatter.format(Date(currentTime)),
+                        text = tr(timeFormatter.format(Date(currentTime))),
                         fontSize = 40.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = dateFormatter.format(Date(currentTime)),
+                        text = tr(dateFormatter.format(Date(currentTime))),
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -117,9 +120,9 @@ fun TimePanelScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "Active Alarms", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+                        Text(text = tr("Active Alarms"), fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
                         IconButton(onClick = { alarms = alarms + "09:00 AM" }) {
-                            Icon(Icons.Default.Add, contentDescription = "Add Alarm")
+                            Icon(Icons.Default.Add, contentDescription = tr("Add Alarm"))
                         }
                     }
 
@@ -141,7 +144,7 @@ fun TimePanelScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(text = alarmTime, fontSize = 22.sp, fontWeight = FontWeight.Medium)
+                                    Text(text = tr(alarmTime), fontSize = 22.sp, fontWeight = FontWeight.Medium)
                                     Switch(checked = true, onCheckedChange = {})
                                 }
                             }
@@ -160,7 +163,7 @@ fun TimePanelScreen(
                     val seconds = timerSeconds % 60
 
                     Text(
-                        text = String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds),
+                        text = tr(String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)),
                         fontSize = 56.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -171,13 +174,13 @@ fun TimePanelScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Button(onClick = { isTimerRunning = !isTimerRunning }) {
-                            Text(if (isTimerRunning) "Pause" else "Start")
+                            Text(tr(if (isTimerRunning) "Pause" else "Start"))
                         }
                         OutlinedButton(onClick = {
                             isTimerRunning = false
                             timerSeconds = 300
                         }) {
-                            Text("Reset")
+                            Text(tr("Reset"))
                         }
                     }
                 }

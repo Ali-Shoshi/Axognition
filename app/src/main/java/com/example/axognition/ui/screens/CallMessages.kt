@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -90,13 +92,13 @@ fun CallMessagesScreen(onBack: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Messages & Calls",
+                    text = tr("Messages & Calls"),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { showAddContactDialog = true }) {
-                        Icon(Icons.Default.PersonAdd, contentDescription = "Add Contact", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.PersonAdd, contentDescription = tr("Add Contact"), tint = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -107,12 +109,12 @@ fun CallMessagesScreen(onBack: () -> Unit) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search messages or contacts...") },
+                placeholder = { Text(tr("Search messages or contacts...")) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear Search")
+                            Icon(Icons.Default.Clear, contentDescription = tr("Clear Search"))
                         }
                     }
                 },
@@ -128,12 +130,12 @@ fun CallMessagesScreen(onBack: () -> Unit) {
                 Tab(
                     selected = currentTab == 0,
                     onClick = { currentTab = 0 },
-                    text = { Text("Recent Chats") }
+                    text = { Text(tr("Recent Chats")) }
                 )
                 Tab(
                     selected = currentTab == 1,
                     onClick = { currentTab = 1 },
-                    text = { Text("All Contacts") }
+                    text = { Text(tr("All Contacts")) }
                 )
             }
 
@@ -179,19 +181,19 @@ fun CallMessagesScreen(onBack: () -> Unit) {
 
             AlertDialog(
                 onDismissRequest = { showAddContactDialog = false },
-                title = { Text("Add New Contact") },
+                title = { Text(tr("Add New Contact")) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = newName,
                             onValueChange = { newName = it },
-                            placeholder = { Text("Contact Name") },
+                            placeholder = { Text(tr("Contact Name")) },
                             singleLine = true
                         )
                         OutlinedTextField(
                             value = newStatus,
                             onValueChange = { newStatus = it },
-                            placeholder = { Text("Initial message or status") },
+                            placeholder = { Text(tr("Initial message or status")) },
                             singleLine = true
                         )
                     }
@@ -218,12 +220,12 @@ fun CallMessagesScreen(onBack: () -> Unit) {
                             }
                         }
                     ) {
-                        Text("Add")
+                        Text(tr("Add"))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showAddContactDialog = false }) {
-                        Text("Cancel")
+                        Text(tr("Cancel"))
                     }
                 }
             )
@@ -254,7 +256,7 @@ fun ChatListItem(contact: Contact, onClick: () -> Unit) {
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text(
-                            text = contact.avatarInitial,
+                            text = tr(contact.avatarInitial),
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -278,11 +280,11 @@ fun ChatListItem(contact: Contact, onClick: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(text = contact.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                    Text(text = contact.time, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = tr(contact.time), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = contact.lastMessage,
+                    text = if (initialContacts.any { it.id == contact.id }) tr(contact.lastMessage) else contact.lastMessage,
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -308,16 +310,16 @@ fun ContactListItem(contact: Contact, onCallClick: () -> Unit, onChatClick: () -
             modifier = Modifier.size(44.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Text(text = contact.avatarInitial, fontWeight = FontWeight.Bold)
+                Text(text = tr(contact.avatarInitial), fontWeight = FontWeight.Bold)
             }
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = contact.name, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            Text(text = if (contact.isOnline) "Active now" else "Offline", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(text = tr(if (contact.isOnline) "Active now" else "Offline"), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         IconButton(onClick = onCallClick) {
-            Icon(Icons.Default.Call, contentDescription = "Call", tint = MaterialTheme.colorScheme.primary)
+            Icon(Icons.Default.Call, contentDescription = tr("Call"), tint = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -343,17 +345,17 @@ fun ChatDetailScreen(contact: Contact, onBack: () -> Unit) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Surface(shape = CircleShape, modifier = Modifier.size(96.dp), color = MaterialTheme.colorScheme.primaryContainer) {
                     Box(contentAlignment = Alignment.Center) {
-                        Text(text = contact.avatarInitial, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                        Text(text = tr(contact.avatarInitial), fontSize = 36.sp, fontWeight = FontWeight.Bold)
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
-                Text(text = "Calling ${contact.name}...", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(text = tr("Calling ${contact.name}..."), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(48.dp))
                 FloatingActionButton(
                     onClick = { isCalling = false },
                     containerColor = MaterialTheme.colorScheme.error
                 ) {
-                    Icon(Icons.Default.CallEnd, contentDescription = "End Call", tint = MaterialTheme.colorScheme.onError)
+                    Icon(Icons.Default.CallEnd, contentDescription = tr("End Call"), tint = MaterialTheme.colorScheme.onError)
                 }
             }
         }
@@ -371,13 +373,13 @@ fun ChatDetailScreen(contact: Contact, onBack: () -> Unit) {
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(text = contact.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text(text = if (contact.isOnline) "Online" else "Offline", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = tr(if (contact.isOnline) "Online" else "Offline"), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     IconButton(onClick = { isCalling = true }) {
-                        Icon(Icons.Default.Call, contentDescription = "Voice Call", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.Call, contentDescription = tr("Voice Call"), tint = MaterialTheme.colorScheme.primary)
                     }
                     IconButton(onClick = { isCalling = true }) {
-                        Icon(Icons.Default.Videocam, contentDescription = "Video Call", tint = MaterialTheme.colorScheme.primary)
+                        Icon(Icons.Default.Videocam, contentDescription = tr("Video Call"), tint = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -401,13 +403,13 @@ fun ChatDetailScreen(contact: Contact, onBack: () -> Unit) {
                         ) {
                             Column(modifier = Modifier.padding(12.dp)) {
                                 Text(
-                                    text = msg.text,
+                                    text = if (msg.id.startsWith("m")) tr(msg.text) else msg.text,
                                     color = if (isMe) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 14.sp
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
-                                    text = msg.time,
+                                    text = tr(msg.time),
                                     fontSize = 10.sp,
                                     color = if (isMe) MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                                     modifier = Modifier.align(Alignment.End)
@@ -431,7 +433,7 @@ fun ChatDetailScreen(contact: Contact, onBack: () -> Unit) {
                     OutlinedTextField(
                         value = messageInput,
                         onValueChange = { messageInput = it },
-                        placeholder = { Text("Type a message...") },
+                        placeholder = { Text(tr("Type a message...")) },
                         modifier = Modifier.weight(1f),
                         maxLines = 3,
                         shape = RoundedCornerShape(24.dp)
@@ -448,7 +450,7 @@ fun ChatDetailScreen(contact: Contact, onBack: () -> Unit) {
                             .size(48.dp)
                             .background(MaterialTheme.colorScheme.primary, CircleShape)
                     ) {
-                        Icon(Icons.Default.Send, contentDescription = "Send", tint = MaterialTheme.colorScheme.onPrimary)
+                        Icon(Icons.Default.Send, contentDescription = tr("Send"), tint = MaterialTheme.colorScheme.onPrimary)
                     }
                 }
             }

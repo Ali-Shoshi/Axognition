@@ -1,5 +1,7 @@
 package com.example.axognition.ui.panels
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -52,7 +54,7 @@ fun ProfilePanelScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = initials,
+                        text = tr(initials),
                         fontSize = 34.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -65,7 +67,7 @@ fun ProfilePanelScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = gradeText,
+                    text = tr(gradeText),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -80,7 +82,7 @@ fun ProfilePanelScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Academic Information",
+                            text = tr("Academic Information"),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -101,7 +103,7 @@ fun ProfilePanelScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "About this tablet",
+                            text = tr("About this tablet"),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -127,12 +129,12 @@ fun ProfileDetailRow(label: String, value: String) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
-            text = label,
+            text = tr(label),
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
-            text = value,
+            text = if (label == "Student") value else tr(value),
             fontSize = 14.sp,
             fontWeight = FontWeight.SemiBold
         )

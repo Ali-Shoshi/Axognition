@@ -18,6 +18,7 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.http.content.staticResources
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Dispatchers
@@ -69,7 +70,7 @@ data class BookResponse(
 data class AssistantHistoryMessage(val role: String, val content: String)
 
 @Serializable
-data class AssistantChatRequest(val message: String, val history: List<AssistantHistoryMessage> = emptyList())
+data class AssistantChatRequest(val message: String, val history: List<AssistantHistoryMessage> = emptyList(), val language: String = "en")
 
 @Serializable
 data class AssistantChatResponse(val reply: String)
@@ -111,6 +112,7 @@ fun Application.configureRouting() {
     }
 
     routing {
+        staticResources("/lessons", "lessons")
         get("/") {
             call.respondText("Axognition server is running")
         }
@@ -163,7 +165,7 @@ fun Application.configureRouting() {
             val history = request.history
                 .filter { it.role in setOf("user", "assistant") && it.content.isNotBlank() }
                 .takeLast(12)
-            val reply = runCatching { LmStudioClient.answer(message, history) }
+            val reply = runCatching { LmStudioClient.answer(message, history, request.language) }
                 .getOrElse { error ->
                     application.log.warn("LM Studio chat request failed", error)
                     return@post call.respond(

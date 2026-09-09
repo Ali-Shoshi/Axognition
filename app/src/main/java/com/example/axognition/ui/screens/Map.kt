@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
@@ -99,7 +101,7 @@ fun MapScreen(onBack: () -> Unit) {
         locationPermissionGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (locationPermissionGranted) moveToCurrentLocation(context, cameraPositionState)
-        else Toast.makeText(context, "Location permission was not granted", Toast.LENGTH_SHORT).show()
+        else Toast.makeText(context, tr("Location permission was not granted"), Toast.LENGTH_SHORT).show()
     }
 
     fun search() {
@@ -109,7 +111,7 @@ fun MapScreen(onBack: () -> Unit) {
             isSearching = true
             val result = findPlace(context, searchText)
             isSearching = false
-            if (result == null) Toast.makeText(context, "No place found for \"$searchText\"", Toast.LENGTH_SHORT).show()
+            if (result == null) Toast.makeText(context, tr("No place found for \"$searchText\""), Toast.LENGTH_SHORT).show()
             else cameraPositionState.animate(CameraUpdateFactory.newLatLngZoom(result, 16f))
         }
     }
@@ -121,8 +123,8 @@ fun MapScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Explore map", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Go back") } },
+                title = { Text(tr("Explore map"), fontWeight = FontWeight.SemiBold) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, tr("Go back")) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
             )
         }
@@ -136,7 +138,7 @@ fun MapScreen(onBack: () -> Unit) {
                 uiSettings = MapUiSettings(myLocationButtonEnabled = false, zoomControlsEnabled = false, compassEnabled = true)
                 ) {
                     savedAreas.forEach { area ->
-                        Marker(MarkerState(LatLng(area.latitude, area.longitude)), title = area.name, snippet = "Saved map area")
+                        Marker(MarkerState(LatLng(area.latitude, area.longitude)), title = area.name, snippet = tr("Saved map area"))
                     }
                 }
 
@@ -147,14 +149,14 @@ fun MapScreen(onBack: () -> Unit) {
                         value = query,
                         onValueChange = { query = it },
                         modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface, RoundedCornerShape(16.dp)),
-                        placeholder = { Text("Search places, shops or addresses") },
+                        placeholder = { Text(tr("Search places, shops or addresses")) },
                         leadingIcon = { Icon(Icons.Default.Search, null) },
-                        trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Default.Close, "Clear search") } },
+                        trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { query = "" }) { Icon(Icons.Default.Close, tr("Clear search")) } },
                         singleLine = true,
                         keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { search() })
                     )
-                    if (isSearching) Text("Finding places…", Modifier.padding(start = 16.dp, top = 6.dp), style = MaterialTheme.typography.labelMedium)
+                    if (isSearching) Text(tr("Finding places…"), Modifier.padding(start = 16.dp, top = 6.dp), style = MaterialTheme.typography.labelMedium)
                 }
 
                 Column(
@@ -167,11 +169,11 @@ fun MapScreen(onBack: () -> Unit) {
                             else permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
                         },
                         containerColor = MaterialTheme.colorScheme.surface
-                    ) { Icon(Icons.Default.MyLocation, "Show my location") }
+                    ) { Icon(Icons.Default.MyLocation, tr("Show my location")) }
                     FloatingActionButton(
                         onClick = { areaName = ""; showSaveDialog = true },
                         containerColor = MaterialTheme.colorScheme.primaryContainer
-                    ) { Icon(Icons.Default.BookmarkAdd, "Save this map area") }
+                    ) { Icon(Icons.Default.BookmarkAdd, tr("Save this map area")) }
                 }
 
                 if (savedAreas.isNotEmpty()) Card(
@@ -179,7 +181,7 @@ fun MapScreen(onBack: () -> Unit) {
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f))
                 ) {
                     Row(Modifier.padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Text("Saved areas", style = MaterialTheme.typography.labelLarge)
+                        Text(tr("Saved areas"), style = MaterialTheme.typography.labelLarge)
                         Spacer(Modifier.width(8.dp))
                         savedAreas.take(2).forEach { area ->
                             AssistChip(
@@ -198,12 +200,12 @@ fun MapScreen(onBack: () -> Unit) {
 
     if (showSaveDialog) AlertDialog(
         onDismissRequest = { showSaveDialog = false },
-        title = { Text("Save map area") },
+        title = { Text(tr("Save map area")) },
         text = {
             Column {
-                Text("Save the current map position on this device for quick access later.")
+                Text(tr("Save the current map position on this device for quick access later."))
                 Spacer(Modifier.height(12.dp))
-                OutlinedTextField(areaName, { areaName = it }, label = { Text("Area name") }, singleLine = true)
+                OutlinedTextField(areaName, { areaName = it }, label = { Text(tr("Area name")) }, singleLine = true)
             }
         },
         confirmButton = {
@@ -212,9 +214,9 @@ fun MapScreen(onBack: () -> Unit) {
                 savedAreas += SavedMapArea(areaName.trim().ifBlank { "Saved area" }, position.target.latitude, position.target.longitude, position.zoom)
                 persistSavedAreas(context, savedAreas)
                 showSaveDialog = false
-            }) { Text("Save") }
+            }) { Text(tr("Save")) }
         },
-        dismissButton = { TextButton(onClick = { showSaveDialog = false }) { Text("Cancel") } }
+        dismissButton = { TextButton(onClick = { showSaveDialog = false }) { Text(tr("Cancel")) } }
     )
 }
 
@@ -239,8 +241,8 @@ private fun MapApiKeyRequired(modifier: Modifier = Modifier) {
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Map setup needed", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text("Add a Google Maps Android API key to secrets.properties, then rebuild the app.")
+                Text(tr("Map setup needed"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(tr("Add a Google Maps Android API key to secrets.properties, then rebuild the app."))
                 Text("MAPS_API_KEY=your_google_maps_android_key", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }

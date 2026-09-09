@@ -1,5 +1,7 @@
 package com.example.axognition.ui
 
+import com.example.axognition.ui.tr
+
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -44,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.axognition.data.AssistantApi
+import com.example.axognition.ui.createAppTextToSpeech
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -77,8 +80,9 @@ fun WakeWordAssistant(
     var restartAfterSpeech by remember { mutableStateOf(false) }
     var speechGeneration by remember { mutableStateOf(0) }
 
-    val wakeWordIntent = remember {
+    val wakeWordIntent = remember(AppLanguage.code) {
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, AppLanguage.locale.toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             // Let the child pause naturally after the wake phrase or while thinking.
@@ -86,8 +90,9 @@ fun WakeWordAssistant(
             putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2_500L)
         }
     }
-    val questionIntent = remember {
+    val questionIntent = remember(AppLanguage.code) {
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, AppLanguage.locale.toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1_800L)
@@ -133,13 +138,13 @@ fun WakeWordAssistant(
             val answer = runCatching {
                 withContext(Dispatchers.IO) { AssistantApi.sendQuestion(cleanQuestion, history) }
             }.getOrElse { error ->
-                "I could not reach the learning assistant. ${error.message ?: "Please try again."}"
+                tr("I could not reach the learning assistant. ${tr(error.message ?: "Please try again.")}")
             }
             bubbleText = answer
             saveMessage(ChatMessage(answer, false))
             restartAfterSpeech = true
             val generation = ++speechGeneration
-            val speechResult = speaker?.speak(answer, TextToSpeech.QUEUE_FLUSH, null, "wake-word-answer")
+            val speechResult = speaker?.speakInAppLanguage(answer, "wake-word-answer")
             if (speechResult != TextToSpeech.SUCCESS) {
                 delay(1_000)
                 resumeWakeWordListening()
@@ -172,7 +177,7 @@ fun WakeWordAssistant(
         }
     }
 
-    DisposableEffect(context) {
+    DisposableEffect(context, AppLanguage.code) {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
             if (latestEnabled) bubbleText = "Voice recognition is not available on this tablet."
             onDispose { }
@@ -236,7 +241,7 @@ fun WakeWordAssistant(
     }
 
     DisposableEffect(context) {
-        val textToSpeech = TextToSpeech(context) { }.apply {
+        val textToSpeech = createAppTextToSpeech(context) { }.apply {
             setOnUtteranceProgressListener(object : UtteranceProgressListener() {
                 override fun onStart(utteranceId: String) = Unit
                 override fun onDone(utteranceId: String) {
@@ -263,7 +268,7 @@ fun WakeWordAssistant(
         }
     }
 
-    LaunchedEffect(enabled) {
+    LaunchedEffect(enabled, AppLanguage.code) {
         if (!enabled) {
             recognizer?.cancel()
             mode = VoiceAssistantMode.IDLE
@@ -301,7 +306,7 @@ fun WakeWordAssistant(
                     )
                     androidx.compose.foundation.layout.Spacer(Modifier.padding(horizontal = 5.dp))
                     Text(
-                        text = text,
+                        text = tr(text),
                         modifier = Modifier.weight(1f).clickable { openChat() },
                         maxLines = 4,
                         overflow = TextOverflow.Ellipsis,
@@ -314,7 +319,7 @@ fun WakeWordAssistant(
                         speaker?.stop()
                         resumeWakeWordListening()
                     }) {
-                        Icon(Icons.Default.Close, contentDescription = "Stop speaking and dismiss")
+                        Icon(Icons.Default.Close, contentDescription = tr("Stop speaking and dismiss"))
                     }
                 }
             }

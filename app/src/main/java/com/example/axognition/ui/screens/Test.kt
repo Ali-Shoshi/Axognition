@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,7 +34,7 @@ fun TestScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "Select a Test Type",
+            text = tr("Select a Test Type"),
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold
         )
@@ -40,7 +42,7 @@ fun TestScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Choose what you want to practice or review today.",
+            text = tr("Choose what you want to practice or review today."),
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -122,14 +124,14 @@ fun TestCategoryCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = title,
+                    text = tr(title),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = description,
+                    text = tr(description),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -139,7 +141,7 @@ fun TestCategoryCard(
 
             Icon(
                 imageVector = Icons.Default.ArrowForward,
-                contentDescription = "Start Test",
+                contentDescription = tr("Start Test"),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )

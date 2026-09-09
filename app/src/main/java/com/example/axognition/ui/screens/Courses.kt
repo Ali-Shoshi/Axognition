@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -136,11 +138,11 @@ fun CoursesScreen(onBack: () -> Unit) {
                         }
                     }
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = playingVideo!!.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "Duration: ${playingVideo!!.duration}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = tr(playingVideo!!.title), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = tr("Duration: ${playingVideo!!.duration}"), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(onClick = { playingVideo = null }) {
-                        Text("Close Video")
+                        Text(tr("Close Video"))
                     }
                 }
             }
@@ -156,11 +158,11 @@ fun CoursesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedUnit = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Units")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back to Units"))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedUnit!!.title,
+                        text = tr(selectedUnit!!.title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -168,7 +170,7 @@ fun CoursesScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "${selectedUnit!!.lectures.size} lectures available",
+                    text = tr("${selectedUnit!!.lectures.size} lectures available"),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -200,9 +202,9 @@ fun CoursesScreen(onBack: () -> Unit) {
                                 )
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = lecture.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                    Text(text = tr(lecture.title), fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(text = lecture.duration, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(text = tr(lecture.duration), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                             }
                         }
@@ -221,11 +223,11 @@ fun CoursesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedCourse = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Courses")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back to Courses"))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedCourse!!.title,
+                        text = tr(selectedCourse!!.title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -233,7 +235,7 @@ fun CoursesScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = selectedCourse!!.description,
+                    text = tr(selectedCourse!!.description),
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -250,13 +252,13 @@ fun CoursesScreen(onBack: () -> Unit) {
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Enroll in Course")
+                        Text(tr("Enroll in Course"))
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
                 Text(
-                    text = "Course Units:",
+                    text = tr("Course Units:"),
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary
@@ -286,10 +288,10 @@ fun CoursesScreen(onBack: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = unit.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(text = tr(unit.title), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "${unit.lectures.size} video lectures",
+                                        text = tr("${unit.lectures.size} video lectures"),
                                         fontSize = 13.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -313,13 +315,13 @@ fun CoursesScreen(onBack: () -> Unit) {
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Platform Courses",
+                    text = tr("Platform Courses"),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Manage your learning path",
+                    text = tr("Manage your learning path"),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -329,12 +331,12 @@ fun CoursesScreen(onBack: () -> Unit) {
                     Tab(
                         selected = currentTab == 0,
                         onClick = { currentTab = 0 },
-                        text = { Text("Enrolled") }
+                        text = { Text(tr("Enrolled")) }
                     )
                     Tab(
                         selected = currentTab == 1,
                         onClick = { currentTab = 1 },
-                        text = { Text("Available") }
+                        text = { Text(tr("Available")) }
                     )
                 }
 
@@ -362,20 +364,20 @@ fun CoursesScreen(onBack: () -> Unit) {
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = course.title,
+                                        text = tr(course.title),
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = course.description,
+                                        text = tr(course.description),
                                         fontSize = 13.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
-                                        text = "${course.units.size} Units",
+                                        text = tr("${course.units.size} Units"),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.SemiBold,
                                         color = MaterialTheme.colorScheme.primary

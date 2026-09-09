@@ -1,5 +1,7 @@
 package com.example.axognition.ui.panels
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -82,7 +84,7 @@ fun PerformancePanelScreen(onBack: () -> Unit) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = "Academic Performance",
+                    text = tr("Academic Performance"),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -117,18 +119,18 @@ fun PerformancePanelScreen(onBack: () -> Unit) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.Folder,
-                                    contentDescription = "Period Folder",
+                                    contentDescription = tr("Period Folder"),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = folder.periodName,
+                                    text = tr(folder.periodName),
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold
                                 )
                             }
                             Text(
-                                text = folder.dateRange,
+                                text = tr(folder.dateRange),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -171,13 +173,13 @@ fun PerformancePanelScreen(onBack: () -> Unit) {
                                 ) {
                                     Column {
                                         Text(
-                                            text = item.subject,
+                                            text = tr(item.subject),
                                             fontSize = 14.sp,
                                             fontWeight = FontWeight.SemiBold
                                         )
                                         Spacer(modifier = Modifier.height(2.dp))
                                         Text(
-                                            text = "Type: ${item.type}",
+                                            text = tr("Type: ${tr(item.type)}"),
                                             fontSize = 12.sp,
                                             color = if (isLecture) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.Medium
@@ -185,7 +187,7 @@ fun PerformancePanelScreen(onBack: () -> Unit) {
                                     }
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Text(
-                                            text = "${item.scorePercentage}%",
+                                            text = tr("${item.scorePercentage}%"),
                                             fontSize = 13.sp,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
@@ -198,7 +200,7 @@ fun PerformancePanelScreen(onBack: () -> Unit) {
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
-                                                text = item.grade,
+                                                text = tr(item.grade),
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = badgeContentColor

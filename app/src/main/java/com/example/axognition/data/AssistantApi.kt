@@ -1,6 +1,7 @@
 package com.example.axognition.data
 
 import com.example.axognition.BuildConfig
+import com.example.axognition.ui.AppLanguage
 import org.json.JSONObject
 import org.json.JSONArray
 import java.net.HttpURLConnection
@@ -29,7 +30,8 @@ object AssistantApi {
                             .put("content", message.text)
                     )
                 }
-                writer.write(JSONObject().put("message", question).put("history", historyJson).toString())
+                writer.write(JSONObject().put("message", question).put("history", historyJson)
+                    .put("language", AppLanguage.code).toString())
             }
             val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader(Charsets.UTF_8)

@@ -1,5 +1,7 @@
 package com.example.axognition.ui.panels
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -62,7 +64,7 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Health", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text(tr("Health"), fontSize = 20.sp, fontWeight = FontWeight.Bold)
                         ScrollableTabRow(
                             selectedTabIndex = selectedTab,
                             edgePadding = 0.dp,
@@ -72,17 +74,17 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                             Tab(
                                 selected = selectedTab == 0,
                                 onClick = { selectedTab = 0 },
-                                text = { Text("Visits", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
+                                text = { Text(tr("Visits"), fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
                             )
                             Tab(
                                 selected = selectedTab == 1,
                                 onClick = { selectedTab = 1 },
-                                text = { Text("Allergies", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
+                                text = { Text(tr("Allergies"), fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
                             )
                             Tab(
                                 selected = selectedTab == 2,
                                 onClick = { selectedTab = 2 },
-                                text = { Text("Problems", fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
+                                text = { Text(tr("Problems"), fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
                             )
                         }
                     }
@@ -106,7 +108,7 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                     ) {
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Doctor Visits (Past & Future)", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Doctor Visits (Past & Future)"), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
                         items(visits) { visit ->
                             Card(
@@ -123,15 +125,15 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(text = visit.doctor, fontWeight = FontWeight.Bold)
-                                        Text(text = visit.date, style = MaterialTheme.typography.bodyMedium)
+                                        Text(text = tr(visit.doctor), fontWeight = FontWeight.Bold)
+                                        Text(text = tr(visit.date), style = MaterialTheme.typography.bodyMedium)
                                     }
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(text = visit.notes, style = MaterialTheme.typography.bodySmall)
+                                    Text(text = tr(visit.notes), style = MaterialTheme.typography.bodySmall)
                                     if (visit.isFuture) {
                                         Spacer(modifier = Modifier.height(4.dp))
                                         Text(
-                                            text = "Upcoming Appointment",
+                                            text = tr("Upcoming Appointment"),
                                             color = MaterialTheme.colorScheme.primary,
                                             fontWeight = FontWeight.SemiBold,
                                             fontSize = 12.sp
@@ -152,7 +154,7 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                     ) {
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Allergies List", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Allergies List"), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
                         items(allergies) { allergy ->
                             Card(modifier = Modifier.fillMaxWidth()) {
@@ -164,11 +166,11 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column {
-                                        Text(text = allergy.allergen, fontWeight = FontWeight.Bold)
-                                        Text(text = "Reaction: ${allergy.reaction}", style = MaterialTheme.typography.bodySmall)
+                                        Text(text = tr(allergy.allergen), fontWeight = FontWeight.Bold)
+                                        Text(text = tr("Reaction: ${tr(allergy.reaction)}"), style = MaterialTheme.typography.bodySmall)
                                     }
                                     Badge {
-                                        Text(allergy.severity)
+                                        Text(tr(allergy.severity))
                                     }
                                 }
                             }
@@ -185,7 +187,7 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                     ) {
                         item {
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Overall Problems & History", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(tr("Overall Problems & History"), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
                         items(problems) { problem ->
                             Card(modifier = Modifier.fillMaxWidth()) {
@@ -194,9 +196,9 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(text = problem.name, fontWeight = FontWeight.Bold)
+                                        Text(text = tr(problem.name), fontWeight = FontWeight.Bold)
                                         Text(
-                                            text = problem.status,
+                                            text = tr(problem.status),
                                             color = when (problem.status) {
                                                 "Improving" -> MaterialTheme.colorScheme.primary
                                                 "Worsening" -> MaterialTheme.colorScheme.error
@@ -206,11 +208,11 @@ fun HealthPanelScreen(onBack: () -> Unit) {
                                         )
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
-                                    Text("History Timeline:", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
+                                    Text(tr("History Timeline:"), style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     problem.history.forEach { hist ->
                                         Text(
-                                            text = "• $hist",
+                                            text = "• ${tr(hist)}",
                                             style = MaterialTheme.typography.bodySmall,
                                             modifier = Modifier.padding(start = 4.dp, top = 2.dp)
                                         )

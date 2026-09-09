@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -130,15 +132,15 @@ fun GamesScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Games", fontWeight = FontWeight.Bold) },
+                title = { Text(tr("Games"), fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
             )
         }
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             TabRow(selectedTabIndex = selectedTab, modifier = Modifier.height(42.dp)) {
-                Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, modifier = Modifier.height(42.dp), text = { Text("Installed") })
-                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, modifier = Modifier.height(42.dp), text = { Text("Discover") })
+                Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, modifier = Modifier.height(42.dp), text = { Text(tr("Installed")) })
+                Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, modifier = Modifier.height(42.dp), text = { Text(tr("Discover")) })
             }
             if (selectedTab == 0) {
                 InstalledGames(
@@ -204,9 +206,9 @@ private fun DiscoverGames(installed: Set<String>, onInstall: (String) -> Unit) {
 @Composable
 private fun StoreHeader(title: String, subtitle: String, overline: String) {
     Column(Modifier.padding(vertical = 4.dp)) {
-        Text(overline.uppercase(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
-        Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(tr(overline.uppercase()), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+        Text(tr(title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(tr(subtitle), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -223,11 +225,11 @@ private fun FeaturedGameCard(onPlayChess: () -> Unit) {
             }
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
-                Text("Continue playing", color = Color(0xFFC7D2FE), style = MaterialTheme.typography.labelLarge)
-                Text("Chess", color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                Text("A classic battle of strategy", color = Color(0xFFE0E7FF), style = MaterialTheme.typography.bodySmall)
+                Text(tr("Continue playing"), color = Color(0xFFC7D2FE), style = MaterialTheme.typography.labelLarge)
+                Text(tr("Chess"), color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                Text(tr("A classic battle of strategy"), color = Color(0xFFE0E7FF), style = MaterialTheme.typography.bodySmall)
             }
-            Button(onClick = onPlayChess) { Icon(Icons.Default.PlayArrow, null); Text("Play") }
+            Button(onClick = onPlayChess) { Icon(Icons.Default.PlayArrow, null); Text(tr("Play")) }
         }
     }
 }
@@ -244,21 +246,21 @@ private fun StoreGameCard(game: StoreGame, action: String, enabled: Boolean = tr
                 Modifier.fillMaxWidth().height(106.dp).clip(RoundedCornerShape(15.dp)).background(game.accent),
                 contentAlignment = Alignment.Center
             ) {
-                Text(game.artwork, fontSize = 50.sp, color = Color.White)
-                Text(game.genre, Modifier.align(Alignment.TopStart).padding(8.dp).clip(RoundedCornerShape(8.dp)).background(Color(0x33000000)).padding(horizontal = 7.dp, vertical = 3.dp), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(tr(game.artwork), fontSize = 50.sp, color = Color.White)
+                Text(tr(game.genre), Modifier.align(Alignment.TopStart).padding(8.dp).clip(RoundedCornerShape(8.dp)).background(Color(0x33000000)).padding(horizontal = 7.dp, vertical = 3.dp), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(Modifier.height(10.dp))
-            Text(game.title, maxLines = 1, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-            Text(game.studio, maxLines = 1, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(tr(game.title), maxLines = 1, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(tr(game.studio), maxLines = 1, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(5.dp))
-            Text("★ ${game.rating}   •   ${game.genre}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("★ ${game.rating}   •   ${tr(game.genre)}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(10.dp))
             if (action == "Play") {
-                Button(onClick = onAction, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.PlayArrow, null); Spacer(Modifier.width(4.dp)); Text(action) }
+                Button(onClick = onAction, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Default.PlayArrow, null); Spacer(Modifier.width(4.dp)); Text(tr(action)) }
             } else {
                 OutlinedButton(onClick = onAction, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
                     if (enabled) Icon(Icons.Default.Download, null)
-                    Spacer(Modifier.width(4.dp)); Text(action)
+                    Spacer(Modifier.width(4.dp)); Text(tr(action))
                 }
             }
         }
@@ -318,29 +320,29 @@ private fun ChessGame(onBack: () -> Unit) {
 
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text("Chess", fontWeight = FontWeight.Bold) },
-            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Back to games") } },
-            actions = { TextButton(onClick = { board = initialBoard(); turn = Player.WHITE; selected = null; rights = CastlingRights(); enPassantTarget = null; pendingPromotion = null; message = null }) { Text("New game") } }
+            title = { Text(tr("Chess"), fontWeight = FontWeight.Bold) },
+            navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, tr("Back to games")) } },
+            actions = { TextButton(onClick = { board = initialBoard(); turn = Player.WHITE; selected = null; rights = CastlingRights(); enPassantTarget = null; pendingPromotion = null; message = null }) { Text(tr("New game")) } }
         )
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(message ?: "${turn.label}'s turn", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(tr(message ?: "${turn.label}'s turn"), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(14.dp))
             ChessBoard(board, selected, legalMoves.map { it.to }.toSet(), ::onSquareTapped)
             Spacer(Modifier.height(14.dp))
-            Text("Tap a piece, then tap a highlighted square. Castling, en passant and promotion are supported.", textAlign = TextAlign.Center, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(tr("Tap a piece, then tap a highlighted square. Castling, en passant and promotion are supported."), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 
     pendingPromotion?.let { move ->
         AlertDialog(
             onDismissRequest = {},
-            title = { Text("Choose promotion") },
-            text = { Text("Your pawn reached the last rank. Choose its new piece.") },
+            title = { Text(tr("Choose promotion")) },
+            text = { Text(tr("Your pawn reached the last rank. Choose its new piece.")) },
             confirmButton = {
                 Row {
                     listOf(PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT).forEach { type ->
-                        TextButton(onClick = { finishMove(move, type) }) { Text(ChessPiece(type, turn).symbol, fontSize = 26.sp) }
+                        TextButton(onClick = { finishMove(move, type) }) { Text(tr(ChessPiece(type, turn).symbol), fontSize = 26.sp) }
                     }
                 }
             }
@@ -364,7 +366,7 @@ private fun ChessBoard(board: Map<Square, ChessPiece>, selected: Square?, target
                             Modifier.weight(1f).fillMaxHeight().background(highlight).clickable { onTap(square) },
                             contentAlignment = Alignment.Center
                         ) {
-                            board[square]?.let { Text(it.symbol, fontSize = 34.sp, color = if (it.player == Player.WHITE) Color.White else Color(0xFF1A1A1A)) }
+                            board[square]?.let { Text(tr(it.symbol), fontSize = 34.sp, color = if (it.player == Player.WHITE) Color.White else Color(0xFF1A1A1A)) }
                             if (square in targets && board[square] == null) Box(Modifier.size(12.dp).background(Color(0x99000000), CircleShape))
                         }
                     }

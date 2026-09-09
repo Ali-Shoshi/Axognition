@@ -1,5 +1,7 @@
 package com.example.axognition.ui
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +31,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
@@ -70,10 +73,11 @@ fun ChildLoginScreen(
                     )
                 }
                 Spacer(Modifier.height(18.dp))
-                Text("Set up this tablet", fontWeight = FontWeight.Bold, fontSize = 25.sp)
+                LanguageOptions(LocalContext.current)
+                Text(tr("Set up this tablet"), fontWeight = FontWeight.Bold, fontSize = 25.sp)
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Sign in once. This tablet will remember the child afterwards.",
+                    tr("Sign in once. This tablet will remember the child afterwards."),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.height(22.dp))
@@ -81,7 +85,7 @@ fun ChildLoginScreen(
                     value = username,
                     onValueChange = { username = it },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Test username") },
+                    label = { Text(tr("Test username")) },
                     singleLine = true,
                     leadingIcon = { Icon(Icons.Default.Person, null) }
                 )
@@ -90,14 +94,14 @@ fun ChildLoginScreen(
                     value = password,
                     onValueChange = { password = it },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Password") },
+                    label = { Text(tr("Password")) },
                     singleLine = true,
                     visualTransformation = PasswordVisualTransformation(),
                     leadingIcon = { Icon(Icons.Default.Lock, null) }
                 )
                 if (error != null) {
                     Text(
-                        error,
+                        tr(error),
                         modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
                         color = MaterialTheme.colorScheme.error
                     )
@@ -109,7 +113,7 @@ fun ChildLoginScreen(
                     modifier = Modifier.fillMaxWidth().height(52.dp)
                 ) {
                     if (isSigningIn) CircularProgressIndicator(modifier = Modifier.height(22.dp), strokeWidth = 2.dp)
-                    else Text("Sign in")
+                    else Text(tr("Sign in"))
                 }
             }
         }

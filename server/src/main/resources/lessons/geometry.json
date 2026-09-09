@@ -1,0 +1,430 @@
+{
+  "id": "geometry",
+  "version": 1,
+  "subject": "Math",
+  "title": "Around & inside",
+  "subtitle": "A moving guide to perimeter and area",
+  "estimatedMinutes": 30,
+  "chapters": [
+    {
+      "title": "Around or inside?",
+      "shape": "rectangle",
+      "a": 6,
+      "b": 4,
+      "accent": "#5265ec",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Meet a garden. A fence travels around its edge. Grass covers the space inside. Those are two different measurements, even though we are looking at the same garden.",
+          "headline": "A fence goes around.",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Follow the little light around the boundary. This journey is the perimeter. We measure it in length units, such as centimetres or metres.",
+          "headline": "Perimeter = distance around",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Now watch square tiles fill the garden. The amount of surface covered is its area. Each tile is one square unit, so area uses square centimetres or square metres.",
+          "headline": "Area = space inside",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "Imagine buying a ribbon for the edge of a picture and paper to cover its face. Say which needs perimeter and which needs area. Watch the edge and the interior take turns lighting up.",
+          "headline": "Ribbon around. Paper inside.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "You want enough grass to cover a garden. Which measurement do you need?",
+        "options": [
+          "Perimeter",
+          "Area",
+          "The number of corners"
+        ],
+        "answer": 1,
+        "explanation": "Grass covers the inside, so we need area. A fence would need perimeter."
+      }
+    },
+    {
+      "title": "The rectangle",
+      "shape": "rectangle",
+      "a": 6,
+      "b": 4,
+      "accent": "#008e80",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "This rectangle is six centimetres long and four centimetres wide. Opposite sides have matching lengths. Follow the labels as the rectangle takes shape.",
+          "headline": "Length 6 cm · width 4 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Add every side: six plus four plus six plus four. That makes twenty centimetres. Another way is two times the sum of the length and width.",
+          "headline": "P = 2 × (6 + 4) = 20 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Count four rows with six squares in each row. Six times four is twenty-four. That is why rectangle area is length times width: twenty-four square centimetres.",
+          "headline": "A = 6 × 4 = 24 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "Look at the two answers side by side. Twenty centimetres measures a journey around. Twenty-four square centimetres measures a covering. Explain why the area answer has a little two in its unit.",
+          "headline": "P = 20 cm     A = 24 cm²",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "A different rectangle is 8 cm long and 3 cm wide. What is its area?",
+        "answer": 24,
+        "unit": "cm²",
+        "explanation": "Eight squares in each of three rows gives 8 × 3 = 24 cm². Its perimeter would be 22 cm."
+      }
+    },
+    {
+      "title": "The square",
+      "shape": "square",
+      "a": 5,
+      "b": 5,
+      "accent": "#c06924",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "A square is a special rectangle. All four sides are equal and all four corners are right angles. Our square has sides of five centimetres.",
+          "headline": "Four equal sides. Four right angles.",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Trace the four equal sides. Five plus five plus five plus five is twenty. For any square, the perimeter is four times the side length.",
+          "headline": "P = 4 × 5 = 20 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Five rows of five squares cover the inside. Five times five makes twenty-five square centimetres. Side times side is also called side squared.",
+          "headline": "A = 5 × 5 = 25 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Try the side-length slider below the stage. Predict the new area before moving it. Doubling the side makes four times as many squares, because both the rows and the columns double.",
+          "headline": "Explore: change the side length.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "A square has side length 7 cm. What is its perimeter?",
+        "answer": 28,
+        "unit": "cm",
+        "explanation": "All four sides are 7 cm, so 4 × 7 = 28 cm. The area would be 49 cm²."
+      }
+    },
+    {
+      "title": "The triangle",
+      "shape": "triangle",
+      "a": 6,
+      "b": 4,
+      "accent": "#b45087",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "A triangle has three sides. This right-angled triangle has a base of six centimetres and a perpendicular height of four centimetres. The height meets the base at a right angle.",
+          "headline": "Base 6 cm · height 4 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "split",
+          "text": "Watch an identical triangle rotate into place. Together the two triangles fill a six-by-four rectangle. One triangle covers exactly half the rectangle.",
+          "headline": "Two matching triangles make a rectangle.",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "The rectangle has area six times four, or twenty-four. Half of twenty-four is twelve. Triangle area is one half times base times perpendicular height.",
+          "headline": "A = ½ × 6 × 4 = 12 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Perimeter uses all three side lengths. The sloping side is not four centimetres: four is the perpendicular height. For a different triangle with sides five, five and six, the perimeter would be sixteen centimetres.",
+          "headline": "Triangle perimeter = add all three sides.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "A triangle has base 10 cm and perpendicular height 6 cm. What is its area?",
+        "answer": 30,
+        "unit": "cm²",
+        "explanation": "The matching rectangle has area 60 cm². Half of that is 30 cm²."
+      }
+    },
+    {
+      "title": "The parallelogram",
+      "shape": "parallelogram",
+      "a": 6,
+      "b": 4,
+      "accent": "#247dc0",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "A parallelogram has two pairs of parallel sides. Imagine leaning a rectangle sideways. The top stays parallel to the base, but the sloping side is longer than the perpendicular height.",
+          "headline": "Parallel means staying the same distance apart.",
+          "seconds": 40
+        },
+        {
+          "mode": "rearrange",
+          "text": "Cut off the small triangle at the left and slide it into the space at the right. No area is lost. The pieces now make a rectangle with the same base and height.",
+          "headline": "Rearrange the pieces. Keep the area.",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "The base is six centimetres and the perpendicular height is four. Base times height gives twenty-four square centimetres. Use the straight up-and-down height, not the sloping edge.",
+          "headline": "A = base × height = 24 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "For perimeter, add the actual outer sides. Opposite sides match, so perimeter is twice the sum of two neighbouring side lengths. Height is useful for area, but it may not be a boundary side.",
+          "headline": "Area uses height. Perimeter uses edges.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "Which measurement belongs in A = base × ___ for a parallelogram?",
+        "options": [
+          "Sloping side",
+          "Perpendicular height",
+          "Perimeter"
+        ],
+        "answer": 1,
+        "explanation": "Use the height at a right angle to the base. The sloping side generally gives the wrong area."
+      }
+    },
+    {
+      "title": "The trapezoid",
+      "shape": "trapezoid",
+      "a": 8,
+      "b": 4,
+      "accent": "#a36a20",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "A trapezoid, also called a trapezium in some countries, has a pair of parallel sides. Here they measure eight centimetres and four centimetres. The perpendicular distance between them is three centimetres.",
+          "headline": "Parallel sides 8 cm and 4 cm · height 3 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "rearrange",
+          "text": "Make a matching copy and turn it around. The two trapezoids fit into one parallelogram. Its base is the sum of the parallel sides: eight plus four. Its height is still three.",
+          "headline": "Two trapezoids → one parallelogram",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Add the parallel sides, multiply by the height, then halve the answer. Eight plus four makes twelve. Twelve times three is thirty-six. Half is eighteen square centimetres.",
+          "headline": "A = ½ × (8 + 4) × 3 = 18 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Perimeter still means walking around every outer edge. Add all four side lengths. The height is drawn inside to measure the perpendicular gap; it is not automatically one of those side lengths.",
+          "headline": "P = the sum of all four edges",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "A trapezoid has parallel sides 10 cm and 6 cm, and height 4 cm. What is its area?",
+        "answer": 32,
+        "unit": "cm²",
+        "explanation": "½ × (10 + 6) × 4 = 32 cm². Only the two parallel sides go inside the brackets."
+      }
+    },
+    {
+      "title": "The circle",
+      "shape": "circle",
+      "a": 3,
+      "b": 3,
+      "accent": "#7961ca",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "A circle has a curved boundary. The radius goes from the centre to the edge. The diameter goes all the way across through the centre, so it is twice the radius.",
+          "headline": "Radius r = 3 cm · diameter d = 6 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "A circle's perimeter has a special name: circumference. It is pi times the diameter, or two times pi times the radius. Pi is approximately three point one four.",
+          "headline": "C = 2πr ≈ 18.84 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Watch the coloured sectors fill the disk. Circle area is pi times radius squared. For radius three, first calculate three times three, which is nine. Then multiply by pi to get about twenty-eight point two six.",
+          "headline": "A = πr² ≈ 28.26 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "The moving point follows circumference. The coloured disk represents area. Do not use the diameter in the area formula where the radius belongs. If you know the diameter, halve it first.",
+          "headline": "Use r for radius, not diameter.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "A circle has diameter 10 cm. Which expression gives its area?",
+        "options": [
+          "π × 10²",
+          "π × 5²",
+          "2 × π × 5"
+        ],
+        "answer": 1,
+        "explanation": "The radius is 5 cm, so the area is π × 5² = 25π cm². The third expression gives circumference."
+      }
+    },
+    {
+      "title": "Put shapes together",
+      "shape": "compound",
+      "a": 6,
+      "b": 4,
+      "accent": "#008e80",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "This L-shaped floor can be split into two rectangles. The whole footprint is six metres wide and four metres high. The upper-right corner, two metres by two metres, is missing.",
+          "headline": "A useful trick: split a complicated shape.",
+          "seconds": 40
+        },
+        {
+          "mode": "split",
+          "text": "The bottom rectangle is six by two, with area twelve. The upper-left rectangle is four by two, with area eight. They do not overlap. Adding twelve and eight gives twenty square metres.",
+          "headline": "A = 12 + 8 = 20 m²",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Another method is to start with a six-by-four rectangle and remove the missing two-by-two corner. Twenty-four minus four is twenty. Both methods describe exactly the same floor.",
+          "headline": "A = 24 − 4 = 20 m²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "For perimeter, trace only the outside boundary, including the inward corner. Do not count the internal line used to split the floor. The six outer lengths are six, two, two, two, four and four, giving twenty metres.",
+          "headline": "P = 6 + 2 + 2 + 2 + 4 + 4 = 20 m",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "When finding the perimeter of a compound shape, do you count the lines drawn inside to split it?",
+        "options": [
+          "Yes, every drawn line",
+          "No, only the outside boundary",
+          "Only the longest internal line"
+        ],
+        "answer": 1,
+        "explanation": "Internal dividing lines help with area. They are not part of a trip around the boundary."
+      }
+    },
+    {
+      "title": "Same perimeter, different area",
+      "shape": "comparison",
+      "a": 6,
+      "b": 4,
+      "accent": "#b45087",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Here are two rectangles: six by four and eight by two. Before any numbers appear, predict whether their perimeters are the same. Trace each boundary with your eyes.",
+          "headline": "Make a prediction.",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Six plus four plus six plus four equals twenty. Eight plus two plus eight plus two also equals twenty. Both rectangles need the same length of fence.",
+          "headline": "Both perimeters = 20 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Now count the tiles inside. Six times four is twenty-four, but eight times two is sixteen. The same length around does not guarantee the same amount of space inside.",
+          "headline": "Areas: 24 cm² and 16 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "This helps explain why shape matters when you design a garden. Sketch another rectangle with perimeter twenty. Try nine by one. Calculate its area and compare it with the other two.",
+          "headline": "Your turn: sketch a 9 × 1 rectangle.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "What is the area of a 9 cm by 1 cm rectangle?",
+        "answer": 9,
+        "unit": "cm²",
+        "explanation": "9 × 1 = 9 cm². Its perimeter is still 20 cm, but its area is smaller."
+      }
+    },
+    {
+      "title": "Design a little park",
+      "shape": "rectangle",
+      "a": 8,
+      "b": 5,
+      "accent": "#5265ec",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "You are designing a rectangular park eight metres long and five metres wide. You need fencing for the edge and turf for the inside. Decide which calculation belongs to each job.",
+          "headline": "A park: 8 m × 5 m",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "For the fence, add eight, five, eight and five. You need twenty-six metres if the whole boundary is fenced. A gate would change the amount of fencing, so always read the problem carefully.",
+          "headline": "Fence: P = 2 × (8 + 5) = 26 m",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "For the turf, multiply eight by five. You need forty square metres. Notice that metres and square metres tell you which kind of measurement you found.",
+          "headline": "Turf: A = 8 × 5 = 40 m²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "You now have a shape toolkit. Trace edges for perimeter. Cover or rearrange the inside for area. Check your units, use perpendicular heights and remember that radius is half the diameter. Explain one formula in your own words before the final checkpoint.",
+          "headline": "Trace. Cover. Check the units.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "Which shopping list is correct for the whole 8 m × 5 m park?",
+        "options": [
+          "40 m of fence; 26 m² of turf",
+          "26 m of fence; 40 m² of turf",
+          "26 m² of fence; 40 m of turf"
+        ],
+        "answer": 1,
+        "explanation": "Fencing follows the 26 m boundary; turf covers the 40 m² interior."
+      }
+    }
+  ]
+}

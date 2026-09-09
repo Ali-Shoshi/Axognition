@@ -1,9 +1,13 @@
 package com.example.axognition
 
+import com.example.axognition.ui.tr
+
 import android.content.res.Configuration
 import android.content.Context
+import com.example.axognition.ui.AppLanguage
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.Spring
@@ -88,10 +92,25 @@ import com.example.axognition.ui.panels.TasksPanelScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppLanguage.initialize(this)
         enableEdgeToEdge()
         setContent {
             val preferences = remember { getSharedPreferences("axognition_preferences", Context.MODE_PRIVATE) }
             var darkMode by rememberSaveable { mutableStateOf(preferences.getBoolean("dark_mode", false)) }
+            // The app preference can differ from Android's system theme. Keep
+            // the time, battery and navigation icons legible over our surfaces.
+            SideEffect {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT
+                    ) { darkMode },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        0xFF101722.toInt()
+                    ) { darkMode }
+                )
+            }
             AxognitionTheme(darkTheme = darkMode) {
                 MainApp(
                     darkMode = darkMode,
@@ -120,6 +139,9 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainApp(darkMode: Boolean, onDarkModeChanged: (Boolean) -> Unit) {
     val context = LocalContext.current
+    // Reading the current language here makes the whole navigation shell
+    // recompose immediately after a language chip is selected in Settings.
+    val language = AppLanguage.code
     var childSession by remember { mutableStateOf(ChildSessionStore.load(context)) }
     var signingIn by rememberSaveable { mutableStateOf(false) }
     var loginError by rememberSaveable { mutableStateOf<String?>(null) }
@@ -157,6 +179,8 @@ private fun AuthenticatedMainApp(
     onDarkModeChanged: (Boolean) -> Unit,
     childSession: ChildSession
 ) {
+    // Keep already-open destinations in sync with the Settings language chip.
+    val language = AppLanguage.code
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val isDashboard = navBackStackEntry?.destination?.route == Screen.Dashboard.route
@@ -223,7 +247,7 @@ private fun AuthenticatedMainApp(
             ModalDrawerSheet {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Axognition Menu",
+                    text = tr("Axognition Menu"),
                     modifier = Modifier.padding(16.dp),
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
@@ -231,8 +255,8 @@ private fun AuthenticatedMainApp(
                 HorizontalDivider()
 
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile") },
+                    icon = { Icon(Icons.Default.Person, contentDescription = tr("Profile")) },
+                    label = { Text(tr("Profile")) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -240,8 +264,8 @@ private fun AuthenticatedMainApp(
                     }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = "Performance") },
-                    label = { Text("Performance") },
+                    icon = { Icon(Icons.Default.Star, contentDescription = tr("Performance")) },
+                    label = { Text(tr("Performance")) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -249,8 +273,8 @@ private fun AuthenticatedMainApp(
                     }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Favorite, contentDescription = "Health") },
-                    label = { Text("Health") },
+                    icon = { Icon(Icons.Default.Favorite, contentDescription = tr("Health")) },
+                    label = { Text(tr("Health")) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -258,8 +282,8 @@ private fun AuthenticatedMainApp(
                     }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.DateRange, contentDescription = "Calendar") },
-                    label = { Text("Calendar") },
+                    icon = { Icon(Icons.Default.DateRange, contentDescription = tr("Calendar")) },
+                    label = { Text(tr("Calendar")) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -267,8 +291,8 @@ private fun AuthenticatedMainApp(
                     }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = "Tasks") },
-                    label = { Text("Today's Tasks") },
+                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = tr("Tasks")) },
+                    label = { Text(tr("Today's Tasks")) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -276,8 +300,8 @@ private fun AuthenticatedMainApp(
                     }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.AccessTime, contentDescription = "Time") },
-                    label = { Text("Time") },
+                    icon = { Icon(Icons.Default.AccessTime, contentDescription = tr("Time")) },
+                    label = { Text(tr("Time")) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -285,8 +309,8 @@ private fun AuthenticatedMainApp(
                     }
                 )
                 NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Settings") },
-                    label = { Text("Settings") },
+                    icon = { Icon(Icons.Default.Settings, contentDescription = tr("Settings")) },
+                    label = { Text(tr("Settings")) },
                     selected = false,
                     onClick = {
                         scope.launch { drawerState.close() }
@@ -300,14 +324,14 @@ private fun AuthenticatedMainApp(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 if (isDashboard) TopAppBar(
-                    title = { Text("${childSession.displayName}'s Axognition") },
+                    title = { Text(tr("${childSession.displayName}'s Axognition")) },
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch { drawerState.open() }
                         }) {
                             Icon(
                                 imageVector = Icons.Default.Menu,
-                                contentDescription = "Open Navigation Drawer"
+                                contentDescription = tr("Open Navigation Drawer")
                             )
                         }
                     }
@@ -470,14 +494,14 @@ fun DashboardScreen(childName: String, modifier: Modifier = Modifier, onItemClic
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Welcome back, $childName",
+            text = tr("Welcome back, $childName"),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
         Text(
-            text = "Long-press and drag cards to rearrange",
+            text = tr("Long-press and drag cards to rearrange"),
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -543,13 +567,13 @@ fun DashboardCard(
         ) {
             Icon(
                 imageVector = item.icon,
-                contentDescription = item.title,
+                contentDescription = tr(item.title),
                 modifier = Modifier.size(36.dp),
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = item.title,
+                text = tr(item.title),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
             )

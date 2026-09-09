@@ -1,5 +1,7 @@
 package com.example.axognition.ui.panels
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.axognition.ui.KioskTopBar
+import com.example.axognition.ui.LanguageOptions
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,8 +26,7 @@ fun SettingsPanelScreen(
 ) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var dataSyncEnabled by remember { mutableStateOf(false) }
-    var selectedLanguage by remember { mutableStateOf("English") }
-    var expandedLanguageMenu by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -39,7 +42,7 @@ fun SettingsPanelScreen(
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Preferences", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(tr("Preferences"), fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
             item {
@@ -51,8 +54,8 @@ fun SettingsPanelScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Push Notifications", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text("Receive reminders for doctor appointments", style = MaterialTheme.typography.bodySmall)
+                                Text(tr("Push Notifications"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(tr("Receive reminders for doctor appointments"), style = MaterialTheme.typography.bodySmall)
                             }
                             Switch(
                                 checked = notificationsEnabled,
@@ -70,8 +73,8 @@ fun SettingsPanelScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Display", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text(if (darkModeEnabled) "Dark Mode is on" else "Light Mode is on", style = MaterialTheme.typography.bodySmall)
+                                Text(tr("Display"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(tr(if (darkModeEnabled) "Dark Mode is on" else "Light Mode is on"), style = MaterialTheme.typography.bodySmall)
                             }
                             Switch(
                                 checked = darkModeEnabled,
@@ -89,8 +92,8 @@ fun SettingsPanelScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Cloud Data Sync", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text("Automatically back up health records", style = MaterialTheme.typography.bodySmall)
+                                Text(tr("Cloud Data Sync"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text(tr("Automatically back up health records"), style = MaterialTheme.typography.bodySmall)
                             }
                             Switch(
                                 checked = dataSyncEnabled,
@@ -103,69 +106,32 @@ fun SettingsPanelScreen(
 
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("App Settings", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(tr("App Settings"), fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text("Language", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                                Text("Select your preferred language", style = MaterialTheme.typography.bodySmall)
-                            }
-                            Box {
-                                OutlinedButton(onClick = { expandedLanguageMenu = true }) {
-                                    Text(selectedLanguage)
-                                }
-                                DropdownMenu(
-                                    expanded = expandedLanguageMenu,
-                                    onDismissRequest = { expandedLanguageMenu = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text("English") },
-                                        onClick = {
-                                            selectedLanguage = "English"
-                                            expandedLanguageMenu = false
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("Spanish") },
-                                        onClick = {
-                                            selectedLanguage = "Spanish"
-                                            expandedLanguageMenu = false
-                                        }
-                                    )
-                                    DropdownMenuItem(
-                                        text = { Text("French") },
-                                        onClick = {
-                                            selectedLanguage = "French"
-                                            expandedLanguageMenu = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
+                        Text(tr("Language"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(tr("Select your preferred language"), style = MaterialTheme.typography.bodySmall)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        LanguageOptions(context)
                     }
                 }
             }
 
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("About", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Text(tr("About"), fontSize = 18.sp, fontWeight = FontWeight.Bold)
             }
 
             item {
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Axognition Health", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text("Version 1.0.4", style = MaterialTheme.typography.bodySmall)
+                        Text(tr("Axognition Health"), fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        Text(tr("Version 1.0.4"), style = MaterialTheme.typography.bodySmall)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Secure health tracking panel designed to manage your doctor visits, allergies, and ongoing medical conditions.", style = MaterialTheme.typography.bodySmall)
+                        Text(tr("Secure health tracking panel designed to manage your doctor visits, allergies, and ongoing medical conditions."), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }

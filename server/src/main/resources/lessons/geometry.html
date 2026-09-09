@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f3ef">
+    <meta name="color-scheme" content="light dark">
+    <title>Around &amp; inside · Axognition</title>
+    <script>
+      // Apply the app's preference before the first paint; standalone browsers
+      // follow their system preference until the Android player supplies one.
+      const requestedTheme = new URLSearchParams(location.search).get('theme');
+      window.geometryInitialLanguage = new URLSearchParams(location.search).get('lang') === 'sq' ? 'sq' : 'en';
+      document.documentElement.lang = window.geometryInitialLanguage;
+      window.geometryInitialTheme = requestedTheme === 'dark' ? true : requestedTheme === 'light' ? false : null;
+      document.documentElement.setAttribute('data-theme',
+        (window.geometryInitialTheme ?? matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
+    </script>
+    <link rel="stylesheet" href="./geometry.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="subject-name" aria-label="Lesson subject">
+          <span id="subjectName">Math</span>
+          <small>Subject</small>
+        </div>
+        <div class="unit-title">
+          Around &amp; inside
+          <span>Perimeter + area</span>
+        </div>
+        <button id="contentsButton" aria-label="Choose chapter">
+          <span aria-hidden="true">☷</span> Chapters <span id="chapterCount">01 / 10</span>
+        </button>
+      </header>
+
+      <div class="chapter-line">
+        <span id="eyebrow">MATHEMATICS • SHAPE LAB</span>
+        <span id="time">About 30 min · at your pace</span>
+      </div>
+
+      <section id="stage" class="stage paused" aria-label="Animated lesson stage">
+        <div class="stage-heading">
+          <div class="stage-heading-top">
+          <span class="pill" id="mode">WATCH &amp; DISCOVER</span>
+          <div class="voice-speed" id="voiceSpeedControl">
+            <button id="voiceSpeedButton" type="button" aria-label="Voice speed, 1 times" aria-haspopup="listbox" aria-expanded="false">
+              <span class="voice-speed-label">Voice Speed</span>
+              <span class="voice-speed-choice"><span id="voiceSpeedValue">1×</span><span aria-hidden="true">▾</span></span>
+            </button>
+            <div id="voiceSpeedMenu" class="voice-speed-menu" role="listbox" aria-label="Narration speed" hidden>
+              <button type="button" role="option" data-speed="0.5" aria-selected="false">0.5×</button>
+              <button type="button" role="option" data-speed="0.7" aria-selected="false">0.7×</button>
+              <button type="button" role="option" data-speed="1" aria-selected="true">1×</button>
+              <button type="button" role="option" data-speed="1.25" aria-selected="false">1.25×</button>
+              <button type="button" role="option" data-speed="1.5" aria-selected="false">1.50×</button>
+              <button type="button" role="option" data-speed="1.75" aria-selected="false">1.75×</button>
+              <button type="button" role="option" data-speed="2" aria-selected="false">2×</button>
+            </div>
+          </div>
+          </div>
+          <h1 id="heading">A new way to see shapes.</h1>
+          <p id="headline">Trace the outside. Discover the inside.</p>
+        </div>
+
+        <div class="scene-frame">
+          <svg
+            id="scene"
+            viewBox="0 0 1000 460"
+            role="img"
+            aria-label="Animated geometric shapes"
+          ></svg>
+        </div>
+
+        <div id="explorer" hidden>
+          <label>
+            Side length
+            <input id="side" type="range" min="2" max="8" step="1" value="5">
+            <output id="sideValue">5 cm</output>
+          </label>
+        </div>
+
+        <div class="narrator">
+          <div class="avatar" aria-hidden="true"><span>✦</span></div>
+          <div class="bubble">
+            <div class="bubble-top">
+              <strong id="speaker">YOUR GUIDE</strong>
+              <span id="voiceState">Ready when you are</span>
+            </div>
+            <p id="caption" aria-live="polite">
+              Explore perimeter and area through moving shapes, colour, and a little curiosity.
+            </p>
+          </div>
+        </div>
+
+        <div id="welcome" class="welcome">
+          <div class="intro">
+            <span class="pill">A VISUAL MATHEMATICS JOURNEY</span>
+            <h2>Around.<br><em>And inside.</em></h2>
+            <p>Watch edges glow and shapes become tiles.<br>Then put your ideas to the test.</p>
+            <button id="start" class="primary">Start exploring <span>▶</span></button>
+            <small>10 chapters · narrated scenes · interactive checkpoints</small>
+          </div>
+        </div>
+
+        <div id="questionPanel" class="question-panel" hidden>
+          <div class="question-card">
+            <span class="pill">YOUR TURN</span>
+            <h2 id="question"></h2>
+            <div id="answers"></div>
+            <p id="feedback" role="status"></p>
+            <button id="continue" class="primary" hidden>Continue →</button>
+          </div>
+        </div>
+
+        <div id="finished" class="question-panel" hidden>
+          <div class="question-card">
+            <span class="pill">LOOK WHAT YOU LEARNED</span>
+            <h2>You've got shape sense.</h2>
+            <p id="score"></p>
+            <p>Perimeter follows the edge. Area covers the inside.</p>
+            <div class="completion-actions">
+              <button id="finish" class="primary" disabled>Finish</button>
+              <button id="review">Review chapters</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div class="transport">
+          <button id="previous" aria-label="Previous scene" title="Previous scene">←</button>
+          <button id="play" class="play" aria-label="Play">▶</button>
+          <button id="next" aria-label="Next scene" title="Skip to next scene" disabled><span id="nextLabel">Next →</span></button>
+          <span id="sceneCount">Scene 1 of 4</span>
+        </div>
+        <div class="timeline">
+          <progress id="progress" max="1600" value="0" aria-label="Lesson playback progress"></progress>
+          <span id="progressText">0 / 10 checkpoints</span>
+        </div>
+        <div class="extras">
+          <button id="replay" aria-label="Replay narration">Replay voice</button>
+          <button id="mute" aria-pressed="false">Sound on</button>
+        </div>
+      </footer>
+
+      <p id="notice" role="status"></p>
+
+      <dialog id="contents">
+        <div class="dialog-head">
+          <h2>Your journey</h2>
+          <button id="closeContents" aria-label="Close chapters">✕</button>
+        </div>
+        <div id="chapterList"></div>
+        <button id="restart">Restart this unit</button>
+        <small>Progress is saved on this device. Guided time includes exploring and answering.</small>
+      </dialog>
+    </main>
+
+    <script src="./geometry.js"></script>
+  </body>
+</html>

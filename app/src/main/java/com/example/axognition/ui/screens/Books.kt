@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfRenderer
@@ -163,8 +165,8 @@ fun BooksScreen(onBack: () -> Unit) {
 private fun LibraryHome(books: List<RemoteBook>, cachedIds: Set<String>, onRefresh: () -> Unit, onCategory: (BookCategory) -> Unit, onGlobalSearch: () -> Unit) {
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("My library", fontSize = 25.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-            IconButton(onClick = onRefresh) { Icon(Icons.Default.Refresh, "Refresh library") }
+            Text(tr("My library"), fontSize = 25.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            IconButton(onClick = onRefresh) { Icon(Icons.Default.Refresh, tr("Refresh library")) }
         }
 
         OutlinedCard(
@@ -177,7 +179,7 @@ private fun LibraryHome(books: List<RemoteBook>, cachedIds: Set<String>, onRefre
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Icon(Icons.Default.Search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("Search every book, author, or topic", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr("Search every book, author, or topic"), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Spacer(Modifier.height(22.dp)); 
@@ -212,19 +214,19 @@ private fun BookCategoryScreen(category: BookCategory, books: List<RemoteBook>, 
     }
     Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-            Text(category.title, fontSize = 25.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, tr("Back")) }
+            Text(tr(category.title), fontSize = 25.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
         }
-        OutlinedTextField(query, onQuery, Modifier.fillMaxWidth(), placeholder = { Text("Search ${category.title.lowercase()}") }, singleLine = true, shape = RoundedCornerShape(18.dp), leadingIcon = { Icon(Icons.Default.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton({ onQuery("") }) { Icon(Icons.Default.Clear, "Clear") } })
+        OutlinedTextField(query, onQuery, Modifier.fillMaxWidth(), placeholder = { Text(tr("Search ${tr(category.title).lowercase()}")) }, singleLine = true, shape = RoundedCornerShape(18.dp), leadingIcon = { Icon(Icons.Default.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton({ onQuery("") }) { Icon(Icons.Default.Clear, tr("Clear")) } })
         Spacer(Modifier.height(12.dp))
         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            SegmentedButton(tab == 1, { onTab(1) }, SegmentedButtonDefaults.itemShape(0, 2)) { Text("Downloaded (${shown.count { it.id in cachedIds }})") }
-            SegmentedButton(tab == 0, { onTab(0) }, SegmentedButtonDefaults.itemShape(1, 2)) { Text("Catalog") }
+            SegmentedButton(tab == 1, { onTab(1) }, SegmentedButtonDefaults.itemShape(0, 2)) { Text(tr("Downloaded (${shown.count { it.id in cachedIds }})")) }
+            SegmentedButton(tab == 0, { onTab(0) }, SegmentedButtonDefaults.itemShape(1, 2)) { Text(tr("Catalog")) }
         }
         Spacer(Modifier.height(16.dp))
         val columns = if (LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) 5 else 3
         val displayed = if (tab == 1) shown.filter { it.id in cachedIds } else shown
-        if (displayed.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(if (tab == 1) "No downloaded books yet" else "No books in this collection") }
+        if (displayed.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(tr(if (tab == 1) "No downloaded books yet" else "No books in this collection")) }
         else LazyVerticalGrid(GridCells.Fixed(columns), Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 16.dp)) {
             items(displayed, key = { it.id }) { book -> BookCoverCard(book, category, book.id in cachedIds, openingId == book.id, { onRead(book) }, { onDelete(book) }) }
         }
@@ -240,17 +242,17 @@ private fun GlobalBookSearch(books: List<RemoteBook>, query: String, onQuery: (S
         Surface(Modifier.fillMaxWidth(.96f).fillMaxHeight(.80f), shape = RoundedCornerShape(28.dp), tonalElevation = 8.dp) {
             Column(Modifier.fillMaxSize().padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Close search") }
-                    Text("Search books", fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                    IconButton(onClick = onDismiss) { Icon(Icons.AutoMirrored.Filled.ArrowBack, tr("Close search")) }
+                    Text(tr("Search books"), fontSize = 25.sp, fontWeight = FontWeight.Bold)
                 }
-                Text("Find something from every collection", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr("Find something from every collection"), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(16.dp))
-                OutlinedTextField(query, onQuery, Modifier.fillMaxWidth(), placeholder = { Text("Title, author, or topic") }, leadingIcon = { Icon(Icons.Default.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton({ onQuery("") }) { Icon(Icons.Default.Clear, "Clear") } }, singleLine = true, shape = RoundedCornerShape(18.dp))
+                OutlinedTextField(query, onQuery, Modifier.fillMaxWidth(), placeholder = { Text(tr("Title, author, or topic")) }, leadingIcon = { Icon(Icons.Default.Search, null) }, trailingIcon = { if (query.isNotEmpty()) IconButton({ onQuery("") }) { Icon(Icons.Default.Clear, tr("Clear")) } }, singleLine = true, shape = RoundedCornerShape(18.dp))
                 Spacer(Modifier.height(14.dp))
-                if (query.isBlank()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Start typing to search the complete library", textAlign = TextAlign.Center) }
-                else if (results.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("No matching books found") }
+                if (query.isBlank()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(tr("Start typing to search the complete library"), textAlign = TextAlign.Center) }
+                else if (results.isEmpty()) Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text(tr("No matching books found")) }
                 else {
-                    Text("${results.size} ${if (results.size == 1) "result" else "results"}", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    Text(tr("${results.size} ${if (results.size == 1) "result" else "results"}"), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                     Spacer(Modifier.height(10.dp))
                     val columns = if (LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) 5 else 3
                     LazyVerticalGrid(GridCells.Fixed(columns), Modifier.fillMaxWidth().weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -281,9 +283,9 @@ private fun CategoryCard(category: BookCategory, total: Int, downloaded: Int, mo
             ) {
                 Icon(category.icon, null, Modifier.size(24.dp), Color.White)
                 Column {
-                    Text(category.title, fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color.White)
+                    Text(tr(category.title), fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Color.White)
                     Spacer(Modifier.height(5.dp))
-                    Text("$downloaded downloaded • $total titles", fontSize = 12.sp, color = Color.White.copy(alpha = .88f))
+                    Text(tr("$downloaded downloaded • $total titles"), fontSize = 12.sp, color = Color.White.copy(alpha = .88f))
                 }
             }
         }
@@ -302,10 +304,10 @@ private fun BookCoverCard(book: RemoteBook, category: BookCategory, downloaded: 
             }
         }
         Text(book.title, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 7.dp))
-        Text(book.author ?: "Unknown author", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(tr(book.author ?: "Unknown author"), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(5.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (downloaded) "Downloaded" else formatBytes(book.fileSizeBytes), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+            Text(tr(if (downloaded) "Downloaded" else formatBytes(book.fileSizeBytes)), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
             when {
                 opening -> CircularProgressIndicator(Modifier.size(26.dp), strokeWidth = 2.dp)
                 downloaded -> OutlinedButton(
@@ -314,8 +316,8 @@ private fun BookCoverCard(book: RemoteBook, category: BookCategory, downloaded: 
                     contentPadding = PaddingValues(horizontal = 9.dp, vertical = 0.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Icon(Icons.Default.Delete, "Delete downloaded PDF", Modifier.size(16.dp))
-                    Spacer(Modifier.width(4.dp)); Text("Delete", fontSize = 11.sp)
+                    Icon(Icons.Default.Delete, tr("Delete downloaded PDF"), Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp)); Text(tr("Delete"), fontSize = 11.sp)
                 }
                 else -> FilledTonalButton(
                     onClick = onRead,
@@ -323,8 +325,8 @@ private fun BookCoverCard(book: RemoteBook, category: BookCategory, downloaded: 
                     modifier = Modifier.height(34.dp),
                     contentPadding = PaddingValues(horizontal = 9.dp, vertical = 0.dp)
                 ) {
-                    Icon(Icons.Default.Download, "Download PDF", Modifier.size(16.dp))
-                    Spacer(Modifier.width(4.dp)); Text("Download", fontSize = 11.sp)
+                    Icon(Icons.Default.Download, tr("Download PDF"), Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp)); Text(tr("Download"), fontSize = 11.sp)
                 }
             }
         }
@@ -335,7 +337,7 @@ private fun BookCoverCard(book: RemoteBook, category: BookCategory, downloaded: 
 private fun CoverImage(url: String, modifier: Modifier) {
     val bitmap by produceState<Bitmap?>(null, url) { value = withContext(Dispatchers.IO) { runCatching { URL(url).openStream().use(BitmapFactory::decodeStream) }.getOrNull() } }
     Box(modifier.background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
-        if (bitmap == null) Icon(Icons.Default.MenuBook, "Book cover unavailable", Modifier.size(34.dp)) else Image(bitmap!!.asImageBitmap(), "Book cover", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+        if (bitmap == null) Icon(Icons.Default.MenuBook, tr("Book cover unavailable"), Modifier.size(34.dp)) else Image(bitmap!!.asImageBitmap(), tr("Book cover"), Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
     }
 }
 
@@ -345,9 +347,9 @@ private fun PdfReader(file: File, onBack: () -> Unit) {
     DisposableEffect(renderer) { onDispose { renderer.close() } }
     Column(Modifier.fillMaxSize()) {
         Row(Modifier.fillMaxWidth().padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
-            Text(file.nameWithoutExtension, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("${renderer.pageCount} pages", fontSize = 12.sp)
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, tr("Back")) }
+            Text(tr(file.nameWithoutExtension), fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(tr("${renderer.pageCount} pages"), fontSize = 12.sp)
         }
         LazyColumn(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) { items(renderer.pageCount) { PdfPage(renderer, it) } }
     }
@@ -356,10 +358,10 @@ private fun PdfReader(file: File, onBack: () -> Unit) {
 @Composable
 private fun PdfPage(renderer: PdfRenderer, index: Int) {
     val bitmap by produceState<Bitmap?>(null, renderer, index) { value = withContext(Dispatchers.IO) { renderer.openPage(index).use { page -> val width = 1200; Bitmap.createBitmap(width, (width.toFloat() * page.height / page.width).toInt(), Bitmap.Config.ARGB_8888).also { page.render(it, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY) } } } }
-    Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) { if (bitmap == null) CircularProgressIndicator(Modifier.padding(24.dp)) else Image(bitmap!!.asImageBitmap(), "Page ${index + 1}", Modifier.fillMaxWidth()) }
+    Box(Modifier.fillMaxWidth().padding(horizontal = 8.dp), contentAlignment = Alignment.Center) { if (bitmap == null) CircularProgressIndicator(Modifier.padding(24.dp)) else Image(bitmap!!.asImageBitmap(), tr("Page ${index + 1}"), Modifier.fillMaxWidth()) }
 }
 
 @Composable
-private fun ErrorContent(message: String, retry: () -> Unit) = Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) { Text("Could not load books", fontWeight = FontWeight.Bold); Spacer(Modifier.height(8.dp)); Text(message, textAlign = TextAlign.Center); Spacer(Modifier.height(16.dp)); OutlinedButton(onClick = retry) { Text("Try again") } } }
+private fun ErrorContent(message: String, retry: () -> Unit) = Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(24.dp)) { Text(tr("Could not load books"), fontWeight = FontWeight.Bold); Spacer(Modifier.height(8.dp)); Text(tr(message), textAlign = TextAlign.Center); Spacer(Modifier.height(16.dp)); OutlinedButton(onClick = retry) { Text(tr("Try again")) } } }
 
 private fun formatBytes(bytes: Long) = if (bytes >= 1_000_000) "%.1f MB".format(bytes / 1_000_000.0) else "%.1f KB".format(bytes / 1_000.0)

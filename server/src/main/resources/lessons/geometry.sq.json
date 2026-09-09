@@ -1,0 +1,527 @@
+{
+  "id": "geometry",
+  "version": 1,
+  "subject": "Matematikë",
+  "title": "Rreth dhe brenda",
+  "subtitle": "Një udhëzues në lëvizje për perimetrin dhe syprinën",
+  "estimatedMinutes": 30,
+  "chapters": [
+    {
+      "title": "Rreth apo brenda?",
+      "shape": "rectangle",
+      "a": 6,
+      "b": 4,
+      "accent": "#5265ec",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Shiko një kopsht. Gardhi ndjek skajin e tij, ndërsa bari mbulon hapësirën brenda. Këto janë dy madhësi të ndryshme, megjithëse po shohim të njëjtin kopsht.",
+          "headline": "Gardhi shkon rreth e rrotull.",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Ndiq dritën e vogël përgjatë kufirit. Gjatësia e kësaj rruge është perimetri. E matim me njësi gjatësie, si centimetra ose metra.",
+          "headline": "Perimetri = gjatësia rreth figurës",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Tani shiko si pllakat katrore mbushin kopshtin. Madhësia e sipërfaqes së mbuluar quhet syprinë. Çdo pllakë përfaqëson një njësi katrore, prandaj syprinën e matim në centimetra katrorë ose metra katrorë.",
+          "headline": "Syprina = madhësia e pjesës së brendshme",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "Përfytyro sikur blen një shirit për skajin e një fotografie dhe letër për ta mbuluar. Për cilën të duhet perimetri dhe për cilën syprina? Shiko si ndriçojnë me radhë skaji dhe pjesa e brendshme.",
+          "headline": "Shirit rreth. Letër brenda.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "Dëshiron të blesh bar për të mbuluar një kopsht. Cila madhësi të duhet?",
+        "options": [
+          "Perimetri",
+          "Syprina",
+          "Numri i këndeve"
+        ],
+        "answer": 1,
+        "explanation": "Bari mbulon pjesën e brendshme, prandaj na duhet syprina. Për një gardh do të na duhej perimetri."
+      }
+    },
+    {
+      "title": "Drejtkëndëshi",
+      "shape": "rectangle",
+      "a": 6,
+      "b": 4,
+      "accent": "#008e80",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Ky drejtkëndësh është gjashtë centimetra i gjatë dhe katër centimetra i gjerë. Brinjët përballë kanë gjatësi të barabarta. Ndiq shënimet ndërsa formohet drejtkëndëshi.",
+          "headline": "Gjatësia 6 cm · gjerësia 4 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Mblidh gjatësitë e të gjitha brinjëve: gjashtë plus katër plus gjashtë plus katër. Shuma është njëzet centimetra. Një mënyrë tjetër është të shumëzosh me dy shumën e gjatësisë dhe gjerësisë.",
+          "headline": "P = 2 × (6 + 4) = 20 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Numëro katër rreshta me nga gjashtë katrorë. Gjashtë herë katër bëjnë njëzet e katër. Prandaj syprina e drejtkëndëshit është gjatësia herë gjerësia: njëzet e katër centimetra katrorë.",
+          "headline": "A = 6 × 4 = 24 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "Krahaso përgjigjet. Njëzet centimetra matin rrugën rreth figurës. Njëzet e katër centimetra katrorë matin sipërfaqen e mbuluar. Shpjego pse njësia e syprinës ka një dysh të vogël lart.",
+          "headline": "P = 20 cm     A = 24 cm²",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "Një drejtkëndësh tjetër është 8 cm i gjatë dhe 3 cm i gjerë. Sa është syprina e tij?",
+        "answer": 24,
+        "unit": "cm²",
+        "explanation": "Tetë katrorë në secilin prej tre rreshtave japin 8 × 3 = 24 cm². Perimetri do të ishte 22 cm."
+      }
+    },
+    {
+      "title": "Katrori",
+      "shape": "square",
+      "a": 5,
+      "b": 5,
+      "accent": "#c06924",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Katrori është një drejtkëndësh i veçantë. Të katër brinjët janë të barabarta dhe të katër këndet janë të drejta. Katrori ynë ka brinjë me gjatësi pesë centimetra.",
+          "headline": "Katër brinjë të barabarta. Katër kënde të drejta.",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Ndiq katër brinjët e barabarta. Pesë plus pesë plus pesë plus pesë bëjnë njëzet. Perimetri i çdo katrori është katër herë gjatësia e brinjës.",
+          "headline": "P = 4 × 5 = 20 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Pesë rreshta me nga pesë katrorë mbulojnë pjesën e brendshme. Pesë herë pesë bëjnë njëzet e pesë centimetra katrorë. Brinja herë brinja quhet edhe brinja në katror.",
+          "headline": "A = 5 × 5 = 25 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Provo rrëshqitësin e gjatësisë së brinjës poshtë figurës. Parashiko syprinën e re përpara se ta lëvizësh. Dyfishimi i brinjës e katërfishon numrin e katrorëve, sepse dyfishohen si rreshtat, ashtu edhe shtyllat.",
+          "headline": "Eksploro: ndrysho gjatësinë e brinjës.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "Një katror ka brinjë 7 cm. Sa është perimetri i tij?",
+        "answer": 28,
+        "unit": "cm",
+        "explanation": "Të katër brinjët janë 7 cm, prandaj 4 × 7 = 28 cm. Syprina do të ishte 49 cm²."
+      }
+    },
+    {
+      "title": "Trekëndëshi",
+      "shape": "triangle",
+      "a": 6,
+      "b": 4,
+      "accent": "#b45087",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Trekëndëshi ka tri brinjë. Ky trekëndësh kënddrejtë ka bazë gjashtë centimetra dhe lartësi pingule katër centimetra. Lartësia takohet me bazën në kënd të drejtë.",
+          "headline": "Baza 6 cm · lartësia 4 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "split",
+          "text": "Shiko si një trekëndësh i njëjtë rrotullohet dhe vendoset pranë të parit. Së bashku formojnë një drejtkëndësh gjashtë me katër. Njëri trekëndësh mbulon saktësisht gjysmën e drejtkëndëshit.",
+          "headline": "Dy trekëndësha të njëjtë formojnë një drejtkëndësh.",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Syprina e drejtkëndëshit është gjashtë herë katër, pra njëzet e katër. Gjysma e njëzet e katër është dymbëdhjetë. Syprina e trekëndëshit është gjysma e prodhimit të bazës me lartësinë pingule.",
+          "headline": "A = ½ × 6 × 4 = 12 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Për perimetrin përdorim gjatësitë e të tri brinjëve. Brinja e pjerrët nuk është katër centimetra: katër është lartësia pingule. Për një trekëndësh tjetër me brinjë pesë, pesë dhe gjashtë, perimetri do të ishte gjashtëmbëdhjetë centimetra.",
+          "headline": "Perimetri i trekëndëshit = shuma e tri brinjëve.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "Një trekëndësh ka bazë 10 cm dhe lartësi pingule 6 cm. Sa është syprina e tij?",
+        "answer": 30,
+        "unit": "cm²",
+        "explanation": "Drejtkëndëshi përkatës ka syprinë 60 cm². Gjysma e saj është 30 cm²."
+      }
+    },
+    {
+      "title": "Paralelogrami",
+      "shape": "parallelogram",
+      "a": 6,
+      "b": 4,
+      "accent": "#247dc0",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Paralelogrami ka dy çifte brinjësh paralele. Përfytyro një drejtkëndësh të anuar. Brinja e sipërme mbetet paralele me bazën, por brinja e pjerrët është më e gjatë se lartësia pingule.",
+          "headline": "Drejtëzat paralele ruajnë të njëjtën largësi.",
+          "seconds": 40
+        },
+        {
+          "mode": "rearrange",
+          "text": "Preje trekëndëshin e vogël në të majtë dhe zhvendose në hapësirën në të djathtë. Syprina nuk ndryshon. Pjesët tani formojnë një drejtkëndësh me të njëjtën bazë dhe lartësi.",
+          "headline": "Rivendos pjesët. Ruaj syprinën.",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Baza është gjashtë centimetra dhe lartësia pingule është katër. Baza herë lartësia japin njëzet e katër centimetra katrorë. Përdor lartësinë pingule me bazën, jo brinjën e pjerrët.",
+          "headline": "A = baza × lartësia = 24 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Për perimetrin mblidh gjatësitë e brinjëve të jashtme. Brinjët përballë janë të barabarta, prandaj perimetri është dyfishi i shumës së dy brinjëve fqinje. Lartësia përdoret për syprinën, por mund të mos jetë brinjë e kufirit.",
+          "headline": "Syprina përdor lartësinë. Perimetri përdor brinjët.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "Cila madhësi plotëson formulën A = baza × ___ për paralelogramin?",
+        "options": [
+          "Brinja e pjerrët",
+          "Lartësia pingule",
+          "Perimetri"
+        ],
+        "answer": 1,
+        "explanation": "Përdor lartësinë që formon kënd të drejtë me bazën. Brinja e pjerrët zakonisht jep syprinë të gabuar."
+      }
+    },
+    {
+      "title": "Trapezi",
+      "shape": "trapezoid",
+      "a": 8,
+      "b": 4,
+      "accent": "#a36a20",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Trapezi është një katërkëndësh me një çift brinjësh paralele. Këtu ato janë tetë centimetra dhe katër centimetra. Largësia pingule ndërmjet tyre është tre centimetra.",
+          "headline": "Brinjët paralele 8 cm dhe 4 cm · lartësia 3 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "rearrange",
+          "text": "Krijo një kopje të njëjtë dhe rrotulloje. Dy trapezet bashkohen në një paralelogram. Baza e tij është shuma e brinjëve paralele: tetë plus katër. Lartësia mbetet tre.",
+          "headline": "Dy trapeze → një paralelogram",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Mblidh brinjët paralele, shumëzo me lartësinë dhe pastaj pjesëtoje rezultatin me dy. Tetë plus katër bëjnë dymbëdhjetë. Dymbëdhjetë herë tre bëjnë tridhjetë e gjashtë. Gjysma është tetëmbëdhjetë centimetra katrorë.",
+          "headline": "A = ½ × (8 + 4) × 3 = 18 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Perimetri është përsëri rruga përgjatë çdo brinje të jashtme. Mblidh gjatësitë e të katër brinjëve. Lartësia e vizatuar brenda mat largësinë pingule; ajo nuk është domosdoshmërisht njëra prej brinjëve.",
+          "headline": "P = shuma e të katër brinjëve",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "Një trapez ka brinjë paralele 10 cm dhe 6 cm dhe lartësi 4 cm. Sa është syprina e tij?",
+        "answer": 32,
+        "unit": "cm²",
+        "explanation": "½ × (10 + 6) × 4 = 32 cm². Brenda kllapave vendosen vetëm dy brinjët paralele."
+      }
+    },
+    {
+      "title": "Rrethi",
+      "shape": "circle",
+      "a": 3,
+      "b": 3,
+      "accent": "#7961ca",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Rrethi është një vijë e lakuar e mbyllur. Rrezja lidh qendrën me një pikë të rrethit. Diametri kalon përmes qendrës dhe lidh dy pika të rrethit, prandaj është dyfishi i rrezes.",
+          "headline": "Rrezja r = 3 cm · diametri d = 6 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Perimetri i rrethit quhet edhe gjatësia e rrethit. Ai është pi herë diametri, ose dy herë pi herë rrezja. Pi është afërsisht tre presje katërmbëdhjetë.",
+          "headline": "C = 2πr ≈ 18.84 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Shiko si sektorët me ngjyra mbushin qarkun. Syprina e qarkut është pi herë rrezja në katror. Për rreze tre, llogarit fillimisht tre herë tre, që bëjnë nëntë. Pastaj shumëzo me pi për të marrë afërsisht njëzet e tetë presje njëzet e gjashtë.",
+          "headline": "A = πr² ≈ 28.26 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "Pika në lëvizje ndjek rrethin. Pjesa e ngjyrosur përfaqëson syprinën e qarkut. Mos e zëvendëso rrezen me diametrin në formulën e syprinës. Nëse e di diametrin, pjesëtoje fillimisht me dy.",
+          "headline": "r tregon rrezen, jo diametrin.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "Një rreth ka diametër 10 cm. Cila shprehje jep syprinën e qarkut?",
+        "options": [
+          "π × 10²",
+          "π × 5²",
+          "2 × π × 5"
+        ],
+        "answer": 1,
+        "explanation": "Rrezja është 5 cm, prandaj syprina është π × 5² = 25π cm². Shprehja e tretë jep gjatësinë e rrethit."
+      }
+    },
+    {
+      "title": "Bashko figurat",
+      "shape": "compound",
+      "a": 6,
+      "b": 4,
+      "accent": "#008e80",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Kjo dysheme në formën e shkronjës L mund të ndahet në dy drejtkëndësha. Përmasat e përgjithshme janë gjashtë metra me katër metra. Mungon këndi i sipërm djathtas, dy metra me dy metra.",
+          "headline": "Një mënyrë e dobishme: ndaj figurën e përbërë.",
+          "seconds": 40
+        },
+        {
+          "mode": "split",
+          "text": "Drejtkëndëshi i poshtëm është gjashtë me dy dhe ka syprinë dymbëdhjetë. Drejtkëndëshi sipër majtas është katër me dy dhe ka syprinë tetë. Ata nuk mbivendosen. Dymbëdhjetë plus tetë japin njëzet metra katrorë.",
+          "headline": "A = 12 + 8 = 20 m²",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Një mënyrë tjetër është të nisësh me një drejtkëndësh gjashtë me katër dhe të heqësh këndin që mungon, dy me dy. Njëzet e katër minus katër bëjnë njëzet. Të dyja mënyrat përshkruajnë saktësisht të njëjtën dysheme.",
+          "headline": "A = 24 − 4 = 20 m²",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Për perimetrin ndiq vetëm kufirin e jashtëm, përfshirë këndin që futet brenda. Mos numëro vijën e brendshme që përdorëm për ndarjen. Gjashtë gjatësitë e jashtme janë gjashtë, dy, dy, dy, katër dhe katër: gjithsej njëzet metra.",
+          "headline": "P = 6 + 2 + 2 + 2 + 4 + 4 = 20 m",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "Kur gjen perimetrin e një figure të përbërë, a i numëron vijat e brendshme që e ndajnë atë?",
+        "options": [
+          "Po, çdo vijë të vizatuar",
+          "Jo, vetëm kufirin e jashtëm",
+          "Vetëm vijën e brendshme më të gjatë"
+        ],
+        "answer": 1,
+        "explanation": "Vijat ndarëse të brendshme ndihmojnë për syprinën. Ato nuk janë pjesë e rrugës përgjatë kufirit."
+      }
+    },
+    {
+      "title": "Perimetër i njëjtë, syprinë e ndryshme",
+      "shape": "comparison",
+      "a": 6,
+      "b": 4,
+      "accent": "#b45087",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Këtu kemi dy drejtkëndësha: gjashtë me katër dhe tetë me dy. Përpara se të shfaqen numrat, parashiko nëse kanë perimetër të njëjtë. Ndiq me sy kufirin e secilit.",
+          "headline": "Bëj një parashikim.",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Gjashtë plus katër plus gjashtë plus katër bëjnë njëzet. Edhe tetë plus dy plus tetë plus dy bëjnë njëzet. Të dy drejtkëndëshat kanë nevojë për të njëjtën gjatësi gardhi.",
+          "headline": "Të dy perimetrat = 20 cm",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Tani numëro pllakat brenda. Gjashtë herë katër bëjnë njëzet e katër, por tetë herë dy bëjnë gjashtëmbëdhjetë. Gjatësia e njëjtë rreth figurës nuk garanton të njëjtën syprinë brenda.",
+          "headline": "Syprinat: 24 cm² dhe 16 cm²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "Kjo tregon pse forma ka rëndësi kur projekton një kopsht. Vizato një drejtkëndësh tjetër me perimetër njëzet. Provo nëntë me një. Llogarit syprinën dhe krahasoje me dy të tjerët.",
+          "headline": "Radha jote: vizato një drejtkëndësh 9 × 1.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "number",
+        "prompt": "Sa është syprina e një drejtkëndëshi 9 cm me 1 cm?",
+        "answer": 9,
+        "unit": "cm²",
+        "explanation": "9 × 1 = 9 cm². Perimetri mbetet 20 cm, por syprina është më e vogël."
+      }
+    },
+    {
+      "title": "Projekto një park të vogël",
+      "shape": "rectangle",
+      "a": 8,
+      "b": 5,
+      "accent": "#5265ec",
+      "cues": [
+        {
+          "mode": "outline",
+          "text": "Po projekton një park drejtkëndor tetë metra të gjatë dhe pesë metra të gjerë. Të duhet gardh për kufirin dhe bar për pjesën e brendshme. Vendos cila llogaritje i përket secilës punë.",
+          "headline": "Një park: 8 m × 5 m",
+          "seconds": 40
+        },
+        {
+          "mode": "perimeter",
+          "text": "Për gardhin mblidh tetë, pesë, tetë dhe pesë. Të duhen njëzet e gjashtë metra nëse rrethohet i gjithë kufiri. Një portë do ta ndryshonte sasinë e gardhit, prandaj lexoje gjithmonë me kujdes problemin.",
+          "headline": "Gardhi: P = 2 × (8 + 5) = 26 m",
+          "seconds": 40
+        },
+        {
+          "mode": "area",
+          "text": "Për barin shumëzo tetë me pesë. Të duhen dyzet metra katrorë. Vër re se metrat dhe metrat katrorë të tregojnë llojin e madhësisë që llogarite.",
+          "headline": "Bari: A = 8 × 5 = 40 m²",
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "text": "Tani njeh figurat. Ndiq brinjët për perimetrin. Mbulo ose rivendos pjesët për syprinën. Kontrollo njësitë dhe përdor lartësitë pingule. Rrezja është gjysma e diametrit. Shpjego një formulë me fjalët e tua para pyetjes së fundit.",
+          "headline": "Ndiq kufirin. Mbulo brendësinë. Kontrollo njësitë.",
+          "seconds": 40
+        }
+      ],
+      "question": {
+        "type": "choice",
+        "prompt": "Cila listë blerjesh është e saktë për të gjithë parkun 8 m × 5 m?",
+        "options": [
+          "40 m gardh; 26 m² bar",
+          "26 m gardh; 40 m² bar",
+          "26 m² gardh; 40 m bar"
+        ],
+        "answer": 1,
+        "explanation": "Gardhi ndjek kufirin 26 m; bari mbulon pjesën e brendshme me syprinë 40 m²."
+      }
+    }
+  ],
+  "language": "sq",
+  "ui": {
+    "Around & inside · Axognition": "Rreth dhe brenda · Axognition",
+    "Around & inside": "Rreth dhe brenda",
+    "Math": "Matematikë",
+    "Subject": "Lënda",
+    "Lesson subject": "Lënda e mësimit",
+    "Perimeter + area": "Perimetri + syprina",
+    "Choose chapter": "Zgjidh kapitullin",
+    "Chapters": "Kapitujt",
+    "MATHEMATICS • SHAPE LAB": "MATEMATIKË • LABORATORI I FIGURAVE",
+    "About 30 min · at your pace": "Rreth 30 min · me ritmin tënd",
+    "Animated lesson stage": "Figurat e animuara të mësimit",
+    "Animated geometric shapes": "Figura gjeometrike të animuara",
+    "WATCH & DISCOVER": "SHIKO DHE ZBULO",
+    "Voice Speed": "Shpejtësia e zërit",
+    "Narration speed": "Shpejtësia e narracionit",
+    "Voice speed, ": "Shpejtësia e zërit, ",
+    " times": " herë",
+    "A new way to see shapes.": "Një mënyrë e re për të parë figurat.",
+    "Trace the outside. Discover the inside.": "Ndiq kufirin. Zbulo brendësinë.",
+    "Side length": "Gjatësia e brinjës",
+    "YOUR GUIDE": "UDHËZUESI YT",
+    "Ready when you are": "Gati kur të jesh ti",
+    "Explore perimeter and area through moving shapes, colour, and a little curiosity.": "Eksploro perimetrin dhe syprinën përmes figurave në lëvizje, ngjyrave dhe kureshtjes.",
+    "A VISUAL MATHEMATICS JOURNEY": "NJË UDHËTIM PAMOR NË MATEMATIKË",
+    "Around.": "Rreth.",
+    "And inside.": "Dhe brenda.",
+    "Watch edges glow and shapes become tiles.": "Shiko si ndriçojnë brinjët dhe figurat mbushen me pllaka.",
+    "Then put your ideas to the test.": "Pastaj provo njohuritë e tua.",
+    "Start exploring": "Fillo eksplorimin",
+    "10 chapters · narrated scenes · interactive checkpoints": "10 kapituj · shpjegime me zë · pyetje ndërvepruese",
+    "YOUR TURN": "RADHA JOTE",
+    "Continue →": "Vazhdo →",
+    "LOOK WHAT YOU LEARNED": "SHIKO ÇFARË MËSOVE",
+    "You've got shape sense.": "Tani i kupton figurat.",
+    "Perimeter follows the edge. Area covers the inside.": "Perimetri ndjek kufirin. Syprina mat pjesën e brendshme.",
+    "Finish": "Përfundo",
+    "Review chapters": "Përsërit kapitujt",
+    "Previous scene": "Pamja e mëparshme",
+    "Play": "Luaj",
+    "Pause": "Ndalo",
+    "Next scene": "Pamja tjetër",
+    "Skip to next scene": "Kalo te pamja tjetër",
+    "Next →": "Tjetra →",
+    "Next · ": "Tjetra · ",
+    "Next scene available in ": "Pamja tjetër hapet pas ",
+    " seconds": " sekondash",
+    "Scene ": "Pamja ",
+    " of 4": " nga 4",
+    "Scene 1 of 4": "Pamja 1 nga 4",
+    "Lesson playback progress": "Ecuria e mësimit",
+    "0 / 10 checkpoints": "0 / 10 pyetje",
+    " / 10 checkpoints": " / 10 pyetje",
+    "Replay narration": "Përsërit narracionin",
+    "Replay voice": "Përsërit zërin",
+    "Sound on": "Zëri aktiv",
+    "Sound off": "Zëri i fikur",
+    "Your journey": "Udhëtimi yt",
+    "Close chapters": "Mbyll kapitujt",
+    "Restart this unit": "Rifillo këtë njësi",
+    "Progress is saved on this device. Guided time includes exploring and answering.": "Ecuria ruhet në këtë pajisje. Koha përfshin eksplorimin dhe përgjigjet.",
+    "Could not save completion. Please try Finish again.": "Përfundimi nuk u ruajt. Provo përsëri butonin Përfundo.",
+    "Storage is unavailable; keep this page open to retain your progress.": "Ruajtja nuk është e disponueshme; mbaje hapur faqen për të ruajtur ecurinë.",
+    "Explore the model": "Eksploro modelin",
+    "Read along": "Lexo tekstin",
+    "Narration is unavailable. Captions remain available; check that an English voice is installed.": "Narracioni nuk është i disponueshëm. Teksti mbetet i lexueshëm; kontrollo nëse është instaluar një zë në shqip.",
+    "Captions on": "Teksti aktiv",
+    "Speaking…": "Duke folur…",
+    "MEET THE SHAPE": "NJIHE FIGURËN",
+    "TRACE THE BOUNDARY": "NDIQ KUFIRIN",
+    "COVER THE INSIDE": "MBULO BRENDËSINË",
+    "SPLIT & DISCOVER": "NDAJ DHE ZBULO",
+    "MOVE THE PIECES": "LËVIZ PJESËT",
+    "MAKE A CONNECTION": "GJEJ LIDHJEN",
+    "THINK IT THROUGH": "MENDOJE ME KUJDES",
+    "Exactly. ": "Saktë. ",
+    "Let’s check that. ": "Le ta kontrollojmë. ",
+    "Your answer in ": "Përgjigjja jote në ",
+    "Check answer": "Kontrollo përgjigjen",
+    "All ten checkpoints completed. Well done!": "I përfundove të dhjeta pyetjet. Të lumtë!",
+    " of ten checkpoints completed. Revisit the remaining chapters to finish your journey.": " nga dhjetë pyetje të përfunduara. Kthehu te kapitujt e mbetur për ta përfunduar udhëtimin.",
+    "Could not finish. Please try again.": "Nuk mund të përfundohej. Provo përsëri.",
+    "Finished ✓": "Përfunduar ✓",
+    "Lecture finished. Your completion is saved on this device.": "Mësimi përfundoi. Përfundimi yt ruhet në këtë pajisje.",
+    "Restart this unit and clear its saved checkpoints?": "Ta rifilloj këtë njësi dhe t'i fshij përgjigjet e ruajtura?",
+    "Could not reset completion. Please try again.": "Përfundimi nuk mund të rivendosej. Provo përsëri.",
+    "Resume exploring ▶": "Vazhdo eksplorimin ▶",
+    "Review lecture ▶": "Përsërit mësimin ▶",
+    "The lesson could not load": "Mësimi nuk mund të ngarkohej",
+    "Check your server connection, then reload. ": "Kontrollo lidhjen me serverin dhe ringarko faqen. ",
+    "base = 6 cm": "baza = 6 cm",
+    "height = 4 cm": "lartësia = 4 cm",
+    "sloping side ≈ 7.21 cm": "brinja e pjerrët ≈ 7,21 cm",
+    "side ≈ 4.47 cm": "brinja ≈ 4,47 cm",
+    "matching copy": "kopje e njëjtë"
+  }
+}

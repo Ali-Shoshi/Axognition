@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -136,11 +138,11 @@ fun PracticeScreen(onBack: () -> Unit) {
                                 practiceViewModel.currentFolder = prev
                             }) {
                                 // Fixed: Updated to AutoMirrored ArrowBack
-                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back"))
                             }
                         }
                         Text(
-                            text = currentFolder.name,
+                            text = if (currentFolder.id == "root" || currentFolder.id == "f1") tr(currentFolder.name) else currentFolder.name,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -155,13 +157,13 @@ fun PracticeScreen(onBack: () -> Unit) {
                     OutlinedButton(onClick = { showCreateFolderDialog = true }) {
                         Icon(Icons.Default.CreateNewFolder, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("New Folder")
+                        Text(tr("New Folder"))
                     }
                     OutlinedButton(onClick = { showCreateFileDialog = true }) {
                         // Fixed: Updated to AutoMirrored NoteAdd
                         Icon(Icons.AutoMirrored.Filled.NoteAdd, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("New Note")
+                        Text(tr("New Note"))
                     }
                 }
 
@@ -203,7 +205,7 @@ fun PracticeScreen(onBack: () -> Unit) {
                                 )
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Text(
-                                    text = item.name,
+                                    text = if (item.id == "f1") tr(item.name) else item.name,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Medium
                                 )
@@ -219,12 +221,12 @@ fun PracticeScreen(onBack: () -> Unit) {
     if (showCreateFolderDialog) {
         AlertDialog(
             onDismissRequest = { showCreateFolderDialog = false },
-            title = { Text("Create New Folder") },
+            title = { Text(tr("Create New Folder")) },
             text = {
                 OutlinedTextField(
                     value = newEntityName,
                     onValueChange = { newEntityName = it },
-                    placeholder = { Text("Folder Name") }
+                    placeholder = { Text(tr("Folder Name")) }
                 )
             },
             confirmButton = {
@@ -234,10 +236,10 @@ fun PracticeScreen(onBack: () -> Unit) {
                         newEntityName = ""
                         showCreateFolderDialog = false
                     }
-                }) { Text("Create") }
+                }) { Text(tr("Create")) }
             },
             dismissButton = {
-                TextButton(onClick = { showCreateFolderDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showCreateFolderDialog = false }) { Text(tr("Cancel")) }
             }
         )
     }
@@ -245,12 +247,12 @@ fun PracticeScreen(onBack: () -> Unit) {
     if (showCreateFileDialog) {
         AlertDialog(
             onDismissRequest = { showCreateFileDialog = false },
-            title = { Text("Create New Note") },
+            title = { Text(tr("Create New Note")) },
             text = {
                 OutlinedTextField(
                     value = newEntityName,
                     onValueChange = { newEntityName = it },
-                    placeholder = { Text("Note Name (e.g. Physics.txt)") }
+                    placeholder = { Text(tr("Note Name (e.g. Physics.txt)")) }
                 )
             },
             confirmButton = {
@@ -261,10 +263,10 @@ fun PracticeScreen(onBack: () -> Unit) {
                         newEntityName = ""
                         showCreateFileDialog = false
                     }
-                }) { Text("Create") }
+                }) { Text(tr("Create")) }
             },
             dismissButton = {
-                TextButton(onClick = { showCreateFileDialog = false }) { Text("Cancel") }
+                TextButton(onClick = { showCreateFileDialog = false }) { Text(tr("Cancel")) }
             }
         )
     }
@@ -330,15 +332,15 @@ fun NoteEditorScreen(note: FileSystemItem.NoteFile, onBack: () -> Unit) {
                 title = {
                     Column {
                         Text(note.name, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(if (isDrawing) "Drawing board" else "Text note", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(tr(if (isDrawing) "Drawing board" else "Text note"), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 },
-                navigationIcon = { IconButton(onClick = ::saveAndExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Save and go back") } },
+                navigationIcon = { IconButton(onClick = ::saveAndExit) { Icon(Icons.AutoMirrored.Filled.ArrowBack, tr("Save and go back")) } },
                 actions = {
                     IconButton(onClick = { isDrawing = !isDrawing; note.isDrawingMode = isDrawing }) {
-                        Icon(if (isDrawing) Icons.Default.Keyboard else Icons.Default.Edit, if (isDrawing) "Switch to typing" else "Switch to drawing")
+                        Icon(if (isDrawing) Icons.Default.Keyboard else Icons.Default.Edit, tr(if (isDrawing) "Switch to typing" else "Switch to drawing"))
                     }
-                    IconButton(onClick = ::saveAndExit) { Icon(Icons.Default.Check, "Save note") }
+                    IconButton(onClick = ::saveAndExit) { Icon(Icons.Default.Check, tr("Save note")) }
                 }
             )
         }
@@ -376,7 +378,7 @@ fun NoteEditorScreen(note: FileSystemItem.NoteFile, onBack: () -> Unit) {
                         value = textContent,
                         onValueChange = { textContent = it; note.textContent = it },
                         modifier = Modifier.fillMaxSize().padding(8.dp),
-                        placeholder = { Text("Start writing your note…") },
+                        placeholder = { Text(tr("Start writing your note…")) },
                         colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Color.Transparent, unfocusedBorderColor = Color.Transparent)
                     )
                 } else {
@@ -444,7 +446,7 @@ fun NoteEditorScreen(note: FileSystemItem.NoteFile, onBack: () -> Unit) {
                             shape = RoundedCornerShape(20.dp),
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                         ) {
-                            Text("${paths.size} strokes", Modifier.padding(horizontal = 10.dp, vertical = 5.dp), style = MaterialTheme.typography.labelSmall)
+                            Text(tr("${paths.size} strokes"), Modifier.padding(horizontal = 10.dp, vertical = 5.dp), style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
@@ -455,12 +457,12 @@ fun NoteEditorScreen(note: FileSystemItem.NoteFile, onBack: () -> Unit) {
     if (showClearDrawingDialog) {
         AlertDialog(
             onDismissRequest = { showClearDrawingDialog = false },
-            title = { Text("Clear drawing?") },
-            text = { Text("This removes all strokes from this page.") },
+            title = { Text(tr("Clear drawing?")) },
+            text = { Text(tr("This removes all strokes from this page.")) },
             confirmButton = {
-                TextButton(onClick = { paths.clear(); redoPaths.clear(); activeStroke = null; persistDrawing(); showClearDrawingDialog = false }) { Text("Clear") }
+                TextButton(onClick = { paths.clear(); redoPaths.clear(); activeStroke = null; persistDrawing(); showClearDrawingDialog = false }) { Text(tr("Clear")) }
             },
-            dismissButton = { TextButton(onClick = { showClearDrawingDialog = false }) { Text("Cancel") } }
+            dismissButton = { TextButton(onClick = { showClearDrawingDialog = false }) { Text(tr("Cancel")) } }
         )
     }
 }
@@ -492,12 +494,12 @@ private fun DrawingTools(
         ) {
             item {
                 IconButton(onClick = onUndo, enabled = canUndo, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Undo, "Undo", modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Undo, tr("Undo"), modifier = Modifier.size(20.dp))
                 }
             }
             item {
                 IconButton(onClick = onRedo, enabled = canRedo, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Redo, "Redo", modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.Redo, tr("Redo"), modifier = Modifier.size(20.dp))
                 }
             }
             items(colors) { color ->
@@ -541,11 +543,11 @@ private fun DrawingTools(
                 Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
                     Row(Modifier.padding(horizontal = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { onStrokeWidthChanged((strokeWidth - 2f).coerceAtLeast(2f)) }, modifier = Modifier.size(32.dp)) {
-                            Icon(Icons.Default.Remove, "Decrease pen size", modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Remove, tr("Decrease pen size"), modifier = Modifier.size(18.dp))
                         }
-                        Text("${strokeWidth.toInt()}", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
+                        Text(tr("${strokeWidth.toInt()}"), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium)
                         IconButton(onClick = { onStrokeWidthChanged((strokeWidth + 2f).coerceAtMost(72f)) }, modifier = Modifier.size(32.dp)) {
-                            Icon(Icons.Default.Add, "Increase pen size", modifier = Modifier.size(18.dp))
+                            Icon(Icons.Default.Add, tr("Increase pen size"), modifier = Modifier.size(18.dp))
                         }
                     }
                 }
@@ -556,7 +558,7 @@ private fun DrawingTools(
                         modifier = Modifier.width(176.dp).padding(horizontal = 9.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("${strokeWidth.toInt()}", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        Text(tr("${strokeWidth.toInt()}"), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
                         Slider(
                             value = strokeWidth,
                             onValueChange = onStrokeWidthChanged,
@@ -568,7 +570,7 @@ private fun DrawingTools(
             }
             item {
                 IconButton(onClick = onClear, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.DeleteSweep, "Clear drawing", tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                    Icon(Icons.Default.DeleteSweep, tr("Clear drawing"), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                 }
             }
         }
@@ -586,7 +588,7 @@ private fun CompactDrawingToolButton(selected: Boolean, onClick: () -> Unit, ico
     ) {
         Icon(
             icon,
-            description,
+            tr(description),
             modifier = Modifier.size(19.dp),
             tint = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
         )

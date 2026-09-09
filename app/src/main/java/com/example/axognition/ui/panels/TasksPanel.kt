@@ -1,5 +1,7 @@
 package com.example.axognition.ui.panels
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -89,23 +91,23 @@ fun TasksPanelScreen(onBack: () -> Unit) {
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                 ) {
                     Column(Modifier.padding(20.dp)) {
-                        Text("TODAY'S PLAN", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                        Text(tr("TODAY'S PLAN"), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            if (remaining == 0) "Everything is complete!" else "$remaining task${if (remaining == 1) "" else "s"} left",
+                            tr(if (remaining == 0) "Everything is complete!" else "$remaining task${if (remaining == 1) "" else "s"} left"),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
                         Spacer(Modifier.height(14.dp))
                         LinearProgressIndicator(progress = { completion }, modifier = Modifier.fillMaxWidth())
                         Spacer(Modifier.height(8.dp))
-                        Text("${completedIds.size} of ${todayTasks.size} completed", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        Text(tr("${completedIds.size} of ${todayTasks.size} completed"), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     }
                 }
             }
 
             item {
-                Text("Your agenda", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp, bottom = 2.dp))
+                Text(tr("Your agenda"), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 4.dp, bottom = 2.dp))
             }
 
             items(todayTasks, key = { it.id }) { task ->
@@ -137,15 +139,15 @@ private fun DailyTaskCard(task: DailyTask, complete: Boolean, onToggle: () -> Un
             }
             Spacer(Modifier.width(13.dp))
             Column(Modifier.weight(1f)) {
-                Text(task.time.uppercase(), style = MaterialTheme.typography.labelSmall, color = task.kind.tint, fontWeight = FontWeight.Bold)
-                Text(task.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = if (complete) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
-                Text(task.detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr(task.time.uppercase()), style = MaterialTheme.typography.labelSmall, color = task.kind.tint, fontWeight = FontWeight.Bold)
+                Text(tr(task.title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = if (complete) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
+                Text(tr(task.detail), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(3.dp))
-                Text(task.duration, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr(task.duration), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Icon(
                 imageVector = if (complete) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
-                contentDescription = if (complete) "Mark incomplete" else "Mark complete",
+                contentDescription = tr(if (complete) "Mark incomplete" else "Mark complete"),
                 tint = if (complete) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(26.dp)
             )

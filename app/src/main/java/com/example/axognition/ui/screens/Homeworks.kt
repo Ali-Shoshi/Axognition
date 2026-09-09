@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -79,7 +81,7 @@ fun HomeworksScreen(onBack: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = selectedCategory?.title ?: "Homework Hub",
+                    text = tr(selectedCategory?.title ?: "Homework Hub"),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
@@ -118,7 +120,7 @@ fun HomeworksScreen(onBack: () -> Unit) {
             if (selectedCategory == null) {
                 // --- CATEGORY SELECTION HUB (2 Options) ---
                 Text(
-                    text = "Select Category",
+                    text = tr("Select Category"),
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.SemiBold
@@ -172,14 +174,14 @@ fun HomeworksScreen(onBack: () -> Unit) {
 
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = category.title,
+                                        text = tr(category.title),
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 18.sp,
                                         maxLines = 1
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = category.description,
+                                        text = tr(category.description),
                                         fontSize = 13.sp,
                                         color = MaterialTheme.colorScheme.secondary,
                                         maxLines = 1,
@@ -187,7 +189,7 @@ fun HomeworksScreen(onBack: () -> Unit) {
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Text(
-                                        text = "$pendingCount pending tasks ($count total)",
+                                        text = tr("$pendingCount pending tasks ($count total)"),
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.primary
@@ -209,7 +211,7 @@ fun HomeworksScreen(onBack: () -> Unit) {
                 val displayedHomeworks = homeworkList.filter { it.category == selectedCategory }
 
                 Text(
-                    text = "Assignments & Labs",
+                    text = tr("Assignments & Labs"),
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight.SemiBold
@@ -225,7 +227,7 @@ fun HomeworksScreen(onBack: () -> Unit) {
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No homework assignments found here.",
+                            text = tr("No homework assignments found here."),
                             color = MaterialTheme.colorScheme.outline,
                             fontSize = 15.sp
                         )
@@ -263,14 +265,14 @@ fun HomeworksScreen(onBack: () -> Unit) {
 fun SummaryStatItem(label: String, value: String, color: androidx.compose.ui.graphics.Color) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
-            text = value,
+            text = tr(value),
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             color = color
         )
         Spacer(modifier = Modifier.height(2.dp))
         Text(
-            text = label,
+            text = tr(label),
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.secondary
         )
@@ -299,7 +301,7 @@ fun HomeworkCard(homework: HomeworkItem, onToggleComplete: () -> Unit) {
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = homework.title,
+                    text = tr(homework.title),
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
                     maxLines = 1,
@@ -307,7 +309,7 @@ fun HomeworkCard(homework: HomeworkItem, onToggleComplete: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = homework.dueDate,
+                    text = tr(homework.dueDate),
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -322,7 +324,7 @@ fun HomeworkCard(homework: HomeworkItem, onToggleComplete: () -> Unit) {
                     color = MaterialTheme.colorScheme.primaryContainer
                 ) {
                     Text(
-                        text = "Grade: ${homework.grade}",
+                        text = tr("Grade: ${homework.grade}"),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
@@ -335,7 +337,7 @@ fun HomeworkCard(homework: HomeworkItem, onToggleComplete: () -> Unit) {
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Text(
-                        text = "Pending",
+                        text = tr("Pending"),
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -180,11 +182,11 @@ fun ExercisesScreen(onBack: () -> Unit) {
                         }
                     }
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = playingCardioVideo!!.videoTitle, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "Duration: ${playingCardioVideo!!.duration}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = tr(playingCardioVideo!!.videoTitle), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = tr("Duration: ${playingCardioVideo!!.duration}"), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(onClick = { playingCardioVideo = null }) {
-                        Text("Close Video")
+                        Text(tr("Close Video"))
                     }
                 }
             }
@@ -200,11 +202,11 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedMuscle = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Muscles")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back to Muscles"))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedMuscle!!.exercise.name,
+                        text = tr(selectedMuscle!!.exercise.name),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -218,14 +220,14 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        Text(text = "Overview", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
+                        Text(text = tr("Overview"), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = selectedMuscle!!.exercise.description, fontSize = 14.sp)
+                        Text(text = tr(selectedMuscle!!.exercise.description), fontSize = 14.sp)
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(text = "Form & Technique Tips", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
+                        Text(text = tr("Form & Technique Tips"), fontWeight = FontWeight.Bold, fontSize = 16.sp, color = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(text = selectedMuscle!!.exercise.tips, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(text = tr(selectedMuscle!!.exercise.tips), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
@@ -241,21 +243,21 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedSport = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Sports")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back to Sports"))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedSport!!.name,
+                        text = tr(selectedSport!!.name),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = selectedSport!!.description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = tr(selectedSport!!.description), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(text = "Select Target Muscle Group:", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                Text(text = tr("Select Target Muscle Group:"), fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(8.dp))
 
                 LazyColumn(
@@ -277,9 +279,9 @@ fun ExercisesScreen(onBack: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = muscle.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(text = tr(if (muscle.name == "Back") "Back muscles" else muscle.name), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(text = "Featured: ${muscle.exercise.name}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(text = tr("Featured: ${tr(muscle.exercise.name)}"), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -299,18 +301,18 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedCardio = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Cardio List")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back to Cardio List"))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = selectedCardio!!.name,
+                        text = tr(selectedCardio!!.name),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = selectedCardio!!.description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = tr(selectedCardio!!.description), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyColumn(
@@ -324,14 +326,14 @@ fun ExercisesScreen(onBack: () -> Unit) {
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text(text = "Pros", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text(text = tr("Pros"), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                                 selectedCardio!!.pros.forEach { pro ->
-                                    Text(text = "• $pro", fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
+                                    Text(text = "• ${tr(pro)}", fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
                                 }
                                 Spacer(modifier = Modifier.height(12.dp))
-                                Text(text = "Cons", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                                Text(text = tr("Cons"), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
                                 selectedCardio!!.cons.forEach { con ->
-                                    Text(text = "• $con", fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
+                                    Text(text = "• ${tr(con)}", fontSize = 13.sp, modifier = Modifier.padding(top = 2.dp))
                                 }
                             }
                         }
@@ -344,7 +346,7 @@ fun ExercisesScreen(onBack: () -> Unit) {
                         ) {
                             Icon(imageVector = Icons.Default.PlayCircle, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Watch Guidance Video")
+                            Text(tr("Watch Guidance Video"))
                         }
                     }
                 }
@@ -358,13 +360,13 @@ fun ExercisesScreen(onBack: () -> Unit) {
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Sports & Fitness",
+                    text = tr("Sports & Fitness"),
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "Explore strength training and cardio routines",
+                    text = tr("Explore strength training and cardio routines"),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -374,12 +376,12 @@ fun ExercisesScreen(onBack: () -> Unit) {
                     Tab(
                         selected = currentTab == 0,
                         onClick = { currentTab = 0 },
-                        text = { Text("Sports & Muscles") }
+                        text = { Text(tr("Sports & Muscles")) }
                     )
                     Tab(
                         selected = currentTab == 1,
                         onClick = { currentTab = 1 },
-                        text = { Text("Cardio Library") }
+                        text = { Text(tr("Cardio Library")) }
                     )
                 }
 
@@ -406,9 +408,9 @@ fun ExercisesScreen(onBack: () -> Unit) {
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(text = sport.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                            Text(text = tr(sport.name), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                             Spacer(modifier = Modifier.height(4.dp))
-                                            Text(text = sport.description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(text = tr(sport.description), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                         Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                                     }
@@ -436,9 +438,9 @@ fun ExercisesScreen(onBack: () -> Unit) {
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(text = cardio.name, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                                            Text(text = tr(cardio.name), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                             Spacer(modifier = Modifier.height(4.dp))
-                                            Text(text = cardio.description, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text(text = tr(cardio.description), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                         Icon(imageVector = Icons.Default.FitnessCenter, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                                     }

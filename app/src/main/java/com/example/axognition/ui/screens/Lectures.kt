@@ -1,6 +1,9 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.activity.compose.BackHandler
+import android.content.SharedPreferences
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +17,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import com.example.axognition.data.LectureProgressStore
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,6 +46,16 @@ data class Subject(
 
 @Composable
 fun LecturesScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    val progress = remember(context) { LectureProgressStore(context) }
+    var completedLectures by remember { mutableStateOf(progress.completedLectures()) }
+    DisposableEffect(progress) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+            completedLectures = progress.completedLectures()
+        }
+        progress.preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose { progress.preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
     var selectedSubject by remember { mutableStateOf<Subject?>(null) }
     var selectedUnit by remember { mutableStateOf<UnitData?>(null) }
     var playingVideo by remember { mutableStateOf<VideoLecture?>(null) }
@@ -61,6 +76,8 @@ fun LecturesScreen(onBack: () -> Unit) {
     val unit = selectedUnit
     val video = playingVideo
     when {
+        video?.id == "geometry" -> GeometryLesson(onBack = { playingVideo = null })
+        video?.id == "fractions" -> FractionsLesson(onBack = { playingVideo = null })
         video != null -> {
             // Video Player Simulation Screen
             Box(
@@ -87,11 +104,11 @@ fun LecturesScreen(onBack: () -> Unit) {
                         }
                     }
                     Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = video.title, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text(text = "Duration: ${video.duration}", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(text = tr(video.title), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(text = tr("Duration: ${video.duration}"), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(32.dp))
                     Button(onClick = { playingVideo = null }) {
-                        Text("Close Video")
+                        Text(tr("Close Video"))
                     }
                 }
             }
@@ -108,11 +125,11 @@ fun LecturesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedUnit = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Units")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back to Units"))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = unit.title,
+                        text = tr(unit.title),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -120,7 +137,7 @@ fun LecturesScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "${unit.lectures.size} lectures available",
+                    text = tr("${unit.lectures.size} lectures available"),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -152,9 +169,12 @@ fun LecturesScreen(onBack: () -> Unit) {
                                 )
                                 Spacer(modifier = Modifier.width(16.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = lecture.title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                    Text(text = tr(lecture.title), fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text(text = lecture.duration, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Text(text = tr(lecture.duration), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    if (lecture.id in completedLectures) {
+                                        Text(tr("Finished ✓"), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                                    }
                                 }
                             }
                         }
@@ -174,11 +194,11 @@ fun LecturesScreen(onBack: () -> Unit) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { selectedSubject = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back to Subjects")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = tr("Back to Subjects"))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = subject.name,
+                        text = tr(subject.name),
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -186,7 +206,7 @@ fun LecturesScreen(onBack: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = "Select a unit to view lectures:",
+                    text = tr("Select a unit to view lectures:"),
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -211,13 +231,16 @@ fun LecturesScreen(onBack: () -> Unit) {
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = unit.title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                    Text(text = tr(unit.title), fontWeight = FontWeight.Bold, fontSize = 16.sp)
                                     Spacer(modifier = Modifier.height(4.dp))
                                     Text(
-                                        text = "${unit.lectures.size} video lectures",
+                                        text = tr("${unit.lectures.size} video lectures"),
                                         fontSize = 13.sp,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
+                                    if (unit.lectures.isNotEmpty() && unit.lectures.all { it.id in completedLectures }) {
+                                        Text(tr("Finished ✓"), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.SemiBold)
+                                    }
                                 }
                                 Icon(
                                     imageVector = Icons.Default.ArrowForward,
@@ -230,6 +253,6 @@ fun LecturesScreen(onBack: () -> Unit) {
                 }
             }
         }
-        else -> LectureCollections(onSubject = { selectedSubject = it })
+        else -> LectureCollections(completedLectures = completedLectures, onSubject = { selectedSubject = it })
     }
 }

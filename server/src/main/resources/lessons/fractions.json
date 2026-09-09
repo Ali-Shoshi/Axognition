@@ -1,0 +1,210 @@
+{
+  "id": "fractions",
+  "version": 1,
+  "title": "Fractions: share, see, solve",
+  "subject": "Mathematics",
+  "targetMinutes": 30,
+  "description": "An introductory guided unit; 30 minutes includes narration, exploration and checkpoints.",
+  "chapters": [
+    {
+      "title": "Fair shares",
+      "numerator": 1,
+      "denominator": 2,
+      "seconds": 180,
+      "scenes": [
+        "A fraction begins with a whole. Imagine one sandwich shared by two friends. To share fairly, each friend must receive the same amount. Cut the sandwich into two equal parts. Each part is one half. Equal means the pieces have the same size, even if you turn them around. Two pieces of different sizes are not halves.",
+        "Count the two spaces in the model. One is coloured. Trace the whole rectangle with your finger, then trace only the coloured part. The coloured part is one of two equal parts. Say: one half. Now imagine colouring the other part too. Two halves rebuild one whole.",
+        "Look away and imagine sharing a pancake. Where would you cut it to make two equal shares? Explain your idea aloud. You can rotate the cut, but each person must still get the same amount. Spend this practice time finding two different ways to make halves."
+      ],
+      "question": "Which sharing makes halves?",
+      "options": [
+        "Two equal parts",
+        "Two unequal parts",
+        "Three equal parts"
+      ],
+      "answer": 0,
+      "feedback": "Halves are exactly two equal parts of the same whole.",
+      "visual": "strip"
+    },
+    {
+      "title": "Reading fractions",
+      "numerator": 3,
+      "denominator": 4,
+      "seconds": 180,
+      "scenes": [
+        "This whole is split into four equal parts. Three parts are coloured. We write three quarters as three over four. The bottom number, four, is the denominator. It tells us how many equal parts make the whole. The top number, three, is the numerator. It counts the parts we are talking about.",
+        "Point to all four parts as you count one, two, three, four. Then point only to the three coloured parts. The denominator counts every equal part, not just the uncoloured ones. Three coloured parts out of four altogether is three quarters.",
+        "Say the numerator and denominator aloud. Now draw four equal boxes on paper and shade three. Write three over four underneath. Imagine shading just one instead. The denominator stays four because the whole still has four equal parts."
+      ],
+      "question": "In 3/4, what does 4 tell us?",
+      "options": [
+        "Four coloured parts",
+        "Four equal parts in the whole",
+        "Four separate wholes"
+      ],
+      "answer": 1,
+      "feedback": "The denominator counts all equal parts in one whole.",
+      "visual": "strip"
+    },
+    {
+      "title": "Unit fractions",
+      "numerator": 1,
+      "denominator": 6,
+      "seconds": 180,
+      "scenes": [
+        "A unit fraction has a numerator of one. One half, one third, one quarter and one sixth are unit fractions. Each names one equal part of a whole. Our strip shows one sixth. It takes six pieces of that size to rebuild the whole strip.",
+        "Keep the whole the same size. If two friends share it equally, each gets one half. If six friends share it equally, each gets one sixth. More equal shares make each share smaller. A larger denominator does not automatically mean a larger fraction.",
+        "Use the slider to explore different numbers of equal shares. Watch the single coloured share shrink as the denominator grows. Predict the size before you move the slider. Then describe why one quarter is smaller than one half when their wholes are equal."
+      ],
+      "question": "For equal-sized wholes, which is larger?",
+      "options": [
+        "1/6",
+        "They are equal",
+        "1/2"
+      ],
+      "answer": 2,
+      "feedback": "A half is larger: dividing the same whole into fewer equal shares makes each share bigger.",
+      "visual": "strip"
+    },
+    {
+      "title": "Fractions on a number line",
+      "numerator": 3,
+      "denominator": 4,
+      "seconds": 180,
+      "scenes": [
+        "Fractions are numbers. On a number line, zero means none of the whole and one means the complete whole. Divide the distance from zero to one into four equal intervals. The first step is one quarter, the second is two quarters and the third is three quarters.",
+        "Notice that four intervals need five boundary marks, including zero and one. We count spaces, not marks. The point at three quarters sits three equal steps after zero. Four quarters reaches one exactly.",
+        "Follow the moving marker. Point halfway between zero and one: that is one half, also called two quarters. Explain why three quarters lies after one half but before one. Try drawing your own number line with four equal spaces."
+      ],
+      "question": "Where is 3/4?",
+      "options": [
+        "Between 0 and 1/2",
+        "Between 1/2 and 1",
+        "After 1"
+      ],
+      "answer": 1,
+      "feedback": "Three quarter-steps travel farther than halfway but do not reach one whole.",
+      "visual": "line"
+    },
+    {
+      "title": "Equivalent fractions",
+      "numerator": 2,
+      "denominator": 4,
+      "seconds": 180,
+      "scenes": [
+        "Different fraction names can describe the same amount. One half and two quarters are equivalent. Imagine cutting each half into two smaller equal pieces. There are now four pieces in the whole, and the coloured half contains two of them. No extra food was added.",
+        "Compare the two strips. Their coloured lengths match exactly. One out of two becomes two out of four. To make an equivalent fraction, multiply the numerator and denominator by the same non-zero number. Both counts change together.",
+        "Fold a paper strip in half and shade one half. Fold it again so there are four equal sections. Count the shaded sections without adding colour. Then imagine folding again to make eight sections. Four eighths still covers the same half."
+      ],
+      "question": "Which fraction equals 1/2?",
+      "options": [
+        "2/4",
+        "1/4",
+        "2/3"
+      ],
+      "answer": 0,
+      "feedback": "Two of four equal parts cover the same amount as one of two equal parts.",
+      "visual": "equivalent"
+    },
+    {
+      "title": "Compare like denominators",
+      "numerator": 5,
+      "denominator": 8,
+      "seconds": 180,
+      "scenes": [
+        "When two fractions have the same denominator, their pieces are the same size if the wholes are the same size. To compare three eighths and five eighths, count the selected pieces. Five pieces of the same size is more than three.",
+        "The strip contains eight equal parts. Five are coloured. Imagine covering the last two coloured parts: only three eighths remains. Putting those two pieces back increases the amount without changing the size of each piece.",
+        "Use your hands to show three and five. Say: five eighths is greater than three eighths because five equal eighths is more than three equal eighths. Do not compare models made from different-sized wholes without checking what each whole represents."
+      ],
+      "question": "Which is greater?",
+      "options": [
+        "3/8",
+        "5/8",
+        "They are equal"
+      ],
+      "answer": 1,
+      "feedback": "With equal wholes and equal denominators, the larger numerator represents more.",
+      "visual": "strip"
+    },
+    {
+      "title": "Adding equal-sized parts",
+      "numerator": 3,
+      "denominator": 8,
+      "seconds": 180,
+      "scenes": [
+        "You eat one eighth of a melon, then two more eighths. How much have you eaten? Count the equal pieces: one plus two is three. You ate three eighths. We add the numerators because they count pieces of the same size.",
+        "The denominator stays eight. Adding pieces does not cut the melon into a new number of equal parts. One eighth plus two eighths is three eighths, not three sixteenths. Watch the first coloured piece appear, then two more join it.",
+        "Draw eight equal boxes. Shade one in blue and two more in another colour. Count all shaded boxes. Explain why the boxes did not change size when you added. Now try two eighths plus three eighths on your paper."
+      ],
+      "question": "What is 2/8 + 3/8?",
+      "options": [
+        "5/16",
+        "1/8",
+        "5/8"
+      ],
+      "answer": 2,
+      "feedback": "Add the counts: two plus three is five. Each piece is still an eighth.",
+      "visual": "strip"
+    },
+    {
+      "title": "Subtracting equal-sized parts",
+      "numerator": 2,
+      "denominator": 6,
+      "seconds": 180,
+      "scenes": [
+        "Suppose five sixths of a cake remains, and friends eat three sixths. How much is left? Begin with five sixth-sized pieces and take away three. Two pieces remain, so the answer is two sixths.",
+        "The size of the pieces stays the same. Five sixths minus three sixths equals two sixths. We subtract the numerators and keep the common denominator. Two sixths can also be called one third because two sixths cover one of three equal larger groups.",
+        "Draw six equal boxes and shade five. Cross out three shaded boxes. Count only the shaded boxes that are not crossed out. Say the subtraction aloud. Try four sixths minus one sixth before answering the checkpoint."
+      ],
+      "question": "What is 4/6 − 1/6?",
+      "options": [
+        "3/6",
+        "3/0",
+        "5/6"
+      ],
+      "answer": 0,
+      "feedback": "Four sixth-sized pieces minus one sixth-sized piece leaves three sixths.",
+      "visual": "strip"
+    },
+    {
+      "title": "Fractions of a collection",
+      "numerator": 3,
+      "denominator": 4,
+      "seconds": 180,
+      "scenes": [
+        "A whole can be a collection, such as eight counters. To find one quarter of eight, split all eight counters into four equal groups. Each group has two counters. One quarter of eight is two.",
+        "To find three quarters of eight, choose three of those four equal groups. Each group contains two counters, so three groups contain six. The denominator tells us the number of equal groups; the numerator tells us how many groups to choose.",
+        "Gather eight small objects or draw eight dots. Arrange them into four pairs. Circle three pairs and count the objects inside. Now find one half of eight by making two equal groups. Explain why three quarters of eight is more than one half of eight."
+      ],
+      "question": "What is 3/4 of 8 counters?",
+      "options": [
+        "3",
+        "4",
+        "6"
+      ],
+      "answer": 2,
+      "feedback": "Eight divided into four equal groups gives two per group. Three groups contain six counters.",
+      "visual": "collection"
+    },
+    {
+      "title": "Your fraction toolkit",
+      "numerator": 3,
+      "denominator": 4,
+      "seconds": 180,
+      "scenes": [
+        "You can now name equal shares, read a numerator and denominator, locate fractions on a number line, recognise equivalent fractions and calculate with equal-sized parts. Always start by asking: what is the whole, and are the parts equal?",
+        "Imagine a picnic pizza cut into eight equal slices. Four slices are half the pizza. Add two more slices and you have six eighths, which is three quarters. If one slice is eaten, five eighths remains. The whole still has eight equal slice positions.",
+        "Teach someone your favourite fraction idea. Explain why the denominator stays the same when you add eighths. Review any chapter you found tricky. Your last question brings equivalence and addition together. Take your time and explain the answer before choosing."
+      ],
+      "question": "What is 1/4 + 2/4?",
+      "options": [
+        "3/8",
+        "3/4",
+        "2/4"
+      ],
+      "answer": 1,
+      "feedback": "One quarter plus two quarters is three quarters. You counted three equal quarter-sized parts.",
+      "visual": "strip"
+    }
+  ]
+}

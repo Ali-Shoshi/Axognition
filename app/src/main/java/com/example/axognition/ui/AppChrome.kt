@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 @Composable
 fun KioskTopBar(title: String, onBack: () -> Unit) {
     CenterAlignedTopAppBar(
-        title = { Text(title, fontWeight = FontWeight.Bold) },
+        title = { Text(tr(title), fontWeight = FontWeight.Bold) },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,
             titleContentColor = MaterialTheme.colorScheme.onBackground

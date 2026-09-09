@@ -1,5 +1,7 @@
 package com.example.axognition.ui.screens
 
+import com.example.axognition.ui.tr
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -27,7 +29,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
-internal fun LectureCollections(onSubject: (Subject) -> Unit) {
+internal fun LectureCollections(completedLectures: Set<String> = emptySet(), onSubject: (Subject) -> Unit) {
     // Temporary grade until the signed-in student's profile supplies it.
     val grade = 1
     var subjects by remember { mutableStateOf<List<RemoteSubject>>(emptyList()) }
@@ -51,19 +53,19 @@ internal fun LectureCollections(onSubject: (Subject) -> Unit) {
     Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Your lectures", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                Text("Grade $grade · A little progress, every day", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(tr("Your lectures"), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Text(tr("Grade $grade · A little progress, every day"), color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            IconButton(onClick = { retry++ }) { Icon(Icons.Default.Refresh, "Refresh subjects") }
+            IconButton(onClick = { retry++ }) { Icon(Icons.Default.Refresh, tr("Refresh subjects")) }
         }
         Spacer(Modifier.height(16.dp))
         when {
             loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             error != null -> Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(error!!)
-                Button(onClick = { retry++ }) { Text("Try again") }
+                Text(tr(error!!))
+                Button(onClick = { retry++ }) { Text(tr("Try again")) }
             }
-            subjects.isEmpty() -> Text("No subjects available for Grade $grade yet.")
+            subjects.isEmpty() -> Text(tr("No subjects available for Grade $grade yet."))
             else -> LazyVerticalGrid(
                 columns = GridCells.Fixed(4),
                 modifier = Modifier.fillMaxWidth().weight(1f),
@@ -73,12 +75,19 @@ internal fun LectureCollections(onSubject: (Subject) -> Unit) {
             ) {
                 itemsIndexed(subjects, key = { _, subject -> subject.id }) { index, subject ->
                     // Preview progress only: no invented completion records are saved to the database.
-                    val total = 8 + index % 5
-                    val done = (index * 3 + 2) % total
+                    val mathematics = subject.name.contains("Mathematics", ignoreCase = true)
+                    val total = if (mathematics) 2 else 8 + index % 5
+                    val done = if (mathematics) listOf("geometry", "fractions").count { it in completedLectures } else (index * 3 + 2) % total
                     LectureSubjectCard(subject, index, done, total) {
-                        onSubject(Subject(subject.id, subject.name, "", List(total) { unit ->
+                        val units = if (subject.name.contains("Mathematics", ignoreCase = true)) {
+                            listOf(UnitData("fractions", "Fractions · Share, see, solve",
+                                listOf(VideoLecture("fractions", "Fractions: interactive guided unit", "30 min"))),
+                                UnitData("geometry", "Around & inside · Perimeter and area",
+                                    listOf(VideoLecture("geometry", "Around & inside: a moving shape lab", "About 30 min"))))
+                        } else List(total) { unit ->
                             UnitData("${subject.id}-preview-$unit", "Unit ${unit + 1} · Preview", emptyList())
-                        }))
+                        }
+                        onSubject(Subject(subject.id, subject.name, "", units))
                     }
                 }
                 item(span = { GridItemSpan(maxLineSpan) }) {
@@ -88,7 +97,7 @@ internal fun LectureCollections(onSubject: (Subject) -> Unit) {
                     ) {
                         Row(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.History, null)
-                            Text("Previous year's lectures", Modifier.weight(1f).padding(horizontal = 14.dp), fontWeight = FontWeight.SemiBold)
+                            Text(tr("Previous year's lectures"), Modifier.weight(1f).padding(horizontal = 14.dp), fontWeight = FontWeight.SemiBold)
                             Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
                         }
                     }
@@ -98,9 +107,9 @@ internal fun LectureCollections(onSubject: (Subject) -> Unit) {
     }
     if (previousYear) AlertDialog(
         onDismissRequest = { previousYear = false },
-        title = { Text("Previous year's lectures") },
-        text = { Text("Your earlier lectures will be available here soon.") },
-        confirmButton = { TextButton(onClick = { previousYear = false }) { Text("Got it") } }
+        title = { Text(tr("Previous year's lectures")) },
+        text = { Text(tr("Your earlier lectures will be available here soon.")) },
+        confirmButton = { TextButton(onClick = { previousYear = false }) { Text(tr("Got it")) } }
     )
 }
 
@@ -124,8 +133,8 @@ private fun LectureSubjectCard(subject: RemoteSubject, index: Int, done: Int, to
             Column(Modifier.fillMaxSize().padding(14.dp)) {
                 Icon(icon, null, Modifier.size(26.dp), tint = Color.White)
                 Spacer(Modifier.height(8.dp))
-                Text(subject.name, Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 15.sp)
-                Text("$done / $total units done", color = Color.White, fontSize = 11.sp)
+                Text(tr(subject.name), Modifier.weight(1f), color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp, lineHeight = 15.sp)
+                Text(tr("$done / $total units done"), color = Color.White, fontSize = 11.sp)
                 Spacer(Modifier.height(6.dp))
                 LinearProgressIndicator(progress = { done.toFloat() / total }, modifier = Modifier.fillMaxWidth().height(4.dp), color = Color.White, trackColor = Color.White.copy(alpha = .22f))
             }
