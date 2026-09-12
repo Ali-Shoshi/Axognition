@@ -30,10 +30,16 @@ object LmStudioClient {
     private val modelName: String
         get() = settingOrDefault("LM_STUDIO_MODEL", "BEST-qwen_qwen3.5-2b")
 
-    suspend fun answer(question: String, history: List<AssistantHistoryMessage> = emptyList(), language: String = "en"): String = withContext(Dispatchers.IO) {
-        val requestJson = buildJsonObject {
+    private fun requestBody(
+        question: String,
+        history: List<AssistantHistoryMessage>,
+        language: String,
+        stream: Boolean
+    ) = buildJsonObject {
             put("model", modelName)
             put("temperature", 0.4)
+            put("max_tokens", 220)
+            put("stream", stream)
             put("messages", buildJsonArray {
                 add(buildJsonObject {
                     put("role", "system")
@@ -52,6 +58,9 @@ object LmStudioClient {
                 })
             })
         }
+
+    suspend fun answer(question: String, history: List<AssistantHistoryMessage> = emptyList(), language: String = "en"): String = withContext(Dispatchers.IO) {
+        val requestJson = requestBody(question, history, language, stream = false)
 
         val request = HttpRequest.newBuilder()
             .uri(URI.create("$baseUrl/chat/completions"))
@@ -76,6 +85,53 @@ object LmStudioClient {
             ?.content
             ?.trim()
             ?.takeIf { it.isNotEmpty() }
+            ?: error("LM Studio returned no assistant message.")
+    }
+
+    /** Streams OpenAI-compatible SSE deltas from the local LM Studio process. */
+    suspend fun streamAnswer(
+        question: String,
+        history: List<AssistantHistoryMessage> = emptyList(),
+        language: String = "en",
+        onDelta: suspend (String) -> Unit
+    ): String = withContext(Dispatchers.IO) {
+        val request = HttpRequest.newBuilder()
+            .uri(URI.create("$baseUrl/chat/completions"))
+            .timeout(Duration.ofSeconds(90))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(requestBody(question, history, language, stream = true).toString()))
+            .build()
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream())
+        check(response.statusCode() in 200..299) {
+            "LM Studio returned HTTP ${response.statusCode()}. Check that its local server is running and the model is loaded."
+        }
+
+        val complete = StringBuilder()
+        response.body().bufferedReader().use { reader ->
+            while (true) {
+                val line = reader.readLine() ?: break
+                val payload = line.removePrefix("data:").trim()
+                if (!line.startsWith("data:") || payload.isBlank()) continue
+                if (payload == "[DONE]") break
+                val delta = runCatching {
+                    Json.parseToJsonElement(payload)
+                        .jsonObject["choices"]
+                        ?.jsonArray
+                        ?.firstOrNull()
+                        ?.jsonObject
+                        ?.get("delta")
+                        ?.jsonObject
+                        ?.get("content")
+                        ?.jsonPrimitive
+                        ?.content
+                }.getOrNull().orEmpty()
+                if (delta.isNotEmpty()) {
+                    complete.append(delta)
+                    onDelta(delta)
+                }
+            }
+        }
+        complete.toString().trim().takeIf { it.isNotEmpty() }
             ?: error("LM Studio returned no assistant message.")
     }
 }

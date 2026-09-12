@@ -14,21 +14,6 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -38,12 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.axognition.data.AssistantApi
 import com.example.axognition.ui.createAppTextToSpeech
@@ -51,8 +31,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 private enum class VoiceAssistantMode { IDLE, WAITING_FOR_WAKE_WORD, LISTENING_TO_QUESTION, THINKING }
+
+data class VoiceAssistantBubble(
+    val text: String,
+    val isAnswer: Boolean = false,
+    val readThrough: Int = 0,
+    val currentStart: Int = -1,
+    val currentEnd: Int = -1,
+    val isSpeaking: Boolean = false
+)
 
 /**
  * Experimental in-app wake phrase listener. It is composed only while Axognition
@@ -63,22 +54,23 @@ fun WakeWordAssistant(
     enabled: Boolean,
     conversation: () -> List<ChatMessage>,
     onMessage: (ChatMessage) -> Unit,
-    onOpenChat: () -> Unit,
-    modifier: Modifier = Modifier
+    content: @Composable (VoiceAssistantBubble?, () -> Unit) -> Unit
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val latestEnabled by rememberUpdatedState(enabled)
     val saveMessage by rememberUpdatedState(onMessage)
-    val openChat by rememberUpdatedState(onOpenChat)
     val mainHandler = remember { Handler(Looper.getMainLooper()) }
     var mode by remember { mutableStateOf(VoiceAssistantMode.IDLE) }
-    var bubbleText by remember { mutableStateOf<String?>(null) }
+    var bubble by remember { mutableStateOf<VoiceAssistantBubble?>(null) }
     var recognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
     var speaker by remember { mutableStateOf<TextToSpeech?>(null) }
     var wakePhraseDetected by remember { mutableStateOf(false) }
     var restartAfterSpeech by remember { mutableStateOf(false) }
     var speechGeneration by remember { mutableStateOf(0) }
+    val speakerReady = remember { AtomicBoolean(false) }
+    val utteranceOffsets = remember { ConcurrentHashMap<String, Int>() }
+    val utteranceEnds = remember { ConcurrentHashMap<String, Int>() }
 
     val wakeWordIntent = remember(AppLanguage.code) {
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -95,8 +87,8 @@ fun WakeWordAssistant(
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, AppLanguage.locale.toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 1_800L)
-            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 2_500L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, 900L)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1_350L)
         }
     }
 
@@ -110,15 +102,15 @@ fun WakeWordAssistant(
                 mode = VoiceAssistantMode.WAITING_FOR_WAKE_WORD
                 runCatching { recognizer?.startListening(wakeWordIntent) }
                     .onFailure {
-                        bubbleText = "I could not start listening. Check the microphone permission."
+                        bubble = VoiceAssistantBubble("I could not start listening. Check the microphone permission.")
                     }
             }
         }
     }
 
-    fun resumeWakeWordListening() {
+    fun resumeWakeWordListening(clearBubble: Boolean = true) {
         restartAfterSpeech = false
-        bubbleText = null
+        if (clearBubble) bubble = null
         mode = VoiceAssistantMode.IDLE
         startWakeWordListening(500)
     }
@@ -126,32 +118,89 @@ fun WakeWordAssistant(
     fun askAssistant(question: String) {
         val cleanQuestion = question.trim()
         if (cleanQuestion.isBlank()) {
-            bubbleText = "I did not catch that. Say “Hej AI” and try again."
+            bubble = VoiceAssistantBubble("I did not catch that. Say “Hej AI” and try again.")
             startWakeWordListening(1_500)
             return
         }
         mode = VoiceAssistantMode.THINKING
         val history = conversation().map { AssistantApi.HistoryMessage(it.text, it.fromStudent) }
         saveMessage(ChatMessage(cleanQuestion, true))
-        bubbleText = "Thinking…"
+        bubble = VoiceAssistantBubble("Thinking…")
+        restartAfterSpeech = false
+        val generation = ++speechGeneration
+        var receivedText = ""
+        var queuedCount = 0
+        val chunker = StreamingSpeechChunker { chunk, responseOffset ->
+            val utteranceId = "wake-word-answer-$generation-$queuedCount"
+            val queueMode = if (queuedCount++ == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+            utteranceOffsets[utteranceId] = responseOffset
+            utteranceEnds[utteranceId] = responseOffset + chunk.length
+            mainHandler.post {
+                if (generation != speechGeneration) return@post
+                bubble = (bubble ?: VoiceAssistantBubble(receivedText, isAnswer = true)).copy(
+                    text = receivedText,
+                    isAnswer = true,
+                    isSpeaking = true
+                )
+                val result = speaker?.speakInAppLanguage(
+                    chunk,
+                    utteranceId,
+                    queueMode = queueMode,
+                    preferNetwork = false,
+                    naturalize = false
+                )
+                if (result != TextToSpeech.SUCCESS) {
+                    utteranceOffsets.remove(utteranceId)
+                    utteranceEnds.remove(utteranceId)
+                }
+            }
+        }
         scope.launch {
             val answer = runCatching {
-                withContext(Dispatchers.IO) { AssistantApi.sendQuestion(cleanQuestion, history) }
+                withContext(Dispatchers.IO) {
+                    AssistantApi.streamQuestion(cleanQuestion, history) { partial ->
+                        receivedText = partial
+                        mainHandler.post {
+                            if (generation == speechGeneration) {
+                                val current = bubble
+                                bubble = VoiceAssistantBubble(
+                                    text = partial,
+                                    isAnswer = true,
+                                    readThrough = current?.readThrough ?: 0,
+                                    currentStart = current?.currentStart ?: -1,
+                                    currentEnd = current?.currentEnd ?: -1,
+                                    isSpeaking = current?.isSpeaking ?: false
+                                )
+                            }
+                        }
+                        chunker.accept(partial)
+                    }
+                }
             }.getOrElse { error ->
-                tr("I could not reach the learning assistant. ${tr(error.message ?: "Please try again.")}")
+                if (receivedText.isNotBlank()) receivedText else runCatching {
+                    withContext(Dispatchers.IO) { AssistantApi.sendQuestion(cleanQuestion, history) }
+                }.getOrElse {
+                    tr("I could not reach the learning assistant. ${tr(error.message ?: "Please try again.")}")
+                }
             }
-            bubbleText = answer
+            receivedText = answer
+            bubble = (bubble ?: VoiceAssistantBubble(answer, isAnswer = true)).copy(text = answer, isAnswer = true)
+            chunker.accept(answer, final = true)
             saveMessage(ChatMessage(answer, false))
             restartAfterSpeech = true
-            val generation = ++speechGeneration
-            val speechResult = speaker?.speakInAppLanguage(answer, "wake-word-answer")
-            if (speechResult != TextToSpeech.SUCCESS) {
-                delay(1_000)
-                resumeWakeWordListening()
-            } else {
-                // Safety fallback in case a device does not report speech completion.
-                delay(45_000)
-                if (restartAfterSpeech && speechGeneration == generation) resumeWakeWordListening()
+            mainHandler.post {
+                if (generation != speechGeneration) return@post
+                if (queuedCount > 0 && speakerReady.get()) {
+                    speaker?.playSilentUtterance(1L, TextToSpeech.QUEUE_ADD, "wake-word-finish-$generation")
+                } else {
+                    bubble = bubble?.copy(readThrough = answer.length, isSpeaking = false)
+                    resumeWakeWordListening(clearBubble = false)
+                }
+            }
+            delay(45_000)
+            if (restartAfterSpeech && speechGeneration == generation) {
+                bubble = bubble?.copy(readThrough = answer.length, currentStart = -1, currentEnd = -1, isSpeaking = false)
+                resumeWakeWordListening(clearBubble = false)
             }
         }
     }
@@ -159,7 +208,7 @@ fun WakeWordAssistant(
     fun beginQuestionListening() {
         if (!latestEnabled) return
         mode = VoiceAssistantMode.LISTENING_TO_QUESTION
-        bubbleText = "Listening…"
+        bubble = VoiceAssistantBubble("Listening…")
         scope.launch {
             delay(150)
             if (latestEnabled && mode == VoiceAssistantMode.LISTENING_TO_QUESTION) {
@@ -173,13 +222,13 @@ fun WakeWordAssistant(
     ) { granted ->
         if (granted) startWakeWordListening(0) else {
             mode = VoiceAssistantMode.IDLE
-            bubbleText = "Microphone permission is needed for “Hej AI”."
+            bubble = VoiceAssistantBubble("Microphone permission is needed for “Hej AI”.")
         }
     }
 
     DisposableEffect(context, AppLanguage.code) {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            if (latestEnabled) bubbleText = "Voice recognition is not available on this tablet."
+            if (latestEnabled) bubble = VoiceAssistantBubble("Voice recognition is not available on this tablet.")
             onDispose { }
         } else {
             val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
@@ -194,7 +243,7 @@ fun WakeWordAssistant(
                         if (mode == VoiceAssistantMode.WAITING_FOR_WAKE_WORD) {
                             startWakeWordListening()
                         } else if (mode == VoiceAssistantMode.LISTENING_TO_QUESTION) {
-                            bubbleText = "I did not catch that. Say “Hej AI” and try again."
+                            bubble = VoiceAssistantBubble("I did not catch that. Say “Hej AI” and try again.")
                             mode = VoiceAssistantMode.IDLE
                             startWakeWordListening(1_500)
                         }
@@ -224,7 +273,7 @@ fun WakeWordAssistant(
                             ?.firstOrNull().orEmpty()
                         if (containsWakePhrase(heard)) {
                             wakePhraseDetected = true
-                            bubbleText = "I’m listening…"
+                            bubble = VoiceAssistantBubble("I’m listening…")
                         }
                     }
 
@@ -241,20 +290,64 @@ fun WakeWordAssistant(
     }
 
     DisposableEffect(context) {
-        val textToSpeech = createAppTextToSpeech(context) { }.apply {
+        lateinit var textToSpeech: TextToSpeech
+        textToSpeech = createAppTextToSpeech(context) { status ->
+            speakerReady.set(status == TextToSpeech.SUCCESS)
+            if (status == TextToSpeech.SUCCESS) mainHandler.post {
+                textToSpeech.configureNaturalAppVoice(preferNetwork = false)
+                textToSpeech.playSilentUtterance(1L, TextToSpeech.QUEUE_FLUSH, "wake-word-warmup")
+            }
+        }.apply {
             setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                override fun onStart(utteranceId: String) = Unit
+                override fun onStart(utteranceId: String) {
+                    if (utteranceId.startsWith("wake-word-answer-")) mainHandler.post {
+                        bubble = bubble?.copy(isSpeaking = true)
+                    }
+                }
+                override fun onRangeStart(utteranceId: String, start: Int, end: Int, frame: Int) {
+                    val responseOffset = utteranceOffsets[utteranceId] ?: return
+                    mainHandler.post {
+                        val textLength = bubble?.text?.length ?: return@post
+                        val absoluteStart = (responseOffset + start).coerceIn(0, textLength)
+                        val absoluteEnd = (responseOffset + end).coerceIn(absoluteStart, textLength)
+                        bubble = bubble?.copy(
+                            readThrough = absoluteEnd,
+                            currentStart = absoluteStart,
+                            currentEnd = absoluteEnd,
+                            isSpeaking = true
+                        )
+                    }
+                }
                 override fun onDone(utteranceId: String) {
-                    if (utteranceId == "wake-word-answer") {
+                    if (utteranceId.startsWith("wake-word-answer-")) {
+                        val end = utteranceEnds.remove(utteranceId) ?: 0
+                        utteranceOffsets.remove(utteranceId)
                         mainHandler.post {
-                            if (restartAfterSpeech) resumeWakeWordListening()
+                            bubble = bubble?.copy(
+                                readThrough = maxOf(bubble?.readThrough ?: 0, end),
+                                currentStart = -1,
+                                currentEnd = -1
+                            )
+                        }
+                    } else if (utteranceId.startsWith("wake-word-finish-")) {
+                        mainHandler.post {
+                            bubble = bubble?.copy(
+                                readThrough = bubble?.text?.length ?: 0,
+                                currentStart = -1,
+                                currentEnd = -1,
+                                isSpeaking = false
+                            )
+                            if (restartAfterSpeech) resumeWakeWordListening(clearBubble = false)
                         }
                     }
                 }
                 override fun onError(utteranceId: String) {
-                    if (utteranceId == "wake-word-answer") {
+                    utteranceOffsets.remove(utteranceId)
+                    utteranceEnds.remove(utteranceId)
+                    if (utteranceId.startsWith("wake-word-finish-")) {
                         mainHandler.post {
-                            if (restartAfterSpeech) resumeWakeWordListening()
+                            bubble = bubble?.copy(currentStart = -1, currentEnd = -1, isSpeaking = false)
+                            if (restartAfterSpeech) resumeWakeWordListening(clearBubble = false)
                         }
                     }
                 }
@@ -264,6 +357,9 @@ fun WakeWordAssistant(
         onDispose {
             textToSpeech.stop()
             textToSpeech.shutdown()
+            speakerReady.set(false)
+            utteranceOffsets.clear()
+            utteranceEnds.clear()
             speaker = null
         }
     }
@@ -272,58 +368,24 @@ fun WakeWordAssistant(
         if (!enabled) {
             recognizer?.cancel()
             mode = VoiceAssistantMode.IDLE
-            bubbleText = null
+            bubble = null
         } else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
-            bubbleText = "Listening for “Hej AI”…"
+            bubble = VoiceAssistantBubble("Listening for “Hej AI”…")
             startWakeWordListening(0)
             scope.launch {
                 delay(2_500)
-                if (bubbleText == "Listening for “Hej AI”…") bubbleText = null
+                if (bubble?.text == "Listening for “Hej AI”…") bubble = null
             }
         } else {
             microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
         }
     }
 
-    bubbleText?.let { text ->
-        Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-            Card(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp, vertical = 32.dp)
-                    .widthIn(max = 440.dp),
-                shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ) {
-                androidx.compose.foundation.layout.Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Icon(
-                        Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    androidx.compose.foundation.layout.Spacer(Modifier.padding(horizontal = 5.dp))
-                    Text(
-                        text = tr(text),
-                        modifier = Modifier.weight(1f).clickable { openChat() },
-                        maxLines = 4,
-                        overflow = TextOverflow.Ellipsis,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                    IconButton(onClick = {
-                        speechGeneration++
-                        restartAfterSpeech = false
-                        speaker?.stop()
-                        resumeWakeWordListening()
-                    }) {
-                        Icon(Icons.Default.Close, contentDescription = tr("Stop speaking and dismiss"))
-                    }
-                }
-            }
-        }
+    content(bubble) {
+        speechGeneration++
+        restartAfterSpeech = false
+        speaker?.stop()
+        resumeWakeWordListening()
     }
 }
 
@@ -339,3 +401,37 @@ private fun questionAfterWakePhrase(text: String): String = text
     // when the partial result contained the complete wake phrase.
     .replaceFirst(Regex("(?i)^\\s*(?:hej|hey)(?:[\\s,.:;-]+(?:a\\.?\\s*i|i|ay))?[\\s,.:;-]*"), "")
     .trim()
+
+/** Emits complete sentences, or a readable phrase when the first sentence is long. */
+internal class StreamingSpeechChunker(
+    private val onChunk: (text: String, responseOffset: Int) -> Unit
+) {
+    private var emittedThrough = 0
+    private val sentenceEnd = Regex("""[.!?](?:["'”’)]*)(?:\s|$)""")
+
+    fun accept(fullText: String, final: Boolean = false) {
+        while (emittedThrough < fullText.length) {
+            val remaining = fullText.substring(emittedThrough)
+            val sentenceBoundary = sentenceEnd.findAll(remaining)
+                .firstOrNull { it.range.last + 1 >= 24 }
+                ?.let { it.range.last + 1 }
+            val rawLength = when {
+                sentenceBoundary != null -> sentenceBoundary
+                remaining.length >= 96 -> remaining.lastIndexOf(' ', startIndex = 84)
+                    .takeIf { it >= 48 }
+                    ?.plus(1)
+                    ?: return
+                final -> remaining.length
+                else -> return
+            }
+            val rawEnd = emittedThrough + rawLength
+            val raw = fullText.substring(emittedThrough, rawEnd)
+            val first = raw.indexOfFirst { !it.isWhitespace() }
+            if (first >= 0) {
+                val lastExclusive = raw.indexOfLast { !it.isWhitespace() } + 1
+                onChunk(raw.substring(first, lastExclusive), emittedThrough + first)
+            }
+            emittedThrough = rawEnd
+        }
+    }
+}

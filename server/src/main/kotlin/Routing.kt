@@ -8,6 +8,7 @@ import com.example.db.NewBook
 import com.example.db.StoredBook
 import com.example.db.SubjectRepository
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.ContentType
 import io.ktor.http.content.PartData
 import io.ktor.http.content.forEachPart
 import io.ktor.server.application.*
@@ -24,6 +25,7 @@ import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
 import java.util.UUID
 
 @Serializable
@@ -74,6 +76,9 @@ data class AssistantChatRequest(val message: String, val history: List<Assistant
 
 @Serializable
 data class AssistantChatResponse(val reply: String)
+
+@Serializable
+data class AssistantStreamEvent(val delta: String? = null, val done: Boolean = false, val error: String? = null)
 
 @Serializable
 data class ChildLoginRequest(
@@ -174,6 +179,41 @@ fun Application.configureRouting() {
                     )
                 }
             call.respond(AssistantChatResponse(reply))
+        }
+
+        post("/assistant/chat/stream") {
+            val request = call.receive<AssistantChatRequest>()
+            val message = request.message.trim()
+            if (message.isBlank()) {
+                return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message must not be blank"))
+            }
+            if (message.length > 4_000) {
+                return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message is too long"))
+            }
+            val history = request.history
+                .filter { it.role in setOf("user", "assistant") && it.content.isNotBlank() }
+                .takeLast(12)
+
+            call.respondTextWriter(ContentType.parse("application/x-ndjson")) {
+                runCatching {
+                    LmStudioClient.streamAnswer(message, history, request.language) { delta ->
+                        write(kotlinx.serialization.json.Json.encodeToString(AssistantStreamEvent(delta = delta)))
+                        write("\n")
+                        flush()
+                    }
+                }.onSuccess {
+                    write(kotlinx.serialization.json.Json.encodeToString(AssistantStreamEvent(done = true)))
+                    write("\n")
+                    flush()
+                }.onFailure { error ->
+                    application.log.warn("LM Studio streaming chat request failed", error)
+                    write(kotlinx.serialization.json.Json.encodeToString(
+                        AssistantStreamEvent(error = "The local learning assistant is unavailable. Check that LM Studio is running and the model is loaded.")
+                    ))
+                    write("\n")
+                    flush()
+                }
+            }
         }
 
         get("/subjects") {

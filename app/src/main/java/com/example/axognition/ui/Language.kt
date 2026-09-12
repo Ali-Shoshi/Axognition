@@ -3,6 +3,7 @@ package com.example.axognition.ui
 import android.content.Context
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -57,8 +58,14 @@ fun createAppTextToSpeech(context: Context, listener: TextToSpeech.OnInitListene
     else TextToSpeech(context, listener)
 }
 
-/** Select the best voice exposed by the engine for the active app language. */
-fun TextToSpeech.configureNaturalAppVoice(rate: Float = 0.96f): Boolean {
+/**
+ * Select the best voice exposed by the engine for the active app language.
+ *
+ * Callers can prefer an enhanced network voice or the faster installed local
+ * voice when their quality and locale match. A local voice remains available
+ * as the fallback if network synthesis cannot start.
+ */
+fun TextToSpeech.configureNaturalAppVoice(rate: Float = 0.96f, preferNetwork: Boolean = true): Boolean {
     val target = AppLanguage.locale
     if (setLanguage(target) < TextToSpeech.LANG_AVAILABLE) return false
     val bestVoice = voices.orEmpty()
@@ -66,17 +73,53 @@ fun TextToSpeech.configureNaturalAppVoice(rate: Float = 0.96f): Boolean {
         .maxWithOrNull(
             compareBy<Voice> { it.quality }
                 .thenBy { if (it.locale.country.equals(target.country, ignoreCase = true)) 1 else 0 }
-                .thenBy { if (it.isNetworkConnectionRequired) 0 else 1 }
+                .thenBy { if (it.isNetworkConnectionRequired == preferNetwork) 1 else 0 }
         )
     if (bestVoice != null && voice?.name != bestVoice.name) voice = bestVoice
-    setPitch(if (AppLanguage.code == "sq") 1.0f else 0.98f)
-    setSpeechRate(rate.coerceIn(0.35f, 2.0f))
+    // A slightly slower, gently raised profile gives the installed voices more
+    // room for consonants and makes the result less clipped and mechanical.
+    setPitch(if (AppLanguage.code == "sq") 1.03f else 1.01f)
+    setSpeechRate((rate * if (AppLanguage.code == "sq") 0.94f else 0.95f).coerceIn(0.35f, 2.0f))
+    Log.i(
+        "AXO_TTS",
+        "language=${AppLanguage.code} voice=${bestVoice?.name ?: "default"} " +
+            "quality=${bestVoice?.quality ?: -1} network=${bestVoice?.isNetworkConnectionRequired ?: false} " +
+            "rate=${rate * if (AppLanguage.code == "sq") 0.94f else 0.95f}"
+    )
     return true
 }
 
-fun TextToSpeech.speakInAppLanguage(text: String, utteranceId: String, rate: Float = 0.96f): Int {
-    if (!configureNaturalAppVoice(rate)) return TextToSpeech.ERROR
-    return speak(text, TextToSpeech.QUEUE_FLUSH, null, utteranceId)
+fun TextToSpeech.speakInAppLanguage(
+    text: String,
+    utteranceId: String,
+    rate: Float = 0.96f,
+    queueMode: Int = TextToSpeech.QUEUE_FLUSH,
+    preferNetwork: Boolean = true,
+    naturalize: Boolean = true
+): Int {
+    if (!configureNaturalAppVoice(rate, preferNetwork)) return TextToSpeech.ERROR
+    val spokenText = if (naturalize) naturalizeSpeechForTts(text, AppLanguage.code) else text
+    val result = speak(spokenText, queueMode, null, utteranceId)
+    if (result == TextToSpeech.ERROR && voice?.isNetworkConnectionRequired == true) {
+        // A network voice can be listed while the device is temporarily
+        // offline. Retry immediately with the best installed local voice.
+        val localVoice = voices.orEmpty()
+            .filter {
+                it.locale.language.equals(AppLanguage.locale.language, ignoreCase = true) &&
+                    !it.isNetworkConnectionRequired
+            }
+            .maxWithOrNull(
+                compareBy<Voice> { it.quality }
+                    .thenBy { if (it.locale.country.equals(AppLanguage.locale.country, ignoreCase = true)) 1 else 0 }
+            )
+        if (localVoice != null) {
+            voice = localVoice
+            setPitch(if (AppLanguage.code == "sq") 1.03f else 1.01f)
+            setSpeechRate((rate * if (AppLanguage.code == "sq") 0.94f else 0.95f).coerceIn(0.35f, 2.0f))
+            return speak(spokenText, queueMode, null, utteranceId)
+        }
+    }
+    return result
 }
 
 @Composable

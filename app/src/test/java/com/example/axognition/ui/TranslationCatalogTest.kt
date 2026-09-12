@@ -1,6 +1,8 @@
 package com.example.axognition.ui
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class TranslationCatalogTest {
@@ -22,5 +24,32 @@ class TranslationCatalogTest {
     @Test fun countsAndReorderedPlaceholdersRemainCorrect() {
         assertEquals("3 nga 10 të përfunduara", catalog.translate("3 of 10 completed"))
         assertEquals("Rrethi · Kapitulli 7", catalog.translate("Chapter 7: Rrethi"))
+    }
+
+    @Test fun speechNotationIsMadePronounceableWithoutChangingCaptions() {
+        val english = naturalizeSpeechForTts("P = 2 × (8 cm + 5 cm) = 26 m", "en")
+        assertTrue(english.contains("equals"))
+        assertTrue(english.contains("times"))
+        assertTrue(english.contains("square") || english.contains("centimetres"))
+        assertFalse(english.contains("×"))
+        assertEquals("A është e barabartë me 40 metra katrorë", naturalizeSpeechForTts("A = 40 m²", "sq"))
+    }
+
+    @Test fun streamedSpeechChunksAreEmittedOnceWithResponseOffsets() {
+        val chunks = mutableListOf<Pair<String, Int>>()
+        val chunker = StreamingSpeechChunker { text, offset -> chunks += text to offset }
+
+        chunker.accept("This is the first")
+        assertTrue(chunks.isEmpty())
+        chunker.accept("This is the first complete sentence. The second")
+        chunker.accept("This is the first complete sentence. The second one is ready!", final = true)
+
+        assertEquals(
+            listOf(
+                "This is the first complete sentence." to 0,
+                "The second one is ready!" to 37
+            ),
+            chunks
+        )
     }
 }
