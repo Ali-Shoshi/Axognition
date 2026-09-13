@@ -58,6 +58,7 @@ import com.example.axognition.ui.AssistantChatButton
 import com.example.axognition.ui.AssistantChatPanel
 import com.example.axognition.ui.ChildLoginScreen
 import com.example.axognition.ui.WakeWordAssistant
+import com.example.axognition.ui.VoiceListeningMode
 import com.example.axognition.ui.VoiceAssistantBubble
 import com.example.axognition.ui.ChatMessage
 import androidx.compose.animation.AnimatedVisibility
@@ -194,7 +195,8 @@ private fun AuthenticatedMainApp(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     var assistantOpen by rememberSaveable { mutableStateOf(false) }
-    var wakeWordEnabled by rememberSaveable { mutableStateOf(false) }
+    var voiceListeningMode by rememberSaveable { mutableStateOf(VoiceListeningMode.OFF) }
+    var chatAudioBusy by remember { mutableStateOf(false) }
     val chatContext = LocalContext.current
     val chatPreferences = remember(childSession.childId) {
         chatContext.getSharedPreferences("assistant_chat_${childSession.childId}", Context.MODE_PRIVATE)
@@ -415,10 +417,11 @@ private fun AuthenticatedMainApp(
         }
     }
         WakeWordAssistant(
-            enabled = wakeWordEnabled,
+            listeningMode = voiceListeningMode,
+            suspended = chatAudioBusy,
             conversation = { chatMessages.toList() },
             onMessage = appendChatMessage
-        ) { voiceBubble, dismissVoice ->
+        ) { voiceBubble, dismissVoice, listenNow ->
             val needsTwoLines = voiceBubble?.let { it.isAnswer || it.text.length > 34 } == true
             val expandedWidth = minOf(if (needsTwoLines) 380.dp else 270.dp, maxWidth - 32.dp)
             val groupWidth = if (voiceBubble != null) expandedWidth else 56.dp
@@ -480,7 +483,6 @@ private fun AuthenticatedMainApp(
                         }
                 )
             }
-        }
             AssistantChatPanel(
                 expanded = assistantOpen,
                 anchor = assistantButtonPosition ?: defaultButtonPosition,
@@ -488,9 +490,13 @@ private fun AuthenticatedMainApp(
                 messages = chatMessages,
                 onMessage = appendChatMessage,
                 onDismiss = { assistantOpen = false },
-                wakeWordEnabled = wakeWordEnabled,
-                onWakeWordEnabledChange = { wakeWordEnabled = it }
+                listeningMode = voiceListeningMode,
+                onListeningModeChange = { voiceListeningMode = it },
+                onVoiceInput = listenNow,
+                onAudioBusyChange = { chatAudioBusy = it },
+                voiceStatus = voiceBubble
             )
+        }
     }
 }
 

@@ -11,6 +11,26 @@ import java.net.URL
 object AssistantApi {
     data class HistoryMessage(val text: String, val fromStudent: Boolean)
 
+    class RequestCancellation {
+        private val cancelled = java.util.concurrent.atomic.AtomicBoolean(false)
+        @Volatile private var connection: HttpURLConnection? = null
+        fun check() {
+            if (cancelled.get()) throw kotlinx.coroutines.CancellationException("Voice turn cancelled")
+        }
+        fun attach(value: HttpURLConnection) {
+            connection = value
+            if (cancelled.get()) { value.disconnect(); check() }
+        }
+        fun cancel() {
+            cancelled.set(true)
+            val current = connection
+            // Disconnect may block; never do it on the Android UI/audio callback thread.
+            if (current != null) kotlin.concurrent.thread(isDaemon = true, name = "assistant-cancel") {
+                runCatching { current.disconnect() }
+            }
+        }
+    }
+
     fun sendQuestion(question: String, history: List<HistoryMessage> = emptyList()): String {
         val connection = URL("${BuildConfig.AXOGNITION_SERVER_URL.trimEnd('/')}/assistant/chat")
             .openConnection() as HttpURLConnection
@@ -50,6 +70,7 @@ object AssistantApi {
     fun streamQuestion(
         question: String,
         history: List<HistoryMessage> = emptyList(),
+        cancellation: RequestCancellation = RequestCancellation(),
         onPartialAnswer: (String) -> Unit
     ): String {
         val connection = URL("${BuildConfig.AXOGNITION_SERVER_URL.trimEnd('/')}/assistant/chat/stream")
@@ -62,6 +83,8 @@ object AssistantApi {
         connection.setRequestProperty("Accept", "application/x-ndjson")
 
         return try {
+            cancellation.attach(connection)
+            cancellation.check()
             connection.outputStream.bufferedWriter(Charsets.UTF_8).use { writer ->
                 val historyJson = JSONArray()
                 history.takeLast(12).forEach { message ->
@@ -83,6 +106,7 @@ object AssistantApi {
             val complete = StringBuilder()
             connection.inputStream.bufferedReader(Charsets.UTF_8).useLines { lines ->
                 lines.forEach { line ->
+                    cancellation.check()
                     if (line.isBlank()) return@forEach
                     val event = JSONObject(line)
                     val error = event.optString("error")

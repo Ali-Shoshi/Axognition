@@ -38,7 +38,7 @@ object LmStudioClient {
     ) = buildJsonObject {
             put("model", modelName)
             put("temperature", 0.4)
-            put("max_tokens", 220)
+            put("reasoning_effort", "none")
             put("stream", stream)
             put("messages", buildJsonArray {
                 add(buildJsonObject {

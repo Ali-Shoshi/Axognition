@@ -13,6 +13,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -60,7 +65,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -122,8 +126,11 @@ fun AssistantChatPanel(
     messages: List<ChatMessage>,
     onMessage: (ChatMessage) -> Unit,
     onDismiss: () -> Unit,
-    wakeWordEnabled: Boolean,
-    onWakeWordEnabledChange: (Boolean) -> Unit,
+    listeningMode: VoiceListeningMode,
+    onListeningModeChange: (VoiceListeningMode) -> Unit,
+    onVoiceInput: () -> Unit,
+    onAudioBusyChange: (Boolean) -> Unit,
+    voiceStatus: VoiceAssistantBubble?,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -144,6 +151,18 @@ fun AssistantChatPanel(
     val scope = rememberCoroutineScope()
     var speaker by remember { mutableStateOf<TextToSpeech?>(null) }
     var isSpeechReady by remember { mutableStateOf(false) }
+    var recognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
+    var isReading by remember { mutableStateOf(false) }
+    val audioBusyCallback by rememberUpdatedState(onAudioBusyChange)
+    LaunchedEffect(isSending, isListening, isReading) {
+        audioBusyCallback(isSending || isListening || isReading)
+    }
+    LaunchedEffect(listeningMode, expanded) {
+        recognizer?.cancel()
+        isListening = false
+        speaker?.stop()
+        isReading = false
+    }
 
     val recognitionIntent = remember(AppLanguage.code) {
         Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
@@ -152,7 +171,6 @@ fun AssistantChatPanel(
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
         }
     }
-    var recognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
 
     fun beginListening() {
         recognizer?.startListening(recognitionIntent)
@@ -203,21 +221,30 @@ fun AssistantChatPanel(
         val textToSpeech = createAppTextToSpeech(context) { status ->
             isSpeechReady = status == TextToSpeech.SUCCESS
         }
+        textToSpeech.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
+            override fun onStart(id: String) = Unit
+            override fun onDone(id: String) { scope.launch { isReading = false } }
+            @Deprecated("Android callback")
+            override fun onError(id: String) { scope.launch { isReading = false } }
+        })
         speaker = textToSpeech
         onDispose {
             textToSpeech.stop()
             textToSpeech.shutdown()
             speaker = null
+            audioBusyCallback(false)
         }
     }
 
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) listState.animateScrollToItem(messages.lastIndex)
+    LaunchedEffect(messages.size, voiceStatus?.text) {
+        if (messages.isNotEmpty()) {
+            val streaming = voiceStatus?.isAnswer == true &&
+                !(messages.lastOrNull()?.fromStudent == false && messages.lastOrNull()?.text == voiceStatus.text)
+            listState.animateScrollToItem(if (streaming) messages.size else messages.lastIndex)
+        }
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val resizeMaxWidth = (maxWidth.value - 32f).coerceAtLeast(1f)
-        val resizeMaxHeight = (maxHeight.value - 32f).coerceAtLeast(1f)
         val density = LocalDensity.current
         val containerWidthPx = with(density) { maxWidth.toPx() }
         val containerHeightPx = with(density) { maxHeight.toPx() }
@@ -243,6 +270,14 @@ fun AssistantChatPanel(
                 .coerceIn(minOf(320f, maxWidthDp), maxWidthDp)
             savedHeight = (with(density) { panelSize.height.toDp().value } * zoom)
                 .coerceIn(minOf(if (messages.isEmpty()) 300f else 420f, maxHeightDp), maxHeightDp)
+        })
+        val resizeByDrag by rememberUpdatedState<(Offset) -> Unit>({ amount ->
+            val widthLimit = (maxWidth.value - 32f).coerceAtLeast(1f)
+            val heightLimit = (maxHeight.value - 32f).coerceAtLeast(1f)
+            savedWidth = ((if (savedWidth > 0f) savedWidth else with(density) { panelSize.width.toDp().value }) + amount.x / density.density)
+                .coerceIn(minOf(320f, widthLimit), widthLimit)
+            savedHeight = ((if (savedHeight > 0f) savedHeight else with(density) { panelSize.height.toDp().value }) + amount.y / density.density)
+                .coerceIn(minOf(if (messages.isEmpty()) 300f else 420f, heightLimit), heightLimit)
         })
 
         if (expanded || expansion > 0f) {
@@ -335,7 +370,11 @@ fun AssistantChatPanel(
                                         Text(message.text, modifier = Modifier.weight(1f))
                                         if (!message.fromStudent) {
                                             IconButton(onClick = {
-                                                speaker?.speakInAppLanguage(message.text, "assistant-response-${message.hashCode()}")
+                                                isReading = true
+                                                scope.launch {
+                                                    kotlinx.coroutines.delay(200)
+                                                    if (isReading && speaker?.speakInAppLanguage(message.text, "assistant-response-${message.hashCode()}") != TextToSpeech.SUCCESS) isReading = false
+                                                }
                                             }, enabled = isSpeechReady, modifier = Modifier.size(40.dp)) {
                                                 Icon(Icons.Default.VolumeUp, contentDescription = tr("Read this response aloud"))
                                             }
@@ -344,15 +383,26 @@ fun AssistantChatPanel(
                                 }
                             }
                         }
+                        if (voiceStatus?.isAnswer == true &&
+                            !(messages.lastOrNull()?.fromStudent == false && messages.lastOrNull()?.text == voiceStatus.text)) {
+                            item {
+                                Surface(color = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                    shape = RoundedCornerShape(18.dp)) {
+                                    Text(voiceStatus.text, modifier = Modifier.padding(14.dp))
+                                }
+                            }
+                        }
                     }
                     Spacer(Modifier.height(10.dp))
                 } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         tr("Ask a question…"),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f)
                             .pointerInput(Unit) {
                                 detectDragGestures { change, dragAmount ->
                                     change.consume()
@@ -360,29 +410,12 @@ fun AssistantChatPanel(
                                 }
                             }
                     )
-                    Spacer(Modifier.height(8.dp))
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(tr("Listen for “Hej AI”"), style = MaterialTheme.typography.labelLarge)
-                        Text(
-                            tr("Experimental · only while Axognition is open"),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Switch(
-                        checked = wakeWordEnabled,
-                        onCheckedChange = onWakeWordEnabledChange
-                    )
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Default.Close, contentDescription = tr("Shrink assistant"))
                     }
+                    }
+                    Spacer(Modifier.height(8.dp))
                 }
-                Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = draft,
@@ -396,8 +429,14 @@ fun AssistantChatPanel(
                     Spacer(Modifier.width(8.dp))
                     ElevatedButton(
                         onClick = {
-                            if (wakeWordEnabled) onWakeWordEnabledChange(false)
-                            if (isListening) {
+                            if (listeningMode != VoiceListeningMode.OFF) {
+                                speaker?.stop()
+                                isReading = false
+                                scope.launch {
+                                    kotlinx.coroutines.delay(200)
+                                    onVoiceInput()
+                                }
+                            } else if (isListening) {
                                 recognizer?.stopListening()
                                 isListening = false
                             } else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
@@ -411,8 +450,8 @@ fun AssistantChatPanel(
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                     ) {
                         Icon(
-                            if (isListening) Icons.Default.Stop else Icons.Default.Mic,
-                            contentDescription = tr(if (isListening) "Stop listening" else "Speak your question")
+                            if (isListening || voiceStatus?.isSpeaking == true) Icons.Default.Stop else Icons.Default.Mic,
+                            contentDescription = tr(if (voiceStatus?.isSpeaking == true) "Interrupt and speak" else if (isListening) "Stop listening" else "Speak your question")
                         )
                     }
                     Spacer(Modifier.width(8.dp))
@@ -457,27 +496,23 @@ fun AssistantChatPanel(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(tr("Chat size"), modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
-                    IconButton(onClick = { resizePanel(0.9f) }) {
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.weight(1f)) {
+                        VoiceModeSelector(listeningMode, onListeningModeChange)
+                    }
+                    Spacer(Modifier.width(4.dp))
+                    IconButton(onClick = { resizePanel(0.9f) }, modifier = Modifier.size(40.dp)) {
                         Icon(Icons.Default.Remove, contentDescription = tr("Make AI chat smaller"))
                     }
-                    IconButton(onClick = { resizePanel(1.1f) }) {
+                    IconButton(onClick = { resizePanel(1.1f) }, modifier = Modifier.size(40.dp)) {
                         Icon(Icons.Default.Add, contentDescription = tr("Make AI chat bigger"))
                     }
                     Box(
-                        Modifier.size(48.dp).pointerInput(orientation, resizeMaxWidth, resizeMaxHeight) {
+                        Modifier.size(40.dp).pointerInput(Unit) {
                             detectDragGestures { change, amount ->
                                 change.consume()
-                                val limitWidth = resizeMaxWidth
-                                val limitHeight = resizeMaxHeight
-                                savedWidth = ((if (savedWidth > 0f) savedWidth else with(density) { panelSize.width.toDp().value }) + amount.x / density.density)
-                                    .coerceIn(minOf(320f, limitWidth), limitWidth)
-                                savedHeight = ((if (savedHeight > 0f) savedHeight else with(density) { panelSize.height.toDp().value }) + amount.y / density.density)
-                                    .coerceIn(minOf(if (messages.isEmpty()) 300f else 420f, limitHeight), limitHeight)
+                                resizeByDrag(amount)
                             }
                         },
                         contentAlignment = Alignment.Center
@@ -485,8 +520,56 @@ fun AssistantChatPanel(
                         Icon(Icons.Default.OpenInFull, contentDescription = tr("Drag to resize AI chat"))
                     }
                 }
+                Text(
+                    tr(if (voiceStatus != null && !voiceStatus.isAnswer) voiceStatus.text else listeningMode.hint),
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
     }
+    }
+}
+
+/** Three stops with a sliding thumb; tap, drag, or select with accessibility tools. */
+@Composable
+internal fun VoiceModeSelector(mode: VoiceListeningMode, onSelect: (VoiceListeningMode) -> Unit) {
+    val position by animateFloatAsState(mode.ordinal.toFloat(), tween(220), label = "voiceMode")
+    val latestSelect by rememberUpdatedState(onSelect)
+    BoxWithConstraints(
+        Modifier.fillMaxWidth().height(48.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
+            .selectableGroup()
+    ) {
+        val segmentWidth = maxWidth / 3
+        val density = LocalDensity.current
+        val segmentPixels = with(density) { segmentWidth.toPx() }
+        Box(Modifier.offset(x = segmentWidth * position).width(segmentWidth).fillMaxHeight()
+            .padding(3.dp).clip(RoundedCornerShape(11.dp)).background(MaterialTheme.colorScheme.primary))
+        Row(Modifier.fillMaxSize().pointerInput(segmentPixels) {
+            detectDragGestures { change, _ ->
+                change.consume()
+                val index = (change.position.x / segmentPixels).toInt().coerceIn(0, 2)
+                latestSelect(VoiceListeningMode.entries[index])
+            }
+        }) {
+            VoiceListeningMode.entries.forEach { item ->
+                Box(
+                    Modifier.weight(1f).fillMaxHeight().selectable(
+                        selected = mode == item, role = Role.RadioButton, onClick = { onSelect(item) }
+                    ).padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(tr(item.label), style = MaterialTheme.typography.labelMedium,
+                        fontWeight = if (mode == item) FontWeight.Bold else FontWeight.Medium,
+                        textAlign = TextAlign.Center,
+                        color = if (mode == item) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
     }
 }
