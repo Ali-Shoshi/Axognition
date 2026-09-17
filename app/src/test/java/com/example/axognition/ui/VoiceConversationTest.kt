@@ -63,4 +63,26 @@ class VoiceConversationTest {
         session.reset()
         assertEquals(VoiceConversation.Turn.Wait, session.accept("next question", VoiceListeningMode.CONVERSATION))
     }
+
+    @Test fun goodbyeHomophonesEndConversationWithoutSendingAQuestion() {
+        listOf("bye AI", "by AI", "Buy AI", "buy A.I.", "buy eye", "okay, buy AI!").forEach { command ->
+            val session = VoiceConversation()
+            session.start()
+            assertEquals(command, VoiceConversation.Turn.End,
+                session.accept(command, VoiceListeningMode.CONVERSATION))
+            assertFalse(session.active)
+            assertEquals(VoiceConversation.Turn.Wait,
+                session.accept("next question", VoiceListeningMode.CONVERSATION))
+        }
+    }
+
+    @Test fun ordinaryBuyingQuestionsDoNotEndConversation() {
+        listOf("Can I buy AI software?", "buy a book", "buy ice cream", "What does buy mean?").forEach { question ->
+            val session = VoiceConversation()
+            session.start()
+            assertEquals(VoiceConversation.Turn.Ask(question),
+                session.accept(question, VoiceListeningMode.CONVERSATION))
+            assertTrue(session.active)
+        }
+    }
 }

@@ -48,6 +48,9 @@ internal class VoiceConversation {
         // Word boundaries avoid activating on fragments embedded in ordinary words.
         private val wakePhrase = Regex("""(?i)\b(?:hej|hey|hi)[\s,.:;-]*(?:a[.\s]*i|i|ay|eye)\b\.?""")
         private val endPhrase = Regex("""(?i)\b(?:bye|by|goodbye|baj|mirupafshim|mirëupafshim)[\s,.:;-]+(?:a[.\s]*i|i|ay)\b\.?""")
+        // "Buy AI" is a common transcription of "bye AI". Restrict this
+        // spelling to a short command so shopping questions do not end a chat.
+        private val misheardEndPhrase = Regex("""(?i)^\s*(?:(?:ok|okay|thanks|thank you)[\s,.:;!-]+)?buy[\s,.:;-]+(?:a[.\s]*i|i|ay|eye)[\s,.!?]*(?:(?:thanks|thank you)[\s,.!?]*)?$""")
         fun containsWakePhrase(text: String): Boolean {
             if (wakePhrase.containsMatchIn(text)) return true
             // Android commonly returns A.I. as "I", "eye", "ay", or merges
@@ -55,6 +58,8 @@ internal class VoiceConversation {
             return Regex("""(?i)(?:^|[^\p{L}\p{N}])(?:hejai|heyai|hiai|heji|heyi|heyay|heyeye)(?:$|[^\p{L}\p{N}])""")
                 .containsMatchIn(text)
         }
-        fun containsEndPhrase(text: String) = endPhrase.containsMatchIn(text)
+        fun containsEndPhrase(text: String) = endPhrase.containsMatchIn(text) || misheardEndPhrase.matches(text)
+        fun fromWakePhrase(text: String): String? = wakePhrase.find(text)?.let { text.substring(it.range.first) }
+        fun normalizeWakePhrases(text: String): String = wakePhrase.replace(text, "hej ai")
     }
 }

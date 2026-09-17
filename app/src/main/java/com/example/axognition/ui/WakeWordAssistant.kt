@@ -26,11 +26,14 @@ import kotlinx.coroutines.*
 data class VoiceAssistantBubble(
     val text: String,
     val isAnswer: Boolean = false,
+    val isQuestion: Boolean = false,
     val readThrough: Int = 0,
     val currentStart: Int = -1,
     val currentEnd: Int = -1,
     val isSpeaking: Boolean = false
-)
+) {
+    val isListening: Boolean get() = !isAnswer && !isQuestion && text == "Listening…"
+}
 
 @Composable
 fun WakeWordAssistant(
@@ -84,8 +87,8 @@ fun WakeWordAssistant(
 }
 
 /**
- * One recognizer session and one answer at a time. Recognition is paused during
- * playback so the speaker cannot transcribe itself as the student's next turn.
+ * During playback, recognition accepts only an explicit wake/end command and
+ * filters text from the current answer. Other speaker audio is never submitted.
  * All state and audio callbacks are serialized on the main thread.
  */
 internal class VoiceController(
@@ -162,9 +165,12 @@ internal class VoiceController(
         session.reset()
         selection = mode
         expectingQuestion = false
-        bubble = null
+        bubble = idleBubble()
         if (mode != VoiceListeningMode.OFF) scheduleListening(0)
     }
+
+    private fun idleBubble(): VoiceAssistantBubble? =
+        if (selection == VoiceListeningMode.CONVERSATION && session.active) VoiceAssistantBubble("Listening…") else null
 
     private fun stopListening() {
         listenJob?.cancel()
@@ -208,7 +214,7 @@ internal class VoiceController(
         cancelTurn()
         stopListening()
         expectingQuestion = session.active
-        bubble = if (session.active) VoiceAssistantBubble("Listening…") else null
+        bubble = idleBubble()
         scheduleListening()
     }
 
@@ -218,7 +224,7 @@ internal class VoiceController(
         stopListening()
         if (selection == VoiceListeningMode.CONVERSATION) session.start()
         expectingQuestion = true
-        bubble = VoiceAssistantBubble("Listening…")
+        bubble = idleBubble()
         scheduleListening(150)
     }
 
@@ -227,11 +233,11 @@ internal class VoiceController(
         stopListening()
         session.reset()
         expectingQuestion = false
-        bubble = VoiceAssistantBubble("Conversation ended. Say “hej AI” to start again.")
+        bubble = null
         scheduleListening()
     }
 
-    private fun scheduleListening(wait: Long = 600) {
+    private fun scheduleListening(wait: Long = 600, interruptOnly: Boolean = false) {
         listenJob?.cancel()
         if (disposed || selection == VoiceListeningMode.OFF) return
         listenJob = scope.launch {
@@ -250,9 +256,25 @@ internal class VoiceController(
             // Keep the healthy service connection. Destroy/rebind on every timeout
             // races Android's disconnect callback against the next startListening.
             val current = recognizer ?: SpeechRecognizer.createSpeechRecognizer(context).also { recognizer = it }
-            val capture = RecognitionCapture(waitingForWake = !expectingQuestion && !session.active)
+            val capture = RecognitionCapture(waitingForWake = interruptOnly || (!expectingQuestion && !session.active))
+            var monitoringResponse = interruptOnly
+            var interrupted = false
             var stopping = false
             fun valid() = !disposed && selection != VoiceListeningMode.OFF && token == recognitionGeneration
+            fun tryInterrupt(text: String): Boolean {
+                if (!monitoringResponse) return true
+                val command = VoiceInterruption.command(text, answerText,
+                    canEndConversation = selection == VoiceListeningMode.CONVERSATION) ?: return false
+                // Cancel the answer, but keep this recognition attempt alive so
+                // words following "hej AI" aren't lost during a microphone restart.
+                cancelTurn()
+                monitoringResponse = false
+                interrupted = true
+                expectingQuestion = true
+                bubble = VoiceAssistantBubble(command, isQuestion = true)
+                android.util.Log.i("AXO_VOICE", "Response interrupted by voice")
+                return true
+            }
             fun complete(candidates: List<String> = emptyList()) {
                 if (!valid()) return
                 val result = capture.finish(candidates) ?: return
@@ -260,16 +282,21 @@ internal class VoiceController(
                 clearRecognitionTimers()
                 current.cancel()
                 retryDelay = 600
+                if (!tryInterrupt(result.text)) {
+                    scheduleListening(interruptOnly = true)
+                    return
+                }
+                val recognized = if (interrupted) VoiceConversation.fromWakePhrase(result.text) ?: result.text else result.text
                 android.util.Log.i("AXO_VOICE",
                     "Recognition complete chars=${result.text.length} wake=${result.wakeDetected} expecting=$expectingQuestion")
-                when (val turn = session.accept(result.text, selection, expectingQuestion, result.wakeDetected)) {
+                when (val turn = session.accept(recognized, selection, expectingQuestion, result.wakeDetected)) {
                     VoiceConversation.Turn.Wait -> {
-                        bubble = if (session.active || expectingQuestion) VoiceAssistantBubble("Listening…") else null
+                        bubble = idleBubble()
                         scheduleListening()
                     }
                     VoiceConversation.Turn.Listen -> {
                         expectingQuestion = true
-                        bubble = VoiceAssistantBubble("Hej AI heard — ask your question.")
+                        bubble = idleBubble()
                         scheduleListening()
                     }
                     VoiceConversation.Turn.End -> endConversation()
@@ -282,6 +309,7 @@ internal class VoiceController(
             fun requestFinal() {
                 if (!valid() || stopping) return
                 stopping = true
+                if (!monitoringResponse && bubble?.isAnswer != true && bubble?.isQuestion != true) bubble = idleBubble()
                 recognitionSettle?.cancel()
                 runCatching { current.stopListening() }
                 // Some installed engines send a blank final bundle, or no final
@@ -295,20 +323,23 @@ internal class VoiceController(
                 override fun onReadyForSpeech(params: Bundle?) {
                     if (!valid()) return
                     android.util.Log.i("AXO_VOICE", "Recognition ready: ${AppLanguage.code}")
-                    if (bubble?.isAnswer != true) {
-                        bubble = if (session.active || expectingQuestion)
-                            VoiceAssistantBubble("Hej AI heard — ask your question.") else null
+                    if (!monitoringResponse && bubble?.isAnswer != true) {
+                        bubble = idleBubble()
                     }
                 }
                 override fun onBeginningOfSpeech() {
                     if (!valid() || stopping) return
                     recognitionSettle?.cancel()
-                    if (session.active || expectingQuestion) bubble = VoiceAssistantBubble("Listening…")
+                    if (!monitoringResponse && (session.active || expectingQuestion) && bubble?.isQuestion != true) bubble = VoiceAssistantBubble("Listening…")
                 }
                 override fun onRmsChanged(rmsdB: Float) = Unit
                 override fun onBufferReceived(buffer: ByteArray?) = Unit
                 override fun onEndOfSpeech() {
                     if (!valid() || stopping) return
+                    if (!monitoringResponse && bubble?.isAnswer != true && bubble?.isQuestion != true) bubble = idleBubble()
+                    // Ambient noise without recognized words should not close
+                    // a quiet listening session and flash the privacy indicator.
+                    if (capture.partialText.isBlank()) return
                     recognitionSettle?.cancel()
                     recognitionSettle = scope.launch {
                         delay(700)
@@ -319,8 +350,10 @@ internal class VoiceController(
                 override fun onPartialResults(results: Bundle?) {
                     if (!valid()) return
                     val changed = capture.partial(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty())
-                    if (capture.wakeDetected || session.active || expectingQuestion) {
-                        bubble = VoiceAssistantBubble("Listening…")
+                    if (changed) tryInterrupt(capture.partialText)
+                    if (!monitoringResponse && changed && !stopping && (capture.wakeDetected || session.active || expectingQuestion)) {
+                        val text = if (interrupted) VoiceConversation.fromWakePhrase(capture.partialText) ?: capture.partialText else capture.partialText
+                        bubble = VoiceAssistantBubble(text, isQuestion = true)
                     }
                     if (changed && !stopping) {
                         recognitionSettle?.cancel()
@@ -334,7 +367,8 @@ internal class VoiceController(
                     complete(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty())
                 }
                 override fun onSegmentResults(results: Bundle) {
-                    complete(results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty())
+                    val candidates = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
+                    if (candidates.any { text -> text.any(Char::isLetterOrDigit) }) complete(candidates)
                 }
                 override fun onEndOfSegmentedSession() { complete() }
                 override fun onError(error: Int) {
@@ -358,12 +392,12 @@ internal class VoiceController(
                                 recognizer = null
                             }
                             retryDelay = (retryDelay * 2).coerceIn(1_200, 8_000)
-                            bubble = VoiceAssistantBubble(when (error) {
+                            if (!monitoringResponse) bubble = VoiceAssistantBubble(when (error) {
                                 SpeechRecognizer.ERROR_AUDIO -> "Microphone unavailable. Retrying…"
                                 SpeechRecognizer.ERROR_NETWORK, SpeechRecognizer.ERROR_NETWORK_TIMEOUT -> "Speech recognition connection failed. Retrying…"
                                 else -> "Speech recognition is restarting…"
                             })
-                            scheduleListening(retryDelay)
+                            scheduleListening(retryDelay, interruptOnly = monitoringResponse)
                         }
                     }
                 }
@@ -373,8 +407,14 @@ internal class VoiceController(
                 putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
                 putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
                 putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
-                // Let the installed engine use its supported endpoint settings;
-                // our bounded finish/grace timers handle engines that never finish.
+                if (android.os.Build.VERSION.SDK_INT >= 33) {
+                    // Keep one quiet session open instead of reopening the mic
+                    // every few seconds. Actual speech still finishes through
+                    // partial/final callbacks and the existing settle timer.
+                    putExtra(RecognizerIntent.EXTRA_SEGMENTED_SESSION,
+                        RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS)
+                    putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, 20_000)
+                }
             }
             runCatching {
                 prepareRecognitionIntent(intent)
@@ -387,8 +427,8 @@ internal class VoiceController(
                 android.util.Log.w("AXO_VOICE", "Could not start recognition", it)
                 recognitionGeneration++
                 clearRecognitionTimers()
-                bubble = VoiceAssistantBubble("Speech recognition is restarting…")
-                scheduleListening(2_000)
+                if (!monitoringResponse) bubble = VoiceAssistantBubble("Speech recognition is restarting…")
+                scheduleListening(2_000, interruptOnly = monitoringResponse)
             }
         }
     }
@@ -403,6 +443,7 @@ internal class VoiceController(
         bubble = VoiceAssistantBubble("Thinking…")
         val cancellation = AssistantApi.RequestCancellation()
         request = cancellation
+        scheduleListening(350, interruptOnly = true)
         var count = 0
         val chunker = StreamingSpeechChunker { chunk, offset ->
             if (token == generation && ttsReady && !speechFailed) {
@@ -463,6 +504,7 @@ internal class VoiceController(
                 if (answerText.isNotBlank()) {
                     finishAnswer()
                 } else {
+                    stopListening()
                     bubble = VoiceAssistantBubble("I could not reach the learning assistant. Please try again.")
                     expectingQuestion = session.active
                     scheduleListening(1_000)
@@ -473,12 +515,14 @@ internal class VoiceController(
 
     private fun finishAnswer() {
         if (disposed || selection == VoiceListeningMode.OFF) return
+        stopListening()
         playbackWatchdog?.cancel()
         if (!savedAnswer && answerText.isNotBlank()) {
             save(ChatMessage(answerText, false))
             savedAnswer = true
         }
         bubble = bubble?.copy(isSpeaking = false, currentStart = -1, currentEnd = -1)
+        if (selection == VoiceListeningMode.CONVERSATION) bubble = idleBubble()
         expectingQuestion = session.active
         // Brief drain interval prevents the microphone picking up the end of playback.
         scheduleListening(500)

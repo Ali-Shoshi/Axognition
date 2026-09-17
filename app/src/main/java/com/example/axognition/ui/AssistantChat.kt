@@ -13,6 +13,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.border
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -416,6 +419,25 @@ fun AssistantChatPanel(
                     }
                     Spacer(Modifier.height(8.dp))
                 }
+                if (voiceStatus?.isQuestion == true) {
+                    val transcriptScroll = rememberScrollState()
+                    LaunchedEffect(voiceStatus.text, transcriptScroll.maxValue) {
+                        transcriptScroll.animateScrollTo(transcriptScroll.maxValue)
+                    }
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(tr("Your question"), style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                            Text(voiceStatus.text, modifier = Modifier.heightIn(max = 88.dp).verticalScroll(transcriptScroll),
+                                style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = draft,
@@ -521,7 +543,9 @@ fun AssistantChatPanel(
                     }
                 }
                 Text(
-                    tr(if (voiceStatus != null && !voiceStatus.isAnswer) voiceStatus.text else listeningMode.hint),
+                    tr(if (voiceStatus?.isSpeaking == true) "Say “hej AI” to interrupt"
+                        else if (voiceStatus != null && !voiceStatus.isAnswer && !voiceStatus.isQuestion) voiceStatus.text
+                        else listeningMode.hint),
                     modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
                     style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,

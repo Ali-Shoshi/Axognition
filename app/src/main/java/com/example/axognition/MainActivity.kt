@@ -46,6 +46,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -422,8 +423,17 @@ private fun AuthenticatedMainApp(
             conversation = { chatMessages.toList() },
             onMessage = appendChatMessage
         ) { voiceBubble, dismissVoice, listenNow ->
-            val needsTwoLines = voiceBubble?.let { it.isAnswer || it.text.length > 34 } == true
-            val expandedWidth = minOf(if (needsTwoLines) 380.dp else 270.dp, maxWidth - 32.dp)
+            val needsTwoLines = voiceBubble?.let { it.isAnswer || it.isQuestion || it.text.length > 34 } == true
+            val textMeasurer = rememberTextMeasurer()
+            val listeningTextWidth = with(density) {
+                textMeasurer.measure(tr("Listening…"), style = MaterialTheme.typography.bodyLarge,
+                    maxLines = 1, softWrap = false).size.width.toDp()
+            }
+            val expandedWidth = minOf(
+                if (voiceBubble?.isListening == true) listeningTextWidth + 74.dp
+                else if (needsTwoLines) 380.dp else 270.dp,
+                maxWidth - 32.dp
+            )
             val groupWidth = if (voiceBubble != null) expandedWidth else 56.dp
             val groupHeight = if (needsTwoLines) 78.dp else 56.dp
             val groupWidthPx = with(density) { groupWidth.toPx() }
@@ -507,8 +517,8 @@ private fun VoiceResponseBubble(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val displayedText = if (state.isAnswer) state.text else tr(state.text)
-    val needsTwoLines = state.isAnswer || displayedText.length > 34
+    val displayedText = if (state.isQuestion) "${tr("Your question")}: ${state.text}" else if (state.isAnswer) state.text else tr(state.text)
+    val needsTwoLines = state.isAnswer || state.isQuestion || displayedText.length > 34
     val readEnd = state.readThrough.coerceIn(0, displayedText.length)
     val currentStart = state.currentStart.coerceIn(0, displayedText.length)
     val currentEnd = state.currentEnd.coerceIn(currentStart, displayedText.length)
@@ -534,6 +544,7 @@ private fun VoiceResponseBubble(
     var lineStarts by remember(displayedText) { mutableStateOf(emptyList<Int>()) }
     var lineTops by remember(displayedText) { mutableStateOf(emptyList<Int>()) }
     val focusOffset = when {
+        state.isQuestion -> displayedText.lastIndex
         state.currentStart >= 0 -> state.currentStart
         state.readThrough > 0 -> state.readThrough - 1
         else -> 0
@@ -551,17 +562,17 @@ private fun VoiceResponseBubble(
     Surface(
         modifier = modifier,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        color = if (state.isQuestion) MaterialTheme.colorScheme.tertiaryContainer else MaterialTheme.colorScheme.surface,
+        contentColor = if (state.isQuestion) MaterialTheme.colorScheme.onTertiaryContainer else MaterialTheme.colorScheme.onSurface,
         border = BorderStroke(
             2.dp,
-            if (state.isSpeaking) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+            if (state.isQuestion) MaterialTheme.colorScheme.tertiary else if (state.isSpeaking) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
         ),
         shadowElevation = 5.dp
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 18.dp, end = 4.dp, top = 7.dp, bottom = 7.dp)
+            modifier = Modifier.padding(start = 18.dp, end = if (state.isListening) 12.dp else 4.dp, top = 7.dp, bottom = 7.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -582,7 +593,7 @@ private fun VoiceResponseBubble(
                     }
                 )
             }
-            IconButton(onClick = onDismiss, modifier = Modifier.size(36.dp)) {
+            if (!state.isListening) IconButton(onClick = onDismiss, modifier = Modifier.size(36.dp)) {
                 Icon(
                     Icons.Default.Close,
                     contentDescription = tr("Stop speaking and dismiss"),

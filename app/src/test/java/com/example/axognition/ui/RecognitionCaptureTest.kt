@@ -10,7 +10,8 @@ class RecognitionCaptureTest {
         capture.partial(listOf("Hey AI what is a triangle?"))
         capture.partial(listOf(""))
         val result = capture.finish(listOf(""))!!
-        assertEquals(VoiceConversation.Turn.Ask("what is a triangle?"),
+        assertEquals("Hey AI what is a triangle?", result.text)
+        assertEquals(VoiceConversation.Turn.Ask("what is a triangle"),
             VoiceConversation().accept(result.text, VoiceListeningMode.WAKE_WORD, wakeDetected = result.wakeDetected))
         assertNull(capture.finish(listOf("Hey AI what is a triangle?")))
     }
