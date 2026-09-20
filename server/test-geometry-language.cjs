@@ -1,3 +1,4 @@
+const {solveCheckpoint}=require('./checkpoint-test-helpers.cjs');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'src/main/resources/lessons');
@@ -5,9 +6,8 @@ const en=JSON.parse(fs.readFileSync(path.join(root,'geometry.json'),'utf8'));
 const sq=JSON.parse(fs.readFileSync(path.join(root,'geometry.sq.json'),'utf8'));
 assert.equal(sq.chapters.length,en.chapters.length);
 sq.chapters.forEach((c,i)=>{
- const original=en.chapters[i];assert.equal(c.shape,original.shape);assert.equal(c.question.answer,original.question.answer);
- assert.equal(c.question.type,original.question.type);assert.equal(c.question.unit,original.question.unit);
- assert.notEqual(c.title,original.title);assert.notEqual(c.question.prompt,original.question.prompt);assert.notEqual(c.question.explanation,original.question.explanation);
+ const original=en.chapters[i];assert.equal(c.shape,original.shape);assert.notEqual(c.title,original.title);
+ c.questions.forEach((q,j)=>{const eq=original.questions[j];assert.equal(q.answer,eq.answer);assert.equal(q.type,eq.type);assert.equal(q.unit,eq.unit);assert.notEqual(q.prompt,eq.prompt);assert.notEqual(q.explanation,eq.explanation);});
  c.cues.forEach((cue,j)=>{assert.equal(cue.mode,original.cues[j].mode);assert.equal(cue.seconds,original.cues[j].seconds);assert.notEqual(cue.text,original.cues[j].text);assert(cue.text.length>80);});
 });
 const catalog=JSON.parse(fs.readFileSync(path.join(__dirname,'../app/src/main/assets/i18n/sq.json'),'utf8'));
@@ -34,7 +34,7 @@ const server=http.createServer((req,res)=>{
  try{
   await go('en');await page.locator('#start').click();
   await page.evaluate(()=>{move(1,3,false);showQuestion()});
-  await page.locator('#answers input').fill('24');await page.locator('#answers input').press('Enter');
+  await solveCheckpoint(page,en.chapters[1]);
   await page.evaluate(()=>selectVoiceSpeed(1.5));
   await go('sq');
   assert.equal(await page.locator('html').getAttribute('lang'),'sq');
@@ -43,15 +43,13 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#start').textContent(),sq.ui['Resume exploring ▶']);
   assert.equal(await page.locator('.voice-speed-label').textContent(),sq.ui['Voice Speed']);
   await page.locator('#start').click();assert.equal(await page.locator('#next').isDisabled(),true);
-  assert.equal(await page.evaluate(()=>spoken.at(-1)),sq.chapters[1].cues[3].text,'Native narration gets Albanian text');
+  assert.equal(await page.evaluate(()=>spoken.at(-1)),sq.chapters[2].cues[0].text,'Native narration gets Albanian text');
   for(let i=0;i<10;i++){
    await page.evaluate(i=>{move(i,3,false);showQuestion()},i);
-   assert.equal(await page.locator('#question').textContent(),sq.chapters[i].question.prompt);
-   const q=sq.chapters[i].question;
-   if(q.type==='choice')await page.locator('#answers button').nth(q.answer).click();
-   else{await page.locator('#answers input').fill(String(q.answer));await page.locator('#answers input').press('Enter');}
-   assert.equal(await page.locator('#feedback').textContent(),sq.ui['Exactly. ']+q.explanation);
-   await page.locator('#continue').click();
+   await solveCheckpoint(page,sq.chapters[i],async(index)=>{
+    assert.equal(await page.locator('#question').textContent(),sq.chapters[i].questions[index].prompt);
+    assert.equal(await page.locator('#feedback').textContent(),sq.ui['Exactly. ']+sq.chapters[i].questions[index].explanation);
+   });
   }
   assert.equal(await page.locator('#finish').textContent(),sq.ui.Finish);
   assert.equal(await page.locator('#finish').isEnabled(),true);

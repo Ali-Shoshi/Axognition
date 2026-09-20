@@ -545,5 +545,7 @@
   "Enter a username and password.": "Shkruaj emrin e përdoruesit dhe fjalëkalimin.",
   "The username or password is incorrect.": "Emri i përdoruesit ose fjalëkalimi është i pasaktë.",
   "The child account is unavailable.": "Llogaria e fëmijës nuk është e disponueshme.",
-  "The local learning assistant is unavailable. Check that LM Studio is running and the model is loaded.": "Asistenti lokal nuk është i disponueshëm. Kontrollo nëse LM Studio është hapur dhe modeli është ngarkuar."
+  "The local learning assistant is unavailable. Check that LM Studio is running and the model is loaded.": "Asistenti lokal nuk është i disponueshëm. Kontrollo nëse LM Studio është hapur dhe modeli është ngarkuar.",
+  "Fractions · Share, see, solve": "Thyesat · Ndaj, shiko dhe zgjidh",
+  "Fractions: interactive guided unit": "Thyesat: një udhëtim pamor ndërveprues"
 }

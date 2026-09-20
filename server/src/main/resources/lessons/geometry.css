@@ -773,6 +773,12 @@ footer button { padding:10px 12px; }
 }
 .question-card h2 { font-size:clamp(19px,2.2vw,26px); margin:12px 0; }
 #answers form { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.question-count { color:var(--muted); font-size:14px; margin:10px 0 0; }
+#answers:has(> button) { grid-template-columns:repeat(2,minmax(0,1fr)); }
+#answers > button { overflow-wrap:anywhere; }
+@media(max-width:600px) {
+  #answers:has(> button) { grid-template-columns:1fr; }
+}
 #answers input { max-width:100%; min-width:0; flex:1 1 100px; }
 #answers button, .primary { max-width:100%; }
 .dialog-head { gap:12px; }

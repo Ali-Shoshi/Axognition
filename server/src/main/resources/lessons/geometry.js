@@ -1,6 +1,8 @@
 'use strict';
 const $=id=>document.getElementById(id);
-const LEGACY_STORE='axognition-geometry-v1';
+// Shared playback behavior; subject-specific models are supplied by each lesson.
+const presentation=window.lessonPresentation || {};
+const LEGACY_STORE=presentation.storageKey || 'axognition-geometry-v1';
 const STORE=window.GeometryVoice?.progressKey?.() || LEGACY_STORE;
 let lesson;
 const lessonLanguage = window.geometryInitialLanguage === 'sq' ? 'sq' : 'en';
@@ -20,17 +22,125 @@ function localizeLessonInterface() {
       if (text && lesson.ui[text]) element.setAttribute(attribute, lesson.ui[text]);
     }
   });
-  document.title = g('Around & inside · Axognition');
+  document.title = g(presentation.title || 'Around & inside · Axognition');
 }
 let chapter=0, cue=0, seconds=0, playing=false, started=false;
 let muted=false, speaking=false, token=0, voiceTimer, lastFrame=0, savedAt=0;
 let answers={};
+let questionAnswers={}, questionIndex=0, inCheckpoint=false;
+let completedSlides={}, generation=0, importedToServer=false;
+let sessionId=null, eventSequence=0, exitSent=false, visitId=null;
+let visitStarted=0, activeStarted=null, activeElapsed=0, lastAttemptAt=0;
+let activityOutbox=[];
+try { const pending=JSON.parse(localStorage.getItem(STORE+':outbox')||'[]');if(Array.isArray(pending))activityOutbox=pending; } catch (_) {}
+const progressRequests=new Map();
+function activityId() {
+  if(window.crypto?.randomUUID)return window.crypto.randomUUID();
+  const bytes=new Uint8Array(16);
+  if(window.crypto?.getRandomValues)window.crypto.getRandomValues(bytes);
+  else for(let i=0;i<16;i++)bytes[i]=Math.floor(Math.random()*256);
+  bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+  const hex=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+  return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);
+}
+function setActivityVisible(value) {
+  const now=performance.now();
+  if(activeStarted!==null)activeElapsed+=Math.max(0,now-activeStarted);
+  activeStarted=value?now:null;
+}
+function beginVisit() {
+  visitId=activityId();visitStarted=performance.now();lastAttemptAt=visitStarted;
+  activeElapsed=0;activeStarted=document.hidden?null:visitStarted;
+}
+function activityTiming() {
+  const now=performance.now(),elapsed=visitId?Math.max(0,now-visitStarted):0;
+  return {elapsedMs:Math.round(elapsed),activeMs:Math.round(Math.min(elapsed,activeElapsed+(activeStarted===null?0:Math.max(0,now-activeStarted)))),
+    sinceAttemptMs:Math.round(visitId?Math.max(0,now-lastAttemptAt):0)};
+}
+function drainActivity() {
+  if(!window.GeometryVoice?.trackEvent)return;
+  while(activityOutbox.length) {
+    try { if(!GeometryVoice.trackEvent(JSON.stringify(activityOutbox[0])))break; }
+    catch (_) { break; }
+    activityOutbox.shift();
+  }
+  try { localStorage.setItem(STORE+':outbox',JSON.stringify(activityOutbox)); }
+  catch (_) { $('notice').textContent=g('Activity could not be saved. Keep this lesson open and try again.'); }
+}
+function trackActivity(type,extra={}) {
+  if(!lesson||!sessionId||!window.GeometryVoice?.trackEvent)return;
+  const event={id:activityId(),sessionId,type,occurredAt:new Date().toISOString(),generation,
+    lessonVersion:lesson.version,sequence:eventSequence++,chapter,cue,
+    question:inCheckpoint?questionIndex:null,checkpointRevision:current().checkpointRevision||1,
+    seconds,visitId,...activityTiming(),...extra};
+  // Persist before handing it to native storage; retries keep the exact same UUID.
+  activityOutbox.push(JSON.parse(JSON.stringify(event)));
+  try {localStorage.setItem(STORE+':outbox',JSON.stringify(activityOutbox));}catch(_){}
+  drainActivity();
+}
+function beginSession(reason) {
+  sessionId=activityId();eventSequence=0;exitSent=false;visitId=null;
+  trackActivity('lecture_started',{value:reason});
+  if(!importedToServer && window.GeometryVoice?.trackEvent) {
+    trackActivity('legacy_import',{importedAnswers:questionAnswers,importedSlides:Object.keys(completedSlides)});
+    importedToServer=true;
+  }
+}
+function finishSlide(type) {
+  const key=chapter+':'+cue,revisit=Boolean(completedSlides[key]);
+  trackActivity(type,{revisit});
+  completedSlides[key]=true;
+}
+function applyServerProgress(state,restorePosition=false) {
+  if(!lesson||!state||state.lessonVersion!==lesson.version||state.generation<generation)return;
+  if(state.generation>generation || (restorePosition && importedToServer)) {
+    generation=state.generation;completedSlides={};questionAnswers={};answers={};completedAt=null;
+  }
+  for(const key of state.completedSlides||[])completedSlides[key]=true;
+  lesson.chapters.forEach((c,i)=>{
+    if(state.checkpointRevisions?.[i] !== (c.checkpointRevision||1))return;
+    questionAnswers[i]=c.questions.map((_,j)=>questionAnswers[i]?.[j]===true||state.questionAnswers?.[i]?.[j]===true);
+    if(questionAnswers[i].every(Boolean))answers[i]=true;
+  });
+  if(allCheckpointsComplete())completedAt=state.completedAt||completedAt||new Date().toISOString();
+  if(restorePosition && state.cursorAt) {
+    chapter=Math.max(0,Math.min(lesson.chapters.length-1,state.chapter));
+    cue=Math.max(0,Math.min(current().cues.length-1,state.cue));seconds=Math.max(0,Math.min(40,state.seconds||0));
+    questionIndex=state.questionIndex===1?1:0;inCheckpoint=Boolean(state.inCheckpoint);
+  }
+  if(state.generation>0)importedToServer=true;
+  save();updateNext();updateProgress();
+}
+window.lessonProgressLoaded=(id,payload)=>{
+  let response;try{response=JSON.parse(payload);}catch(_){return;}
+  const resolve=progressRequests.get(id);
+  if(resolve){progressRequests.delete(id);resolve(response);}
+  else if(response.state&&!response.pending&&!activityOutbox.length) {
+    applyServerProgress(response.state,false);
+    if(started&&inCheckpoint)showQuestion(questionIndex);
+  }
+  if(response.error||response.pending||activityOutbox.length)$('notice').textContent=g('Saved on this device. Waiting to sync with the server.');
+  else if(response.state)$('notice').textContent=g('Progress synced with the server.');
+};
+function loadServerProgress() {
+  if(!window.GeometryVoice?.loadProgress)return Promise.resolve(null);
+  const id=activityId();
+  return new Promise(resolve=>{
+    progressRequests.set(id,resolve);
+    setTimeout(()=>{if(progressRequests.delete(id))resolve(null);},3500);
+    try {GeometryVoice.loadProgress(id);}catch(_){progressRequests.delete(id);resolve(null);}
+  });
+}
+window.geometryExit=()=>{
+  if(started&&!exitSent){trackActivity('lecture_exit');exitSent=true;}
+  setActivityVisible(false);setPlaying(false);save();drainActivity();
+};
 let customSide=5;
-const NEXT_WAIT_MS = 7000;
+const NEXT_WAIT_MS = 10000;
 const VOICE_SPEEDS = [0.5, 0.7, 1, 1.25, 1.5, 1.75, 2];
 let nextUnlockAt = 0, voiceSpeed = 1, lastSpeechText = '', completedAt = null;
 function updateNext() {
-  const remaining = Math.max(0, nextUnlockAt - performance.now());
+  const remaining = completedSlides[chapter+':'+cue]||allCheckpointsComplete()?0:Math.max(0, nextUnlockAt - performance.now());
   const inScene = started && $('welcome').hidden && $('questionPanel').hidden && $('finished').hidden;
   const waiting = inScene && remaining > 0;
   $('next').disabled = !inScene || waiting || Boolean($('contents').open);
@@ -118,6 +228,10 @@ function fillGrid(x,y,cols,rows,unit,clip='') {
   return s+'</g>';
 }
 function renderShape() {
+  if (presentation.render) {
+    presentation.render({chapter:current(), cue, value:customSide, scene:$('scene'), label, g});
+    return;
+  }
   const c=current(), mode=c.cues[cue].mode, area=['area','split','rearrange','compare'].includes(mode), edge=mode==='perimeter'||mode==='compare';
   let shape='', labels='', extras='', tiles='', path='';
   if(c.shape==='rectangle'||c.shape==='square') {
@@ -216,7 +330,9 @@ function save() {
   if(!lesson)return;
   try {
     localStorage.setItem(STORE,JSON.stringify( {
-      version:1,chapter,cue,seconds,answers,voiceSpeed,completedAt
+      version:2,chapter,cue,seconds,answers,questionAnswers,questionIndex,inCheckpoint,voiceSpeed,completedAt,
+      finalCheckpointRevision:lesson.chapters[lesson.chapters.length-1].checkpointRevision,
+      completedSlides,generation,importedToServer
     }
     ));
     return true;
@@ -281,6 +397,7 @@ function updateProgress() {
   $('previous').disabled=chapter===0&&cue===0;
 }
 function renderCue(narrate=true) {
+  inCheckpoint=false;
   const c=current(), s=c.cues[cue];
   applyLessonTheme();
   $('heading').textContent=c.title;
@@ -289,16 +406,17 @@ function renderCue(narrate=true) {
   $('mode').textContent=( {
     outline:g('MEET THE SHAPE'),perimeter:g('TRACE THE BOUNDARY'),area:g('COVER THE INSIDE'),split:g('SPLIT & DISCOVER'),rearrange:g('MOVE THE PIECES'),compare:g('MAKE A CONNECTION')
   }
-  )[s.mode];
+  )[s.mode] || g(presentation.modes?.[s.mode] || 'WATCH & DISCOVER');
   $('chapterCount').textContent=String(chapter+1).padStart(2,'0')+' / 10';
-  $('explorer').hidden=c.shape!=='square'||cue!==3;
-  $('sideValue').textContent=customSide+' cm';
+  $('explorer').hidden=presentation.hasExplorer ? !presentation.hasExplorer(c, cue) : c.shape!=='square'||cue!==3;
+  $('sideValue').textContent=presentation.explorerValue ? presentation.explorerValue(customSide, g) : customSide+' cm';
   $('questionPanel').hidden=true;
   $('finished').hidden=true;
   nextUnlockAt = performance.now() + NEXT_WAIT_MS;
   updateNext();
   updateProgress();
   renderShape();
+  if(started) {beginVisit();trackActivity('slide_entered',{revisit:Boolean(completedSlides[chapter+':'+cue])||allCheckpointsComplete()});}
   if(playing&&narrate)speak(s.text);
 }
 function move(ch,sc,play=playing) {
@@ -311,32 +429,52 @@ function move(ch,sc,play=playing) {
   save();
 }
 function start() {
-  if(!lesson)return;
+  if(!lesson||$('start').disabled)return;
+  beginSession(allCheckpointsComplete()?'review':'start');
   started=true;
   $('welcome').hidden=true;
+  if(inCheckpoint) {
+    showQuestion(questionIndex);
+    return;
+  }
   setPlaying(true);
   renderCue();
 }
-function showQuestion() {
+function showQuestion(index) {
   setPlaying(false);
+  inCheckpoint=true;
+  const questions=current().questions;
+  const unanswered=questions.findIndex((_,i)=>questionAnswers[chapter]?.[i]!==true);
+  questionIndex=Number.isInteger(index) ? Math.max(0,Math.min(questions.length-1,index)) : Math.max(0,unanswered);
   $('questionPanel').hidden=false;
   updateNext();
   $('answers').replaceChildren();
   $('feedback').textContent='';
-  $('continue').hidden=true;
-  const q=current().question;
+  let solved=questionAnswers[chapter]?.[questionIndex]===true;
+  $('continue').hidden=!solved;
+  $('continue').textContent=questionIndex===0?g('Next question →'):g('Complete checkpoint →');
+  $('questionCount').textContent=g('Question ')+(questionIndex+1)+g(' of 2');
+  const q=questions[questionIndex];
+  beginVisit();trackActivity('question_shown',{question:questionIndex,revisit:solved});
   $('question').textContent=q.prompt;
   $('caption').textContent=q.prompt;
   $('speaker').textContent=g('THINK IT THROUGH');
   function check(value,button) {
+    if(solved||!Number.isFinite(value))return;
     const correct=value===q.answer;
+    trackActivity('answer_submitted',{question:questionIndex,answer:value});
+    lastAttemptAt=performance.now();
     if(button)button.classList.add(correct?'correct':'incorrect');
     const feedback=(correct?g('Exactly. '):g('Let’s check that. '))+q.explanation;
     $('feedback').textContent=feedback;
     $('caption').textContent=feedback;
     speak(feedback);
     if(correct) {
-      answers[chapter]=true;
+      solved=true;
+      questionAnswers[chapter] ||= [];
+      questionAnswers[chapter][questionIndex]=true;
+      if(questions.every((_,i)=>questionAnswers[chapter][i]===true))answers[chapter]=true;
+      document.querySelectorAll('#answers button, #answers input').forEach(element=>element.disabled=true);
       $('continue').hidden=false;
       updateProgress();
       save();
@@ -358,8 +496,8 @@ function showQuestion() {
     input.min='0';
     input.step='any';
     input.required=true;
-    input.setAttribute('aria-label',g('Your answer in ')+q.unit);
-    unit.textContent=' '+q.unit+' ';
+    input.setAttribute('aria-label',q.unit?g('Your answer in ')+g(q.unit):g('Your answer'));
+    unit.textContent=' '+g(q.unit)+' ';
     b.type='submit';
     b.textContent=g('Check answer');
     row.append(input,unit,b);
@@ -374,11 +512,24 @@ function showQuestion() {
     ;
     $('answers').append(row);
   }
+  if(solved) {
+    if(q.type==='choice')$('answers').children[q.answer].classList.add('correct');
+    else $('answers').children[0].children[0].value=String(q.answer);
+    $('feedback').textContent=g('Exactly. ')+q.explanation;
+    document.querySelectorAll('#answers button, #answers input').forEach(element=>element.disabled=true);
+  }
   speak(q.prompt);
   save();
 }
 function completeOrContinue() {
+  if(!inCheckpoint||questionAnswers[chapter]?.[questionIndex]!==true)return;
+  trackActivity('question_next',{question:questionIndex});
+  if(questionIndex<current().questions.length-1) {
+    showQuestion(questionIndex+1);
+    return;
+  }
   if(!answers[chapter])return;
+  inCheckpoint=false;
   $('speaker').textContent=g('YOUR GUIDE');
   stopVoice();
   if(chapter<lesson.chapters.length-1)move(chapter+1,0,true);
@@ -396,7 +547,9 @@ function completeOrContinue() {
   }
 }
 function openContents() {
-  if(!lesson)return;
+  if(!lesson||$('start').disabled)return;
+  if(started)trackActivity('pause',{value:'chapters'});
+  setActivityVisible(false);
   setPlaying(false);
   $('chapterList').replaceChildren();
   lesson.chapters.forEach((c,i)=> {
@@ -404,6 +557,8 @@ function openContents() {
     b.textContent=String(i+1).padStart(2,'0')+'  '+c.title+(answers[i]?'   ✓':'');
     b.onclick=()=> {
       $('contents').close();
+      if(!started)beginSession('chapter');
+      trackActivity('chapter_selected',{targetChapter:i,targetCue:0});
       started=true;
       $('welcome').hidden=true;
       $('speaker').textContent=g('YOUR GUIDE');
@@ -423,6 +578,7 @@ $('play').onclick=()=> {
     return;
   }
   if(!$('questionPanel').hidden||!$('finished').hidden)return;
+  trackActivity(playing?'pause':'resume',{value:'play_button'});
   if(playing)setPlaying(false);
   else {
     setPlaying(true);
@@ -433,12 +589,16 @@ $('play').onclick=()=> {
 $('next').onclick=()=> {
   updateNext();
   if(!lesson||$('next').disabled)return;
+  finishSlide('slide_next');
   if(cue<3)move(chapter,cue+1);
   else showQuestion();
 }
 ;
 $('previous').onclick=()=> {
   if(!lesson||!started)return;
+  if(cue===0&&chapter===0)return;
+  const targetChapter=cue>0?chapter:chapter-1,targetCue=cue>0?cue-1:3;
+  trackActivity('slide_back',{targetChapter,targetCue,revisit:Boolean(completedSlides[targetChapter+':'+targetCue])||allCheckpointsComplete()});
   $('speaker').textContent=g('YOUR GUIDE');
   if(cue>0)move(chapter,cue-1);
   else if(chapter>0)move(chapter-1,3);
@@ -446,11 +606,13 @@ $('previous').onclick=()=> {
 ;
 $('replay').onclick=()=> {
   if(!lesson||!started)return;
+  trackActivity('voice_replay');
   speak($('caption').textContent);
 }
 ;
 $('mute').onclick=()=> {
   muted=!muted;
+  trackActivity('mute',{value:String(muted)});
   stopVoice();
   $('mute').textContent=muted?g('Sound off'):g('Sound on');
   $('mute').setAttribute('aria-pressed',String(muted));
@@ -460,6 +622,8 @@ $('mute').onclick=()=> {
 $('continue').onclick=completeOrContinue;
 $('finish').onclick=()=> {
   if (!recordCompletion()) return;
+  trackActivity('lecture_finished');
+  window.geometryExit();
   setPlaying(false);
   window.GeometryVoice?.hideKeyboard?.();
   if (window.GeometryVoice?.finish) {
@@ -480,6 +644,7 @@ function selectVoiceSpeed(selected) {
   const resumeSpeech = speaking;
   const text = lastSpeechText;
   voiceSpeed = selected;
+  if(started)trackActivity('voice_speed',{value:String(selected)});
   const label = selected === 1.5 ? '1.50×' : selected + '×';
   $('voiceSpeedValue').textContent=label;
   $('voiceSpeedButton').setAttribute('aria-label',g('Voice speed, ')+label.replace('×',g(' times')));
@@ -507,6 +672,7 @@ document.addEventListener('keydown',event=> {
 $('contentsButton').onclick=openContents;
 $('review').onclick=openContents;
 $('closeContents').onclick=()=>$('contents').close();
+$('contents').addEventListener?.('close',()=>setActivityVisible(!document.hidden));
 $('restart').onclick=()=> {
   if(confirm(g('Restart this unit and clear its saved checkpoints?'))) {
     if (window.GeometryVoice?.setCompleted && !GeometryVoice.setCompleted(false)) {
@@ -514,6 +680,10 @@ $('restart').onclick=()=> {
       return;
     }
     completedAt = null;
+    if(!sessionId){sessionId=activityId();eventSequence=0;}
+    trackActivity('reset');generation++;completedSlides={};
+    questionAnswers={};
+    questionIndex=0;
     answers= {
     }
     ;
@@ -521,17 +691,21 @@ $('restart').onclick=()=> {
     $('speaker').textContent=g('YOUR GUIDE');
     started=true;
     $('welcome').hidden=true;
+    beginSession('restart');
     move(0,0,false);
   }
 }
 ;
 $('side').oninput=()=> {
   customSide=Number($('side').value);
-  $('sideValue').textContent=customSide+' cm';
+  trackActivity('explorer_changed',{value:String(customSide)});
+  $('sideValue').textContent=presentation.explorerValue ? presentation.explorerValue(customSide, g) : customSide+' cm';
   renderShape();
 }
 ;
 document.addEventListener('visibilitychange',()=> {
+  if(started)trackActivity(document.hidden?'hidden':'visible');
+  setActivityVisible(!document.hidden);
   if(document.hidden) {
     setPlaying(false);
     save();
@@ -539,15 +713,20 @@ document.addEventListener('visibilitychange',()=> {
 }
 );
 window.addEventListener('pagehide',()=> {
-  setPlaying(false);
-  save();
+  window.geometryExit();
 }
 );
 window.geometryPause=()=> {
+  if(started)trackActivity('hidden',{value:'app_background'});
+  setActivityVisible(false);
   setPlaying(false);
   save();
 }
 ;
+window.geometryResume=()=> {
+  if(started)trackActivity('visible',{value:'app_foreground'});
+  setActivityVisible(!document.hidden);
+};
 function frame(now) {
   updateNext();
   if(playing&&lesson) {
@@ -555,6 +734,7 @@ function frame(now) {
     lastFrame=now;
     updateProgress();
     if(seconds>=current().cues[cue].seconds&&!speaking) {
+      finishSlide('slide_auto');
       if(cue<3)move(chapter,cue+1,true);
       else showQuestion();
     }
@@ -566,14 +746,15 @@ function frame(now) {
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
-fetch(lessonLanguage === 'sq' ? './geometry.sq.json' : './geometry.json').then(r=> {
+fetch('./'+(presentation.id || 'geometry')+(lessonLanguage === 'sq' ? '.sq' : '')+'.json').then(r=> {
   if(!r.ok)throw Error('HTTP '+r.status);
   return r.json();
 }
-).then(data=> {
+).then(async data=> {
   lesson=data;
   localizeLessonInterface();
   $('subjectName').textContent=lesson.subject||g('Subject');
+  let resumeCheckpoint=false;
   try {
     let stored = localStorage.getItem(STORE);
     // Claim the old device-wide progress only once when upgrading, then keep
@@ -583,26 +764,59 @@ fetch(lessonLanguage === 'sq' ? './geometry.sq.json' : './geometry.json').then(r
       if (stored) localStorage.setItem(STORE, stored);
       localStorage.setItem(LEGACY_STORE + ':owner', STORE);
     }
-    const saved=JSON.parse(stored);
-    if(saved?.version===1) {
+    const parsed=JSON.parse(stored);
+    const saved=presentation.migrateSaved ? presentation.migrateSaved(parsed) : parsed;
+    if(saved?.version===1 || saved?.version===2) {
       chapter=Math.min(lesson.chapters.length-1,Math.max(0,Math.floor(Number(saved.chapter)||0)));
       cue=Math.min(3,Math.max(0,Math.floor(Number(saved.cue)||0)));
       seconds=Math.min(40,Math.max(0,Number(saved.seconds)||0));
       if (VOICE_SPEEDS.includes(saved.voiceSpeed)) voiceSpeed = saved.voiceSpeed;
-      for(let i=0;
-      i<lesson.chapters.length;
-      i++)if(saved.answers?.[i]===true)answers[i]=true;
+      generation=Number.isSafeInteger(saved.generation)&&saved.generation>=0?saved.generation:0;
+      importedToServer=saved.importedToServer===true;
+      lesson.chapters.forEach((c,i)=>c.cues.forEach((_,j)=>{if(saved.completedSlides?.[i+':'+j]===true)completedSlides[i+':'+j]=true;}));
+      for(let i=0;i<lesson.chapters.length;i++) {
+        const questions=lesson.chapters[i].questions;
+        questionAnswers[i]=questions.map((_,j)=>saved.version===2
+          ? saved.questionAnswers?.[i]?.[j]===true
+          : saved.answers?.[i]===true && j===lesson.chapters[i].legacyQuestionIndex);
+        if(questionAnswers[i].every(Boolean))answers[i]=true;
+        if(answers[i]&&!saved.completedSlides)lesson.chapters[i].cues.forEach((_,j)=>completedSlides[i+':'+j]=true);
+      }
+      if(saved.version===1 && Object.values(saved.answers||{}).some(value=>value===true)) {
+        $('notice').textContent=g('Checkpoint updated: complete both questions to finish each chapter.');
+      }
+      resumeCheckpoint=saved.version===2 && saved.inCheckpoint===true;
+      questionIndex=saved.questionIndex===1?1:0;
+      const finalChapter=lesson.chapters.length-1;
+      const finalRevision=lesson.chapters[finalChapter].checkpointRevision;
+      if(finalRevision && saved.finalCheckpointRevision!==finalRevision) {
+        questionAnswers[finalChapter]=lesson.chapters[finalChapter].questions.map(()=>false);
+        delete answers[finalChapter];
+        if(chapter===finalChapter && resumeCheckpoint)questionIndex=0;
+        completedAt=null;
+        $('notice').textContent=g('The final checkpoint has new questions. Complete both to finish.');
+      }
       if (allCheckpointsComplete() && typeof saved.completedAt === 'string') completedAt = saved.completedAt;
       $('start').textContent=g('Resume exploring ▶');
     }
   }
   catch(e) {
   }
+  inCheckpoint=resumeCheckpoint;
+  drainActivity();
+  const remote=await loadServerProgress();
+  if(remote?.state&&!remote.pending&&!activityOutbox.length) {
+    applyServerProgress(remote.state,true);
+    resumeCheckpoint=inCheckpoint;
+  }
   renderCue(false);
+  inCheckpoint=resumeCheckpoint;
   selectVoiceSpeed(voiceSpeed);
   if (allCheckpointsComplete()) {
     recordCompletion();
     $('start').textContent=g('Review lecture ▶');
+  } else if(window.GeometryVoice?.setCompleted) {
+    if(!GeometryVoice.setCompleted(false))$('notice').textContent=g('Could not reset completion. Please try again.');
   }
   $('start').disabled=false;
 }

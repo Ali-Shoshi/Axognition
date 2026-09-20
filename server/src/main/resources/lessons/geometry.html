@@ -98,7 +98,7 @@
             <span class="pill">A VISUAL MATHEMATICS JOURNEY</span>
             <h2>Around.<br><em>And inside.</em></h2>
             <p>Watch edges glow and shapes become tiles.<br>Then put your ideas to the test.</p>
-            <button id="start" class="primary">Start exploring <span>▶</span></button>
+            <button id="start" class="primary" disabled>Start exploring <span>▶</span></button>
             <small>10 chapters · narrated scenes · interactive checkpoints</small>
           </div>
         </div>
@@ -106,6 +106,7 @@
         <div id="questionPanel" class="question-panel" hidden>
           <div class="question-card">
             <span class="pill">YOUR TURN</span>
+            <p id="questionCount" class="question-count" aria-live="polite">Question 1 of 2</p>
             <h2 id="question"></h2>
             <div id="answers"></div>
             <p id="feedback" role="status"></p>

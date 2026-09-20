@@ -1,34 +1,48 @@
-# Fractions unit
+# Fractions · Share, see & solve
 
-Start the existing server (its database, storage and local .env configuration must already be available):
+A narrated visual fractions lesson using the same layout, controls, pacing and
+Android host as Around & inside.
 
-```powershell
-cd C:\Users\ghost\AndroidStudioProjects\Axognition\server
-.\run-server.bat
-```
+## Run
 
-Browser preview: http://localhost:8080/lessons/fractions.html
+From the server directory, run `.\run-server.bat`, then open
+http://localhost:8080/lessons/fractions.html. Rebuild the Android app to use the
+shared native lesson host. Open Lectures > Mathematics > Fractions.
 
-In the rebuilt Android app: Lectures > Mathematics > Fractions > Fractions: interactive guided unit.
-The app uses its existing AXOGNITION_SERVER_URL. The tablet must be able to reach that address.
+The tablet uses the existing AXOGNITION_SERVER_URL and must reach that server.
+Use `?theme=dark&lang=sq` to preview the Albanian lesson in dark mode.
 
-## Content and pacing
+## Content and interaction
 
-The server packages fractions.json and fractions.html under src/main/resources/lessons.
-Edit the JSON to revise narration, questions or chapter models; rebuild/restart the server afterward.
-There are ten 180-second chapters, with narrated scenes starting at 0, 45 and 90 seconds,
-and a checkpoint at 135 seconds. Playback pauses for an answer. Timing includes intentional
-observation, paper practice and discussion time; this is not thirty minutes of continuous speech.
-Taking longer at questions extends the lesson. Next chapter allows faster self-paced progress.
+Ten chapters contain four narrated scenes each, followed by a checkpoint:
+equal shares, numerator/denominator, unit fractions, number lines, equivalence,
+comparison, addition, subtraction, fractions of a collection and a picnic recap.
+Models change with each explanation: unequal shares become halves, selected
+parts light up, number-line markers step forward, equal lengths align, added
+pieces join and subtracted pieces leave. The unit-fraction slider changes the
+number of equal parts while keeping the whole the same size.
 
-Topics: equal shares; numerator/denominator; unit fractions; number lines; equivalence;
-comparison; addition; subtraction; fractions of a collection; recap.
-Addition and subtraction here use like denominators and may need adult guidance for younger children.
+Each scene has a 40-second exploration window and waits for narration to finish.
+Next unlocks after ten seconds on unfinished scenes; revisited completed scenes
+and completed lectures have no wait. Pause, replay, sound, voice speed, chapter
+selection and checkpoints work exactly as in Around & inside. The approximately
+30-minute estimate includes practice and answering, not continuous speech.
+Captions contain the spoken explanation; reduced-motion mode shows the results.
 
-Android narrates using its installed English TextToSpeech voice. The browser uses speechSynthesis.
-Voice quality and offline availability depend on the installed voice. No prerecorded audio is bundled.
-Every narrated scene is also captioned. Use Replay narration to repeat it.
-Progress is stored locally in the player, not in a server student record.
+English and Albanian content lives in `fractions.json` and `fractions.sq.json`.
+`fractions.html`, `fractions.js` and `fractions.css` supply the introduction and
+fraction diagrams. Shared `geometry.js` and `geometry.css` supply the player.
+Edit the source resources and restart/rebuild the server to serve updates.
+
+Android follows the app's language and theme, stops speech on pause or exit,
+preserves the WebView on rotation, and uses speech-completion callbacks. Voice
+availability depends on the installed TTS engine. Finishing all ten checkpoints
+records Fractions as completed; Finish returns to the lecture list. Restart
+clears only this lesson's current progress, preserving activity history. Progress
+and activity sync to PostgreSQL per student, with an offline queue on Android.
+See [Lecture progress](LECTURE-PROGRESS.md).
+The earlier fractions player's chapter and earned checkpoints migrate once to
+the first student who opens the new version. Browser progress stays on the device.
 
 ## Verification
 
@@ -36,8 +50,36 @@ From the repository root:
 
 ```powershell
 node server/test-fractions.cjs
+node server/test-fractions-browser.cjs
+node server/test-geometry.cjs
 ```
 
-On the tablet, test Play, Pause, Replay, chapter selection, a wrong answer and then a correct one.
-Rotate and reopen the lesson to check local resume. Check English voice output on the actual device.
-Final completion requires all ten checkpoints.
+The browser checks require Playwright and Chrome (or bundled packages exposed
+through NODE_PATH). They cover both languages and themes, portrait/landscape
+layouts, scenes and animation bounds, questions, slider, voice speed, Next gating,
+progress migration, student isolation, finish and restart. Captures and results
+are written to `server/build/fractions-preview`.
+
+Physical-device speech quality and keyboard dismissal remain device checks.
+
+## Two questions per checkpoint
+
+Each of the ten chapter checkpoints now has two questions: a multiple-choice
+question with exactly six distinct options, followed by a typed numeric answer.
+The second question asks for a calculation or a missing number. Both answers
+must be correct before the checkpoint counts as complete. All twenty answers
+are required to finish the lecture. English and Albanian use matching questions.
+
+The player labels Question 1 of 2 / Question 2 of 2, gives feedback for each,
+and saves progress between questions. Reloading resumes the current checkpoint.
+Previously earned answers are kept for the matching question; the added question
+still needs to be completed. Restart clears both answers in every checkpoint.
+
+The final Fractions checkpoint asks learners to combine quarters and eighths
+to find what remains, then solve a separate 24-counter colour problem. Its two
+questions replace the former simple addition/equivalence questions. Students
+who finished the former checkpoint keep their earlier chapter progress and
+attempt these two new questions to restore lecture completion.
+
+Run `node server/test-checkpoint-pairs.cjs` for answer gating, six-option content,
+partial resume, completion and restart checks across both lessons and languages.

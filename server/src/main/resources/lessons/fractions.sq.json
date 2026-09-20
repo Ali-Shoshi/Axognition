@@ -1,0 +1,1115 @@
+{
+  "id": "fractions",
+  "version": 4,
+  "subject": "Matematikë",
+  "title": "Ndaj, shiko dhe zgjidh",
+  "subtitle": "Një udhëtim pamor me thyesat",
+  "estimatedMinutes": 30,
+  "chapters": [
+    {
+      "title": "Ndarje të barabarta",
+      "shape": "shares",
+      "accent": "#5265ec",
+      "cues": [
+        {
+          "mode": "whole",
+          "headline": "Fillo me një të plotë.",
+          "text": "Ky sanduiç është një i plotë. Para se të emërtojmë një thyesë, duhet të dimë çfarë përfaqëson e plota. Ndiq me gisht kufirin e drejtkëndëshit. Çdo pjesë do të vijë nga i njëjti sanduiç.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 1,
+                "n": 1,
+                "caption": "1 whole"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "partition",
+          "headline": "Dy pjesë. Por a është e drejtë?",
+          "text": "Sanduiçi ndahet në dy pjesë, por njëra është më e madhe se tjetra. Këto nuk janë gjysma. Për të bërë gjysma, të dy miqtë duhet të marrin të njëjtën sasi.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "Unequal pieces ≠ halves",
+                "unequal": true
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "select",
+          "headline": "Pjesët e barabarta bëjnë gjysma.",
+          "text": "Tani prerja kalon në mes. Të dyja pjesët kanë të njëjtën madhësi. Pjesa e ngjyrosur është një nga dy pjesët e barabarta: një gjysmë. Edhe pjesa pa ngjyrë është një gjysmë.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2 · one half"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "combine",
+          "headline": "Dy gjysma bëjnë një të plotë.",
+          "text": "Gjysma e dytë bashkohet me të parën. Nuk mungon asgjë dhe pjesët nuk mbivendosen. Një gjysmë plus një gjysmë bëjnë një të plotë. Shpjego pse pjesët duhet të kenë të njëjtën madhësi.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 2,
+                "caption": "1/2 + 1/2 = 1",
+                "secondaryFrom": 1
+              }
+            ]
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Cila ndarje krijon gjysma?",
+          "options": [
+            "Dy pjesë të barabarta",
+            "Dy pjesë të pabarabarta",
+            "Tri pjesë të barabarta",
+            "Katër pjesë të barabarta",
+            "Një e plotë pa prerje",
+            "Dy pjesë të çfarëdo madhësie"
+          ],
+          "answer": 0,
+          "explanation": "Gjysmat janë pikërisht dy pjesë të barabarta të së njëjtës të plotë."
+        },
+        {
+          "type": "number",
+          "prompt": "Një sanduiç ndahet në mënyrë të barabartë mes dy miqve. Sa pjesë të barabarta bëjnë sanduiçin e plotë?",
+          "answer": 2,
+          "unit": "parts",
+          "explanation": "Dy gjysma të barabarta bashkohen për të bërë një të plotë."
+        }
+      ]
+    },
+    {
+      "title": "Leximi i thyesave",
+      "shape": "reading",
+      "accent": "#008e80",
+      "cues": [
+        {
+          "mode": "partition",
+          "headline": "Katër pjesë të barabarta në një të plotë.",
+          "text": "E plota ndahet në katër pjesë të barabarta. Numëro çdo pjesë, përfshirë ato pa ngjyrë. Janë katër gjithsej. Ky numër shkruhet poshtë vijës së thyesës dhe quhet emërues.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 4,
+                "n": 0,
+                "caption": "4 equal parts"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "select",
+          "headline": "Zgjidh tri nga katër pjesët.",
+          "text": "Tri pjesë ndriçojnë njëra pas tjetrës. Numri sipër vijës numëron pjesët e zgjedhura dhe quhet numërues. Zgjodhëm tri pjesë, prandaj numëruesi është tre. E plota ende ka katër pjesë të barabarta.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 4,
+                "n": 3,
+                "caption": "3 selected parts"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "name",
+          "headline": "Dy numrat kanë detyra të ndryshme.",
+          "text": "Thyesa lexohet tri të katërtat. Treshi numëron pjesët e zgjedhura. Katra numëron të gjitha pjesët e barabarta të së plotës. Ndiq etiketat pranë thyesës dhe lidhe secilin numër me shiritin sipër.",
+          "model": {
+            "type": "reading",
+            "d": 4,
+            "n": 3
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "headline": "Ndrysho zgjedhjen, ruaj madhësinë.",
+          "text": "Tani vetëm një pjesë është e ngjyrosur: një e katërta. Numëruesi ndryshoi nga tre në një, por emëruesi mbeti katër. Ndryshuam sa pjesë zgjodhëm, jo mënyrën si e ndamë të plotën.",
+          "model": {
+            "type": "reading",
+            "d": 4,
+            "n": 1
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Te 3/4, çfarë tregon numri 4?",
+          "options": [
+            "Katër pjesë të ngjyrosura",
+            "Katër pjesë të barabarta në të plotën",
+            "Katër të plota të veçanta",
+            "Katër pjesë pa ngjyrë",
+            "Vlerën e numëruesit",
+            "Numrin e gjysmave të zgjedhura"
+          ],
+          "answer": 1,
+          "explanation": "Emëruesi numëron të gjitha pjesët e barabarta në një të plotë."
+        },
+        {
+          "type": "number",
+          "prompt": "Pesë nga tetë pjesë të barabarta janë të ngjyrosura. Cili është numëruesi?",
+          "answer": 5,
+          "unit": "",
+          "explanation": "Numëruesi numëron pjesët e zgjedhura. Thyesa është 5/8 dhe numëruesi është 5."
+        }
+      ]
+    },
+    {
+      "title": "Thyesat me numërues një",
+      "shape": "unit",
+      "accent": "#c06924",
+      "cues": [
+        {
+          "mode": "select",
+          "headline": "Një pjesë e barabartë ka emrin e vet.",
+          "text": "Kur zgjedhim vetëm një pjesë, numëruesi është një. Shiriti sipër tregon një gjysmë, ndërsa ai poshtë një të gjashtën. Numëruesit janë të njëjtë, por madhësitë e pjesëve ndryshojnë.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "1/6"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "headline": "Më shumë pjesë, pjesë më të vogla.",
+          "text": "Të dy shiritat kanë të njëjtën gjatësi. Shiko pjesën e ngjyrosur në secilin. Ndarja në gjashtë pjesë të barabarta jep pjesë më të vogla sesa ndarja në dy. Një gjysmë është më e madhe se një e gjashta.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2 > 1/6"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "The whole stays the same size"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "combine",
+          "headline": "Gjashtë të gjashtat mbushin të plotën.",
+          "text": "Gjashtë pjesët ndriçojnë me radhë. Secila është një e gjashta. Numëroji ndërsa mbushin shiritin. Gjashtë herë nga një e gjashta bëjnë një të plotë. Emëruesi tregon sa pjesë të tilla duhen.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "6 × 1/6 = 1"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "explore",
+          "headline": "Ti vendos numrin e pjesëve.",
+          "text": "Lëviz rrëshqitësin e pjesëve të barabarta. Gjatësia e së plotës mbetet njësoj dhe vetëm një pjesë është e zgjedhur. Provo dy pjesë, pastaj tetë. Parashiko cila pjesë do të jetë më e vogël dhe shpjego çfarë vëren.",
+          "model": {
+            "type": "explore"
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Për të plota me madhësi të njëjtë, cila thyesë është më e madhe?",
+          "options": [
+            "1/6",
+            "1/8",
+            "1/2",
+            "1/3",
+            "1/4",
+            "1/10"
+          ],
+          "answer": 2,
+          "explanation": "Gjysma është më e madhe: më pak pjesë të barabarta të së njëjtës të plotë japin pjesë më të mëdha."
+        },
+        {
+          "type": "number",
+          "prompt": "Sa pjesë me madhësi 1/6 bëjnë një të plotë?",
+          "answer": 6,
+          "unit": "pieces",
+          "explanation": "Gjashtë të gjashtat bëjnë një të plotë: 6 × 1/6 = 1."
+        }
+      ]
+    },
+    {
+      "title": "Thyesat në boshtin numerik",
+      "shape": "line",
+      "accent": "#b45087",
+      "cues": [
+        {
+          "mode": "whole",
+          "headline": "Një udhëtim i plotë, nga 0 te 1.",
+          "text": "Thyesa është edhe numër. Këtu largësia nga zero te një është një udhëtim i plotë. Pika jonë nis te zero. Mesi i këtij udhëtimi përfaqëson gjysmën e largësisë së plotë.",
+          "model": {
+            "type": "line",
+            "d": 1,
+            "n": 0
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "partition",
+          "headline": "Numëro hapësirat, jo shenjat.",
+          "text": "Ndajmë udhëtimin në katër hapësira të barabarta. Ka pesë shenja, duke përfshirë zeron dhe njëshin. Numërojmë katër hapësirat ndërmjet tyre. Çdo hapësirë është një e katërta e largësisë së plotë.",
+          "model": {
+            "type": "line",
+            "d": 4,
+            "n": 0
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "travel",
+          "headline": "Tre hapa të barabartë arrijnë te 3/4.",
+          "text": "Ndiq pikën që bën tre hapa nga një e katërta. Hapi i parë arrin te një e katërta, i dyti te dy të katërtat, i treti te tri të katërtat. Mbetet edhe një hap për të arritur te një.",
+          "model": {
+            "type": "line",
+            "d": 4,
+            "n": 3,
+            "travel": true
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "headline": "Pas gjysmës. Para një të plote.",
+          "text": "Dy të katërtat janë në mes: një gjysmë. Pika është te tri të katërtat, një hap pas gjysmës. Ende nuk ka arritur te një. Tri të katërtat ndodhen ndërmjet një gjysme dhe një të plote.",
+          "model": {
+            "type": "line",
+            "d": 4,
+            "n": 3,
+            "half": true
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Ku ndodhet 3/4?",
+          "options": [
+            "Ndërmjet 0 dhe 1/2",
+            "Ndërmjet 1/2 dhe 1",
+            "Pas 1",
+            "Pikërisht te 0",
+            "Pikërisht te 1/2",
+            "Pikërisht te 1"
+          ],
+          "answer": 1,
+          "explanation": "Tre hapa nga një e katërta kalojnë gjysmën, por nuk arrijnë një të plotë."
+        },
+        {
+          "type": "number",
+          "prompt": "Boshti nga 0 te 1 ka katër intervale të barabarta. Sa hapa nga një e katërta duhen nga 0 për të arritur te 1/2?",
+          "answer": 2,
+          "unit": "steps",
+          "explanation": "Dy hapa nga një e katërta arrijnë te 2/4, i njëjti numër si 1/2."
+        }
+      ]
+    },
+    {
+      "title": "Thyesat e barasvlershme",
+      "shape": "equivalent",
+      "accent": "#247dc0",
+      "cues": [
+        {
+          "mode": "select",
+          "headline": "Fillo me një gjysmë.",
+          "text": "Pjesa e ngjyrosur mbulon gjysmën e së plotës. Shiko skajin e saj të djathtë. Do t’i presim pjesët më të vogla pa shtuar ngjyrë dhe pa ndryshuar madhësinë e së plotës.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "partition",
+          "headline": "Prerje të reja. E njëjta sasi.",
+          "text": "Shiriti i dytë ka të njëjtën madhësi, por çdo gjysmë është ndarë më dysh. Gjysma e ngjyrosur tani ka dy të katërta. Skajet e ngjyrosura përputhen. Emrat ndryshojnë, por sasitë janë të njëjta.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              },
+              {
+                "d": 4,
+                "n": 2,
+                "caption": "2/4"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "headline": "Të dy numrat ndryshojnë bashkë.",
+          "text": "Një pjesë nga dy bëhet dy pjesë nga katër. Të dy numrat janë dyfishuar. Një gjysmë dhe dy të katërtat janë thyesa të barasvlershme. Shumëzimi i të dy numrave me të njëjtin numër të plotë pozitiv ruan sasinë.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              },
+              {
+                "d": 4,
+                "n": 2,
+                "caption": "1/2 = 2/4"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "partition",
+          "headline": "Ndaje përsëri: katër të tetat.",
+          "text": "Shiriti poshtë tani ka tetë pjesë të barabarta. Katër janë të ngjyrosura dhe gjatësia e tyre përputhet me gjysmën sipër. Një gjysmë, dy të katërtat dhe katër të tetat përfaqësojnë të njëjtën sasi.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              },
+              {
+                "d": 8,
+                "n": 4,
+                "caption": "4/8 = 1/2"
+              }
+            ]
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Cila thyesë është e barabartë me 1/2?",
+          "options": [
+            "2/4",
+            "1/4",
+            "2/3",
+            "3/4",
+            "1/8",
+            "3/8"
+          ],
+          "answer": 0,
+          "explanation": "Dy nga katër pjesë të barabarta mbulojnë të njëjtën sasi si një nga dy pjesë të barabarta."
+        },
+        {
+          "type": "number",
+          "prompt": "Plotëso numëruesin që mungon: 1/2 = ?/8.",
+          "answer": 4,
+          "unit": "",
+          "explanation": "Shumëzo të dy numrat e 1/2 me 4 për të marrë 4/8."
+        }
+      ]
+    },
+    {
+      "title": "Krahasimi me emërues të njëjtë",
+      "shape": "compare",
+      "accent": "#7961ca",
+      "cues": [
+        {
+          "mode": "partition",
+          "headline": "Krahaso pjesë me të njëjtën madhësi.",
+          "text": "Këto dy të plota kanë të njëjtën gjatësi dhe nga tetë pjesë të barabarta. Çdo pjesë është një e teta. Mund t’i krahasojmë sasitë duke numëruar sa pjesë të tilla janë zgjedhur.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 0,
+                "caption": "Same-sized wholes"
+              },
+              {
+                "d": 8,
+                "n": 0,
+                "caption": "8 equal parts each"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "select",
+          "headline": "Tri të tetat në shiritin e parë.",
+          "text": "Tri pjesë ndriçojnë në shiritin sipër. Ato janë tri të tetat. Edhe pesë pjesët pa ngjyrë i përkasin së plotës, prandaj emëruesi është tetë. Mbaje mend gjatësinë e ngjyrosur.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 3,
+                "caption": "3/8"
+              },
+              {
+                "d": 8,
+                "n": 0,
+                "caption": "Ready to compare"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "select",
+          "headline": "Pesë të tetat shkojnë më larg.",
+          "text": "Pesë pjesë ndriçojnë në shiritin poshtë. Secila ka të njëjtën madhësi si pjesët sipër. Pesë të tetat shkojnë dy pjesë më larg se tri të tetat. Më shumë pjesë me të njëjtën madhësi japin sasi më të madhe.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 3,
+                "caption": "3/8"
+              },
+              {
+                "d": 8,
+                "n": 5,
+                "caption": "5/8"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "headline": "Emërues të njëjtë? Krahaso numëruesit.",
+          "text": "Shiritat fillojnë në të njëjtin vend. Pjesa e ngjyrosur poshtë është më e gjatë. Pesë të tetat janë më të mëdha se tri të tetat, sepse pesë është më shumë se tre dhe madhësitë e pjesëve përputhen.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 3,
+                "caption": "3/8 < 5/8"
+              },
+              {
+                "d": 8,
+                "n": 5,
+                "caption": "Two more eighths"
+              }
+            ]
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Cila nga këto thyesa është më e madhe?",
+          "options": [
+            "3/8",
+            "5/8",
+            "1/8",
+            "2/8",
+            "4/8",
+            "0/8"
+          ],
+          "answer": 1,
+          "explanation": "Kur të plotat dhe emëruesit janë të njëjtë, numëruesi më i madh përfaqëson më shumë."
+        },
+        {
+          "type": "number",
+          "prompt": "Sa pjesë nga një e teta më shumë ka 5/8 sesa 3/8?",
+          "answer": 2,
+          "unit": "pieces",
+          "explanation": "Pesë të tetat kanë dy pjesë më shumë se tri të tetat: 5 − 3 = 2."
+        }
+      ]
+    },
+    {
+      "title": "Mbledhja e pjesëve të barabarta",
+      "shape": "add",
+      "accent": "#008e80",
+      "cues": [
+        {
+          "mode": "select",
+          "headline": "Fillo me një të tetën.",
+          "text": "Mendoje shiritin si një pjepër të ndarë në tetë pjesë të barabarta. Merr një pjesë: një të tetën. Vendet bosh na kujtojnë se tetë pjesë të tilla do të bënin pjeprin e plotë.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 1,
+                "caption": "1/8"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "combine",
+          "headline": "Bashko edhe dy të teta.",
+          "text": "Dy pjesë të tjera zënë vendet pranë së parës. Numëro pjesën fillestare dhe dy pjesët e reja: një, dy, tre. Gjithsej ke tri të tetat. Të gjitha pjesët kanë të njëjtën madhësi.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 3,
+                "caption": "1/8 + 2/8 = 3/8",
+                "secondaryFrom": 1
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "name",
+          "headline": "Mblidh numëruesit. Ruaj emëruesin.",
+          "text": "Përgjigjja është tri të tetat. Numëruesi bëhet një plus dy, pra tre. Emëruesi mbetet tetë sepse çdo pjesë është ende një e teta. Mbledhja e pjesëve nuk e ndan të plotën në gjashtëmbëdhjetë pjesë.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 3,
+                "caption": "(1 + 2)/8 = 3/8",
+                "secondaryFrom": 1
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "explore",
+          "headline": "Provo dy të teta plus tri të teta.",
+          "text": "Ja një bashkim i ri. Fillo me dy të teta të ngjyrosura dhe shiko tri të tjera që bashkohen me to. Numëro të gjitha pjesët e zgjedhura. E plota ende ka tetë vende. Thuaje përgjigjen para pyetjes.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 8,
+                "n": 5,
+                "caption": "2/8 + 3/8 = ?",
+                "secondaryFrom": 2
+              }
+            ]
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Sa bëjnë 2/8 + 3/8?",
+          "options": [
+            "5/16",
+            "1/8",
+            "5/8",
+            "6/8",
+            "5/4",
+            "3/8"
+          ],
+          "answer": 2,
+          "explanation": "Mblidh numëruesit: dy plus tre bëjnë pesë. Çdo pjesë mbetet një e teta."
+        },
+        {
+          "type": "number",
+          "prompt": "Plotëso numëruesin që mungon: 1/8 + 3/8 = ?/8.",
+          "answer": 4,
+          "unit": "",
+          "explanation": "Mblidh numëruesit: 1 + 3 = 4. Pjesët mbeten të teta, prandaj shuma është 4/8."
+        }
+      ]
+    },
+    {
+      "title": "Zbritja e pjesëve të barabarta",
+      "shape": "subtract",
+      "accent": "#c06924",
+      "cues": [
+        {
+          "mode": "select",
+          "headline": "Fillo me pesë të gjashtat.",
+          "text": "Pesë nga gjashtë pjesët janë të ngjyrosura. Ato përfaqësojnë tortën që ka mbetur: pesë të gjashtat e tortës fillestare. Edhe vendi pa ngjyrë i përket së plotës, prandaj çdo pjesë është një e gjashta.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "remove",
+          "headline": "Hiq tri të gjashtat.",
+          "text": "Tri pjesë të ngjyrosura largohen dhe vendet e tyre shënohen me kryq. Numëro vetëm pjesët e ngjyrosura që mbeten: një, dy. Nga pesë të gjashtat hoqëm tri të gjashtat dhe mbetën dy të gjashtat.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6 − 3/6 = 2/6",
+                "removedFrom": 2
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "headline": "Dy të gjashtat janë një e treta.",
+          "text": "Shiriti sipër tregon dy të gjashtat që mbetën. Ai poshtë tregon një të tretën e një të plote me të njëjtën madhësi. Gjatësitë e ngjyrosura përputhen. Janë dy emra për të njëjtën sasi.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 6,
+                "n": 2,
+                "caption": "2/6"
+              },
+              {
+                "d": 3,
+                "n": 1,
+                "caption": "1/3 = 2/6"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "remove",
+          "headline": "Radha jote: nga katër hiq një.",
+          "text": "Këtë herë fillo me katër të gjashtat. Shiko një pjesë të ngjyrosur që largohet. Numëro pjesët që mbeten. Emëruesi mbetet gjashtë sepse e plota ka ende gjashtë vende të barabarta.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 6,
+                "n": 4,
+                "caption": "4/6 − 1/6 = ?",
+                "removedFrom": 3
+              }
+            ]
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Sa bëjnë 4/6 − 1/6?",
+          "options": [
+            "3/6",
+            "3/0",
+            "5/6",
+            "2/6",
+            "4/6",
+            "1/6"
+          ],
+          "answer": 0,
+          "explanation": "Katër pjesë nga një e gjashta, minus një pjesë, lënë tri të gjashtat."
+        },
+        {
+          "type": "number",
+          "prompt": "Plotëso numëruesin që mungon: 5/6 − 2/6 = ?/6.",
+          "answer": 3,
+          "unit": "",
+          "explanation": "Pesë pjesë nga një e gjashta minus dy lënë tri të gjashtat."
+        }
+      ]
+    },
+    {
+      "title": "Thyesat e një bashkësie",
+      "shape": "collection",
+      "accent": "#b45087",
+      "cues": [
+        {
+          "mode": "whole",
+          "headline": "E plota mund të jetë një bashkësi.",
+          "text": "Këta tetë gurë janë bashkësia jonë e plotë. Një thyesë mund të përshkruajë një pjesë të një bashkësie. Numëro fillimisht të tetë gurët. Do t’i ndajmë të gjithë në grupe të barabarta.",
+          "model": {
+            "type": "collection",
+            "groups": false,
+            "selected": 0
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "partition",
+          "headline": "Katër grupe të barabarta me nga dy.",
+          "text": "Gurët janë vendosur në katër grupe të barabarta, me nga dy gurë secili. Çdo grup është një e katërta e bashkësisë. Tetë pjesëtuar me katër bëjnë dy. Një e katërta e tetës është dy.",
+          "model": {
+            "type": "collection",
+            "groups": true,
+            "selected": 1
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "select",
+          "headline": "Zgjidh tri nga katër grupet.",
+          "text": "Tri grupe ndriçojnë. Secili grup i zgjedhur ka dy gurë. Numëro me çifte: dy, katër, gjashtë. Tri të katërtat e tetës janë gjashtë. Zgjodhëm tri grupe, jo vetëm tre gurë.",
+          "model": {
+            "type": "collection",
+            "groups": true,
+            "selected": 3
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "name",
+          "headline": "Ndaj në grupe, pastaj zgjidh.",
+          "text": "Për tri të katërtat e tetës, pjesëto tetën me katër: dy gurë për grup. Pastaj zgjidh tri grupe: tre herë dy bëjnë gjashtë. Dy gurët e pazgjedhur përbëjnë të katërtën e mbetur.",
+          "model": {
+            "type": "collection",
+            "groups": true,
+            "selected": 3,
+            "formula": true
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 1,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Për të gjetur 3/4 e një bashkësie, çfarë bën fillimisht?",
+          "options": [
+            "Zgjedh çfarëdo tre objektesh",
+            "E ndan në tri grupe të barabarta",
+            "Shumëzon numrin gjithsej me katër",
+            "Heq katër objekte",
+            "E ndan në katër grupe të barabarta",
+            "Shton tre objekte"
+          ],
+          "answer": 4,
+          "explanation": "Emëruesi tregon se duhen katër grupe të barabarta. Pastaj zgjedhim tri prej tyre."
+        },
+        {
+          "type": "number",
+          "prompt": "Sa gurë janë 3/4 e 8 gurëve?",
+          "answer": 6,
+          "unit": "counters",
+          "explanation": "Tetë gurë në katër grupe japin dy për grup. Tri grupe kanë gjashtë gurë."
+        }
+      ]
+    },
+    {
+      "title": "Mjetet e tua për thyesat",
+      "checkpointRevision": 2,
+      "shape": "recap",
+      "accent": "#5265ec",
+      "cues": [
+        {
+          "mode": "select",
+          "headline": "Përgatit një piknik me të katërta.",
+          "text": "Ky sanduiç pikniku ka katër pjesë të barabarta. Fillimisht zgjidh një të katërtën. Përcakto të plotën, numëro të gjitha pjesët e barabarta dhe pastaj pjesët e zgjedhura. Këta hapa të ndihmojnë të kuptosh thyesat.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 4,
+                "n": 1,
+                "caption": "1/4"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "combine",
+          "headline": "Shto edhe dy pjesë të barabarta.",
+          "text": "Dy pjesë të tjera nga një e katërta bashkohen me tënden. Numëro pjesët e zgjedhura: një, dy, tre. Një e katërta plus dy të katërtat bëjnë tri të katërtat. Emëruesi mbetet katër.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 4,
+                "n": 3,
+                "caption": "1/4 + 2/4 = 3/4",
+                "secondaryFrom": 1
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "compare",
+          "headline": "Prerje të ndryshme. E njëjta pjesë.",
+          "text": "Ndaje çdo të katërt më dysh. Shiriti i dytë ka tetë pjesë të barabarta dhe gjashtë janë të ngjyrosura. Gjashtë të tetat kanë të njëjtën gjatësi si tri të katërtat. Të dy numrat ndryshojnë bashkë.",
+          "model": {
+            "type": "bars",
+            "rows": [
+              {
+                "d": 4,
+                "n": 3,
+                "caption": "3/4"
+              },
+              {
+                "d": 8,
+                "n": 6,
+                "caption": "6/8 = 3/4"
+              }
+            ]
+          },
+          "seconds": 40
+        },
+        {
+          "mode": "travel",
+          "headline": "E njëjta ide në figura dhe numra.",
+          "text": "Pika arrin te tri të katërtat në boshtin numerik. Kjo është e njëjta sasi si tri nga katër pjesë sanduiçi ose gjashtë nga tetë pjesë më të vogla. Përdore këtë lidhje për pyetjen e fundit.",
+          "model": {
+            "type": "line",
+            "d": 4,
+            "n": 3,
+            "travel": true
+          },
+          "seconds": 40
+        }
+      ],
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Në një piknik ka 16 feta të barabarta. Ti ha 1/4 e tyre dhe një mik ha 3/8 e tyre. Cila pjesë e të gjitha fetave mbetet?",
+          "options": [
+            "1/8",
+            "2/8",
+            "3/8",
+            "4/8",
+            "5/8",
+            "7/8"
+          ],
+          "answer": 2,
+          "explanation": "Një e katërta është dy të tetat. Së bashku hani pesë të tetat, prandaj tetë të tetat minus pesë të tetat lënë tri të tetat."
+        },
+        {
+          "type": "number",
+          "prompt": "Një kuti ka 24 gurë. Një e treta janë blu dhe një e katërta janë të kuq; asnjë nuk është të dyja. Sa gurë nuk janë as blu, as të kuq?",
+          "answer": 10,
+          "unit": "counters",
+          "explanation": "Një e treta e 24 është 8 dhe një e katërta është 6. Këto janë 14 gurë gjithsej, prandaj mbeten 24 − 14 = 10 gurë me ngjyra të tjera."
+        }
+      ]
+    }
+  ],
+  "ui": {
+    "Around & inside · Axognition": "Rreth dhe brenda · Axognition",
+    "Around & inside": "Rreth dhe brenda",
+    "Math": "Matematikë",
+    "Subject": "Lënda",
+    "Lesson subject": "Lënda e mësimit",
+    "Perimeter + area": "Perimetri + syprina",
+    "Choose chapter": "Zgjidh kapitullin",
+    "Chapters": "Kapitujt",
+    "MATHEMATICS • SHAPE LAB": "MATEMATIKË • LABORATORI I FIGURAVE",
+    "About 30 min · at your pace": "Rreth 30 min · me ritmin tënd",
+    "Animated lesson stage": "Figurat e animuara të mësimit",
+    "Animated geometric shapes": "Figura gjeometrike të animuara",
+    "WATCH & DISCOVER": "SHIKO DHE ZBULO",
+    "Voice Speed": "Shpejtësia e zërit",
+    "Narration speed": "Shpejtësia e narracionit",
+    "Voice speed, ": "Shpejtësia e zërit, ",
+    " times": " herë",
+    "A new way to see shapes.": "Një mënyrë e re për të parë figurat.",
+    "Trace the outside. Discover the inside.": "Ndiq kufirin. Zbulo brendësinë.",
+    "Side length": "Gjatësia e brinjës",
+    "YOUR GUIDE": "UDHËZUESI YT",
+    "Ready when you are": "Gati kur të jesh ti",
+    "Explore perimeter and area through moving shapes, colour, and a little curiosity.": "Eksploro perimetrin dhe syprinën përmes figurave në lëvizje, ngjyrave dhe kureshtjes.",
+    "A VISUAL MATHEMATICS JOURNEY": "NJË UDHËTIM PAMOR NË MATEMATIKË",
+    "Around.": "Rreth.",
+    "And inside.": "Dhe brenda.",
+    "Watch edges glow and shapes become tiles.": "Shiko si ndriçojnë brinjët dhe figurat mbushen me pllaka.",
+    "Then put your ideas to the test.": "Pastaj provo njohuritë e tua.",
+    "Start exploring": "Fillo eksplorimin",
+    "10 chapters · narrated scenes · interactive checkpoints": "10 kapituj · shpjegime me zë · pyetje ndërvepruese",
+    "YOUR TURN": "RADHA JOTE",
+    "Continue →": "Vazhdo →",
+    "LOOK WHAT YOU LEARNED": "SHIKO ÇFARË MËSOVE",
+    "You've got shape sense.": "Tani i kupton figurat.",
+    "Perimeter follows the edge. Area covers the inside.": "Perimetri ndjek kufirin. Syprina mat pjesën e brendshme.",
+    "Finish": "Përfundo",
+    "Review chapters": "Përsërit kapitujt",
+    "Previous scene": "Pamja e mëparshme",
+    "Play": "Luaj",
+    "Pause": "Ndalo",
+    "Next scene": "Pamja tjetër",
+    "Skip to next scene": "Kalo te pamja tjetër",
+    "Next →": "Tjetra →",
+    "Next · ": "Tjetra · ",
+    "Next scene available in ": "Pamja tjetër hapet pas ",
+    " seconds": " sekondash",
+    "Scene ": "Pamja ",
+    " of 4": " nga 4",
+    "Scene 1 of 4": "Pamja 1 nga 4",
+    "Lesson playback progress": "Ecuria e mësimit",
+    "0 / 10 checkpoints": "0 / 10 pyetje",
+    " / 10 checkpoints": " / 10 pyetje",
+    "Replay narration": "Përsërit narracionin",
+    "Replay voice": "Përsërit zërin",
+    "Sound on": "Zëri aktiv",
+    "Sound off": "Zëri i fikur",
+    "Your journey": "Udhëtimi yt",
+    "Close chapters": "Mbyll kapitujt",
+    "Restart this unit": "Rifillo këtë njësi",
+    "Progress is saved on this device. Guided time includes exploring and answering.": "Ecuria ruhet në këtë pajisje. Koha përfshin eksplorimin dhe përgjigjet.",
+    "Could not save completion. Please try Finish again.": "Përfundimi nuk u ruajt. Provo përsëri butonin Përfundo.",
+    "Storage is unavailable; keep this page open to retain your progress.": "Ruajtja nuk është e disponueshme; mbaje hapur faqen për të ruajtur ecurinë.",
+    "Explore the model": "Eksploro modelin",
+    "Read along": "Lexo tekstin",
+    "Narration is unavailable. Captions remain available; check that an English voice is installed.": "Narracioni nuk është i disponueshëm. Teksti mbetet i lexueshëm; kontrollo nëse është instaluar një zë në shqip.",
+    "Captions on": "Teksti aktiv",
+    "Speaking…": "Duke folur…",
+    "MEET THE SHAPE": "NJIHE FIGURËN",
+    "TRACE THE BOUNDARY": "NDIQ KUFIRIN",
+    "COVER THE INSIDE": "MBULO BRENDËSINË",
+    "SPLIT & DISCOVER": "NDAJ DHE ZBULO",
+    "MOVE THE PIECES": "LËVIZ PJESËT",
+    "MAKE A CONNECTION": "GJEJ LIDHJEN",
+    "THINK IT THROUGH": "MENDOJE ME KUJDES",
+    "Exactly. ": "Saktë. ",
+    "Let’s check that. ": "Le ta kontrollojmë. ",
+    "Your answer in ": "Përgjigjja jote në ",
+    "Check answer": "Kontrollo përgjigjen",
+    "All ten checkpoints completed. Well done!": "I përfundove të dhjeta pyetjet. Të lumtë!",
+    " of ten checkpoints completed. Revisit the remaining chapters to finish your journey.": " nga dhjetë pyetje të përfunduara. Kthehu te kapitujt e mbetur për ta përfunduar udhëtimin.",
+    "Could not finish. Please try again.": "Nuk mund të përfundohej. Provo përsëri.",
+    "Finished ✓": "Përfunduar ✓",
+    "Lecture finished. Your completion is saved on this device.": "Mësimi përfundoi. Përfundimi yt ruhet në këtë pajisje.",
+    "Restart this unit and clear its saved checkpoints?": "Ta rifilloj këtë njësi dhe t'i fshij përgjigjet e ruajtura?",
+    "Could not reset completion. Please try again.": "Përfundimi nuk mund të rivendosej. Provo përsëri.",
+    "Resume exploring ▶": "Vazhdo eksplorimin ▶",
+    "Review lecture ▶": "Përsërit mësimin ▶",
+    "The lesson could not load": "Mësimi nuk mund të ngarkohej",
+    "Check your server connection, then reload. ": "Kontrollo lidhjen me serverin dhe ringarko faqen. ",
+    "base = 6 cm": "baza = 6 cm",
+    "height = 4 cm": "lartësia = 4 cm",
+    "sloping side ≈ 7.21 cm": "brinja e pjerrët ≈ 7,21 cm",
+    "side ≈ 4.47 cm": "brinja ≈ 4,47 cm",
+    "matching copy": "kopje e njëjtë",
+    "Share, see & solve · Axognition": "Ndaj, shiko dhe zgjidh · Axognition",
+    "Share, see & solve": "Ndaj, shiko dhe zgjidh",
+    "Fractions": "Thyesat",
+    "MATHEMATICS • FRACTION LAB": "MATEMATIKË • LABORATORI I THYESAVE",
+    "A whole new way to see fractions.": "Një mënyrë e re për të parë thyesat.",
+    "Share a whole. See the parts.": "Ndaj të plotën. Shiko pjesët.",
+    "Share a whole.": "Ndaj të plotën.",
+    "See the parts.": "Shiko pjesët.",
+    "Watch wholes split and equal shares come together.": "Shiko të plotat që ndahen dhe pjesët që bashkohen.",
+    "Equal parts": "Pjesë të barabarta",
+    "You've got fraction sense.": "Tani i kupton thyesat.",
+    "Equal parts. One whole. So many ways to see it.": "Pjesë të barabarta. Një e plotë. Shumë mënyra për ta parë.",
+    "Animated fraction models": "Modele të animuara të thyesave",
+    "Explore fractions through equal shares, moving pieces, and a little curiosity.": "Zbulo thyesat me pjesë të barabarta, lëvizje dhe pak kureshtje.",
+    "MEET THE WHOLE": "NJIH TË PLOTËN",
+    "MAKE EQUAL SHARES": "NDAJ NË PJESË TË BARABARTA",
+    "COUNT THE PARTS": "NUMËRO PJESËT",
+    "BRING PARTS TOGETHER": "BASHKO PJESËT",
+    "NAME WHAT YOU SEE": "EMËRTO ATË QË SHEH",
+    "TRY IT YOURSELF": "PROVOJE VETË",
+    "FOLLOW THE FRACTION": "NDIQ THYESËN",
+    "TAKE PARTS AWAY": "HIQ PJESË",
+    "1 whole": "1 e plotë",
+    "Unequal pieces ≠ halves": "Pjesë të pabarabarta ≠ gjysma",
+    "1/2 · one half": "1/2 · një gjysmë",
+    "4 equal parts": "4 pjesë të barabarta",
+    "3 selected parts": "3 pjesë të zgjedhura",
+    "The whole stays the same size": "Madhësia e së plotës nuk ndryshon",
+    "Same whole. One selected part.": "E njëjta e plotë. Një pjesë e zgjedhur.",
+    "Numerator: selected parts": "Numëruesi: pjesët e zgjedhura",
+    "Denominator: all equal parts": "Emëruesi: të gjitha pjesët",
+    "Same-sized wholes": "Të plota me madhësi të njëjtë",
+    "8 equal parts each": "Secila ka 8 pjesë të barabarta",
+    "Ready to compare": "Gati për krahasim",
+    "Two more eighths": "Dy të teta më shumë",
+    "8 counters": "8 gurë",
+    "3/4 of 8 = 6": "3/4 e 8 = 6",
+    "1/4 of 8 = 2": "1/4 e 8 = 2",
+    "Your answer in counters": "Përgjigjja jote në gurë",
+    "counters": "gurë",
+    "Question ": "Pyetja ",
+    " of 2": " nga 2",
+    "Next question →": "Pyetja tjetër →",
+    "Complete checkpoint →": "Përfundo kontrollin →",
+    "Your answer": "Përgjigjja jote",
+    "parts": "pjesë",
+    "pieces": "pjesë",
+    "steps": "hapa",
+    "Activity could not be saved. Keep this lesson open and try again.": "Veprimtaria nuk mund të ruhej. Mbaje këtë mësim hapur dhe provo përsëri.",
+    "Saved on this device. Waiting to sync with the server.": "U ruajt në këtë pajisje. Në pritje të sinkronizimit me serverin.",
+    "Progress synced with the server.": "Përparimi u sinkronizua me serverin.",
+    "Checkpoint updated: complete both questions to finish each chapter.": "Kontrolli u përditësua: plotëso të dyja pyetjet për të përfunduar çdo kapitull.",
+    "The final checkpoint has new questions. Complete both to finish.": "Kontrolli i fundit ka pyetje të reja. Plotëso të dyja për ta përfunduar."
+  }
+}

@@ -1,0 +1,24 @@
+/* Layout and controls come from the Around & inside player (geometry.css). */
+.fraction-slot { fill:var(--surface); stroke:var(--measure); stroke-width:2; }
+.fraction-piece { fill:var(--accent); fill-opacity:.72; }
+.fraction-rule { fill:none; stroke:var(--ink); stroke-width:3; }
+.fraction-group { fill:var(--accent); fill-opacity:.08; stroke:var(--measure); stroke-width:2; stroke-dasharray:6 5; }
+.fraction-step { fill:none; stroke:var(--accent); stroke-width:3; animation:fraction-count .7s both; animation-delay:calc(var(--i)*.4s); }
+.fraction-count { animation:fraction-count .7s both; animation-delay:calc(var(--i)*.22s); }
+.fraction-join { animation:fraction-join 2.6s both; animation-delay:calc(var(--i)*.25s); }
+.fraction-away { animation:fraction-away 3s both; }
+.fraction-cross { fill:none; stroke:var(--ink); stroke-width:3; animation:fraction-count 1s 2s both; }
+.fraction-marker { fill:var(--accent); stroke:var(--surface); stroke-width:3; }
+.fraction-travel { animation:fraction-travel 4s steps(var(--steps),end) both; }
+@keyframes fraction-count { from { opacity:0; } to { opacity:1; } }
+@keyframes fraction-join { from { transform:translateY(-32px); opacity:0; } to { transform:none; opacity:1; } }
+@keyframes fraction-away { 0%,20% { opacity:1; transform:none; } 100% { opacity:0; transform:translateY(-32px); } }
+@keyframes fraction-travel { from { transform:translateX(calc(-1 * var(--distance))); } to { transform:translateX(0); } }
+/* Paused/reduced-motion diagrams show the result of each explanation immediately. */
+.paused .fraction-count, .paused .fraction-join, .paused .fraction-away,
+.paused .fraction-cross, .paused .fraction-step, .paused .fraction-travel { animation:none; }
+.paused .fraction-away { opacity:0; }
+@media (prefers-reduced-motion:reduce) {
+  .fraction-count, .fraction-join, .fraction-away, .fraction-cross, .fraction-step, .fraction-travel { animation:none; }
+  .fraction-away { opacity:0; }
+}

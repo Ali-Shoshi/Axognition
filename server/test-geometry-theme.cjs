@@ -1,3 +1,4 @@
+const {solveCheckpoint}=require('./checkpoint-test-helpers.cjs');
 // Run with Playwright on NODE_PATH and Chrome installed.
 const fs = require('node:fs'), path = require('node:path'), http = require('node:http');
 const assert = require('node:assert/strict');
@@ -100,10 +101,7 @@ const server = http.createServer((req,res) => {
           }
           await page.evaluate(()=>showQuestion());
           await check(`${theme} ${width} question ${ch+1}`);
-          const q=data.chapters[ch].question;
-          if(q.type==='choice')await page.locator('#answers button').nth(q.answer).click();
-          else {await page.locator('#answers input').fill(String(q.answer));await page.locator('#answers button').click()}
-          await check(`${theme} ${width} feedback ${ch+1}`);
+          await solveCheckpoint(page,data.chapters[ch],async(index)=>check(`${theme} ${width} feedback ${ch+1}/${index+1}`));
         }
         await page.locator('#contentsButton').click();
         await check(`${theme} ${width} chapter picker`);
@@ -112,7 +110,7 @@ const server = http.createServer((req,res) => {
         await page.screenshot({path:path.join(output,`${theme}-${width}x${height}.png`)});
       }
     }
-    await page.evaluate(()=>{move(3,3,false);showQuestion()});
+    await page.evaluate(()=>{delete questionAnswers[3];delete answers[3];move(3,3,false);showQuestion(1)});
     await page.locator('#answers input').fill('30');
     await page.evaluate(()=>window.geometrySetTheme(false));
     assert.equal(await page.locator('#answers input').inputValue(),'30','Theme changes retain typed answers');

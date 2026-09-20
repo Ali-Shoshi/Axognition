@@ -22,6 +22,9 @@ tasks.register<JavaExec>("createChildAccount") {
 kotlin {
     jvmToolchain(21)
 }
+tasks.test {
+    inputs.property("lectureDatabaseTests", providers.environmentVariable("LECTURE_DB_TESTS").orElse("false"))
+}
 dependencies {
     implementation("io.ktor:ktor-server-config-yaml:3.5.2")
     implementation("io.ktor:ktor-server-core:3.5.2")
@@ -30,6 +33,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:3.5.2")
     implementation("io.ktor:ktor-server-auth:3.5.2")
     implementation("io.ktor:ktor-server-auth-jwt:3.5.2")
+    implementation("io.ktor:ktor-server-body-limit:3.5.2")
     implementation("ch.qos.logback:logback-classic:1.5.37")
     implementation("de.mkammerer:argon2-jvm:2.12")
 

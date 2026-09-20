@@ -1,5 +1,11 @@
 # ktor-sample
 
+## Lecture progress and analytics
+
+Both mathematics lectures now save individual progress and activity on the server.
+See [LECTURE-PROGRESS.md](LECTURE-PROGRESS.md) for deployment, endpoints, event
+definitions, offline syncing, database scaling and verification.
+
 ## Local child authentication setup
 
 The server reads local secrets from `server/.env`, which is intentionally ignored by Git.

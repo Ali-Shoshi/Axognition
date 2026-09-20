@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import com.example.axognition.data.LectureProgressStore
+import com.example.axognition.data.LectureSync
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +49,7 @@ data class Subject(
 fun LecturesScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val progress = remember(context) { LectureProgressStore(context) }
+    LaunchedEffect(Unit) { LectureSync.refreshCompletions(context) }
     var completedLectures by remember { mutableStateOf(progress.completedLectures()) }
     DisposableEffect(progress) {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->

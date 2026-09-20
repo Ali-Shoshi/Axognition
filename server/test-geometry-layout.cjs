@@ -1,3 +1,4 @@
+const {solveCheckpoint}=require('./checkpoint-test-helpers.cjs');
 // Run with Playwright installed (or exposed through NODE_PATH).
 const fs = require('node:fs');
 const path = require('node:path');
@@ -90,14 +91,7 @@ const server = http.createServer((req, res) => {
         }
         await page.evaluate(() => showQuestion());
         await audit(`${width}x${height} question ${ch+1}`);
-        const q = data.chapters[ch].question;
-        if(q.type === 'choice') await page.locator('#answers button').nth(q.answer).click();
-        else {
-          await page.locator('#answers input').fill(String(q.answer));
-          await page.locator('#answers button').click();
-        }
-        await audit(`${width}x${height} feedback ${ch+1}`);
-        await page.locator('#continue').click();
+        await solveCheckpoint(page,data.chapters[ch],async(index)=>audit(`${width}x${height} feedback ${ch+1}/${index+1}`));
       }
       await audit(`${width}x${height} complete`);
       await page.locator('#review').click();
@@ -115,7 +109,7 @@ const server = http.createServer((req, res) => {
       await page.screenshot({path:path.join(output,`${width}x${height}.png`)});
     }
     await page.setViewportSize({width:823,height:1223});
-    await page.evaluate(() => { move(3,3,false); showQuestion(); });
+    await page.evaluate(() => { delete questionAnswers[3]; delete answers[3]; move(3,3,false); showQuestion(1); });
     await page.locator('#answers input').fill('30');
     await page.setViewportSize({width:1316,height:730});
     assert.equal(await page.locator('#answers input').inputValue(),'30','Rotation preserves a typed answer');

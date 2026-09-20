@@ -1,6 +1,7 @@
 # Around & inside
 
-A separate narrated, animated perimeter-and-area unit. The fractions unit is unchanged.
+A narrated, animated perimeter-and-area unit. Fractions now uses the same player
+and Android host, with its own content, diagrams and saved completion.
 
 ## Try it
 
@@ -22,8 +23,8 @@ The server resources `geometry.json`, `geometry.html`, `geometry.css` and
 Each has a 40-second exploration window; it never advances automatically before
 speech has finished. A checkpoint follows every four scenes (about 2:40).
 The approximately 30-minute estimate includes practice and questions, not continuous
-speech. Next fills for seven seconds before unlocking on each scene, including
-when returning to a scene. Changing orientation, theme or voice speed does not
+speech. Next fills for ten seconds on unfinished scenes. Previously completed
+scenes unlock immediately, as do all scenes in a completed lecture. Changing orientation, theme or voice speed does not
 reset or bypass that wait. The wait continues while narration is paused.
 
 Models trace edges, fill with square tiles, assemble matching triangles, slide
@@ -43,8 +44,9 @@ Completing all ten checkpoints records the lecture as finished. The final review
 screen includes Finish, which saves completion before returning to the lecture
 list on Android. The lecture and unit show a Finished badge, and the Mathematics
 collection reflects actual completion. Restart clears this lecture's completion.
-Progress and completion are stored on this device, scoped to the signed-in
-student; they do not sync through the server. Existing device-wide Geometry
+Progress, completion and activity sync to PostgreSQL for the signed-in student,
+with a durable offline queue on Android. See [Lecture progress](LECTURE-PROGRESS.md).
+Existing device-wide Geometry
 progress is migrated once to the first student who opens it after upgrading.
 
 ## Validation
@@ -83,8 +85,24 @@ checkpoint, text contrast, prominent chapter/Next controls, browser fallback,
 app preference precedence and live theme changes. It uses the same Playwright
 setup as the layout test and writes captures to `server/build/geometry-theme`.
 
-`node server/test-geometry-controls.cjs` checks the seven-second fill and input
+`node server/test-geometry-controls.cjs` checks the ten-second fill and input
 gate, timer resets, rotation/theme/rate changes, all voice speeds, saved speed,
 Enter dismissal, completion gating, Finish exit and restart. Android bridge
 calls are mocked in this browser test; physical keyboard dismissal and installed
 TTS playback still require a connected, authorized device.
+
+## Two questions per checkpoint
+
+Each of the ten chapter checkpoints now has two questions: a multiple-choice
+question with exactly six distinct options, followed by a typed numeric answer.
+The second question asks for a calculation or a missing number. Both answers
+must be correct before the checkpoint counts as complete. All twenty answers
+are required to finish the lecture. English and Albanian use matching questions.
+
+The player labels Question 1 of 2 / Question 2 of 2, gives feedback for each,
+and saves progress between questions. Reloading resumes the current checkpoint.
+Previously earned answers are kept for the matching question; the added question
+still needs to be completed. Restart clears both answers in every checkpoint.
+
+Run `node server/test-checkpoint-pairs.cjs` for answer gating, six-option content,
+partial resume, completion and restart checks across both lessons and languages.

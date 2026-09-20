@@ -117,6 +117,7 @@ fun Application.configureRouting() {
     }
 
     routing {
+        lectureProgressRoutes()
         staticResources("/lessons", "lessons")
         get("/") {
             call.respondText("Axognition server is running")

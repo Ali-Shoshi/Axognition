@@ -26,6 +26,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.axognition.BuildConfig
 import com.example.axognition.data.LectureProgressStore
+import com.example.axognition.data.ChildSessionStore
+import com.example.axognition.data.LectureOutbox
+import com.example.axognition.data.LectureSync
 import com.example.axognition.ui.theme.LocalAxognitionDarkTheme
 import com.example.axognition.ui.AppLanguage
 import com.example.axognition.ui.configureNaturalAppVoice
@@ -34,13 +37,15 @@ import com.example.axognition.ui.speakInAppLanguage
 import com.example.axognition.ui.tr
 import org.json.JSONObject
 
-/** Separate player so the existing fractions lesson keeps its behaviour. */
+@Composable
+internal fun GeometryLesson(onBack: () -> Unit) = GuidedMathLesson("geometry", onBack)
+
+/** Shared host for narrated mathematics lessons, including speech and completion. */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-internal fun GeometryLesson(onBack: () -> Unit) {
+internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
     // The activity handles orientation changes in place, so this WebView and the
     // lesson's JavaScript state remain alive while the screen is resized.
-    BackHandler(onBack = onBack)
     val context = LocalContext.current
     val currentOnBack by rememberUpdatedState(onBack)
     val progressStore = remember(context) { LectureProgressStore(context) }
@@ -50,10 +55,10 @@ internal fun GeometryLesson(onBack: () -> Unit) {
     val currentDarkTheme by rememberUpdatedState(darkTheme)
     val background = MaterialTheme.colorScheme.background
     val owner = LocalLifecycleOwner.current
-    val url = BuildConfig.AXOGNITION_SERVER_URL.trimEnd('/') + "/lessons/geometry.html"
+    val url = BuildConfig.AXOGNITION_SERVER_URL.trimEnd('/') + "/lessons/$lessonId.html"
     val language = AppLanguage.code
     var speechStatus by remember { mutableStateOf("Preparing narration…") }
-    val bridge = remember { GeometrySpeechBridge(progressStore) }
+    val bridge = remember(lessonId) { GeometrySpeechBridge(progressStore, lessonId, context.applicationContext) }
     val speech = remember {
         createAppTextToSpeech(context) { result ->
             bridge.initialized = result == TextToSpeech.SUCCESS
@@ -67,7 +72,17 @@ internal fun GeometryLesson(onBack: () -> Unit) {
         }
     }
     var web by remember { mutableStateOf<WebView?>(null) }
-    // Reload the lesson data when the app language changes while Geometry is
+    var leaving by remember { mutableStateOf(false) }
+    val leaveLesson: () -> Unit = {
+        if (!leaving) {
+            leaving = true
+            val view = web
+            if (view == null) currentOnBack()
+            else view.evaluateJavascript("window.geometryExit && window.geometryExit();") { currentOnBack() }
+        }
+    }
+    BackHandler(onBack = leaveLesson)
+    // Reload the lesson data when the app language changes while the lesson is
     // already open. The initial factory load uses the same language, so this
     // effect is only observable on a subsequent language change.
     LaunchedEffect(language) {
@@ -77,6 +92,9 @@ internal fun GeometryLesson(onBack: () -> Unit) {
         }
     }
     DisposableEffect(speech, owner) {
+        bridge.progressResponse = { request, payload -> web?.let { view -> view.post {
+            if (!bridge.disposed) view.evaluateJavascript("window.lessonProgressLoaded?.(${JSONObject.quote(request)},${JSONObject.quote(payload)});", null)
+        } } }
         bridge.speech = speech
         bridge.hideKeyboardAction = {
             web?.let { view -> view.post {
@@ -105,7 +123,10 @@ internal fun GeometryLesson(onBack: () -> Unit) {
                 speech.stop()
                 web?.evaluateJavascript("window.geometryPause && window.geometryPause();", null)
                 web?.onPause()
-            } else if (event == Lifecycle.Event.ON_RESUME) web?.onResume()
+            } else if (event == Lifecycle.Event.ON_RESUME) {
+                web?.onResume()
+                web?.evaluateJavascript("window.geometryResume && window.geometryResume();", null)
+            }
         }
         owner.lifecycle.addObserver(observer)
         onDispose {
@@ -119,7 +140,7 @@ internal fun GeometryLesson(onBack: () -> Unit) {
     }
     Column(Modifier.fillMaxSize().background(background)) {
         Row {
-            TextButton(onClick = onBack) { Text(tr("Back to lectures")) }
+            TextButton(onClick = leaveLesson) { Text(tr("Back to lectures")) }
             TextButton(onClick = {
                 speech.stop()
                 web?.loadUrl("$url?theme=${if (darkTheme) "dark" else "light"}&lang=$language")
@@ -167,7 +188,9 @@ internal fun GeometryLesson(onBack: () -> Unit) {
     }
 }
 
-private class GeometrySpeechBridge(private val progress: LectureProgressStore) {
+private class GeometrySpeechBridge(private val progress: LectureProgressStore, private val lessonId: String, private val context: Context) {
+    private val childId = ChildSessionStore.load(context)?.childId
+    var progressResponse: ((String, String) -> Unit)? = null
     @Volatile var initialized = false
     @Volatile var ready = false
     @Volatile var disposed = false
@@ -177,7 +200,29 @@ private class GeometrySpeechBridge(private val progress: LectureProgressStore) {
     @Volatile private var rate = 1f
 
     @JavascriptInterface
-    fun progressKey(): String = progress.geometryPlayerKey
+    fun progressKey(): String = progress.playerKey(lessonId)
+
+    @JavascriptInterface
+    fun trackEvent(payload: String): Boolean = runCatching {
+        if (disposed || childId == null || ChildSessionStore.load(context)?.childId != childId) return false
+        val saved = LectureOutbox.get(context).enqueue(childId, LectureSync.origin, lessonId, payload)
+        if (saved) LectureSync.schedule(context)
+        saved
+    }.getOrDefault(false)
+
+    @JavascriptInterface
+    fun loadProgress(requestId: String) {
+        val child = childId ?: return
+        if (disposed) return
+        LectureSync.executor.execute {
+            val response = JSONObject()
+            runCatching { LectureSync.load(context, lessonId, child) }
+                .onSuccess { response.put("state", it) }
+                .onFailure { response.put("error", it.message ?: "Lecture sync unavailable.") }
+            response.put("pending", LectureOutbox.get(context).pending(child, LectureSync.origin, lessonId))
+            if (!disposed) progressResponse?.invoke(requestId, response.toString())
+        }
+    }
 
     @JavascriptInterface
     fun setRate(value: Float) {
@@ -188,11 +233,11 @@ private class GeometrySpeechBridge(private val progress: LectureProgressStore) {
     fun hideKeyboard() { if (!disposed) hideKeyboardAction?.invoke() }
 
     @JavascriptInterface
-    fun setCompleted(completed: Boolean): Boolean = !disposed && progress.setCompleted("geometry", completed)
+    fun setCompleted(completed: Boolean): Boolean = !disposed && progress.setCompleted(lessonId, completed)
 
     @JavascriptInterface
     fun finish(): Boolean {
-        if (disposed || "geometry" !in progress.completedLectures()) return false
+        if (disposed || lessonId !in progress.completedLectures()) return false
         speech?.stop()
         hideKeyboard()
         finishAction?.invoke()

@@ -1,6 +1,6 @@
 {
   "id": "geometry",
-  "version": 1,
+  "version": 3,
   "subject": "Math",
   "title": "Around & inside",
   "subtitle": "A moving guide to perimeter and area",
@@ -38,17 +38,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "choice",
-        "prompt": "You want enough grass to cover a garden. Which measurement do you need?",
-        "options": [
-          "Perimeter",
-          "Area",
-          "The number of corners"
-        ],
-        "answer": 1,
-        "explanation": "Grass covers the inside, so we need area. A fence would need perimeter."
-      }
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "You want enough grass to cover a garden. Which measurement do you need?",
+          "options": [
+            "Perimeter",
+            "Area",
+            "The number of corners",
+            "The length of one side",
+            "The diagonal length",
+            "The height of the fence"
+          ],
+          "answer": 1,
+          "explanation": "Grass covers the inside, so we need area. A fence would need perimeter."
+        },
+        {
+          "type": "number",
+          "prompt": "A garden is 5 m long and 3 m wide. How many metres of fence go around it?",
+          "answer": 16,
+          "unit": "m",
+          "explanation": "Add the four outside edges: 5 + 3 + 5 + 3 = 16 m."
+        }
+      ]
     },
     {
       "title": "The rectangle",
@@ -82,13 +95,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "number",
-        "prompt": "A different rectangle is 8 cm long and 3 cm wide. What is its area?",
-        "answer": 24,
-        "unit": "cm²",
-        "explanation": "Eight squares in each of three rows gives 8 × 3 = 24 cm². Its perimeter would be 22 cm."
-      }
+      "legacyQuestionIndex": 1,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Which calculation finds the area of a rectangle?",
+          "options": [
+            "Length + width",
+            "2 × length + 2 × width",
+            "Length × width",
+            "Length ÷ width",
+            "4 × length",
+            "Length − width"
+          ],
+          "answer": 2,
+          "explanation": "Area counts rows of squares: length times width."
+        },
+        {
+          "type": "number",
+          "prompt": "A different rectangle is 8 cm long and 3 cm wide. What is its area?",
+          "answer": 24,
+          "unit": "cm²",
+          "explanation": "Eight squares in each of three rows gives 8 × 3 = 24 cm². Its perimeter would be 22 cm."
+        }
+      ]
     },
     {
       "title": "The square",
@@ -122,13 +152,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "number",
-        "prompt": "A square has side length 7 cm. What is its perimeter?",
-        "answer": 28,
-        "unit": "cm",
-        "explanation": "All four sides are 7 cm, so 4 × 7 = 28 cm. The area would be 49 cm²."
-      }
+      "legacyQuestionIndex": 1,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "A square has side length 5 cm. What is its area?",
+          "options": [
+            "10 cm²",
+            "15 cm²",
+            "20 cm²",
+            "25 cm²",
+            "30 cm²",
+            "5 cm²"
+          ],
+          "answer": 3,
+          "explanation": "Five rows of five squares give 5 × 5 = 25 cm²."
+        },
+        {
+          "type": "number",
+          "prompt": "A square has side length 7 cm. What is its perimeter?",
+          "answer": 28,
+          "unit": "cm",
+          "explanation": "All four sides are 7 cm, so 4 × 7 = 28 cm. The area would be 49 cm²."
+        }
+      ]
     },
     {
       "title": "The triangle",
@@ -162,13 +209,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "number",
-        "prompt": "A triangle has base 10 cm and perpendicular height 6 cm. What is its area?",
-        "answer": 30,
-        "unit": "cm²",
-        "explanation": "The matching rectangle has area 60 cm². Half of that is 30 cm²."
-      }
+      "legacyQuestionIndex": 1,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "A triangle fills half a rectangle with area 48 cm². What is the triangle’s area?",
+          "options": [
+            "96 cm²",
+            "48 cm²",
+            "12 cm²",
+            "36 cm²",
+            "24 cm²",
+            "6 cm²"
+          ],
+          "answer": 4,
+          "explanation": "Half of 48 is 24, so the triangle covers 24 cm²."
+        },
+        {
+          "type": "number",
+          "prompt": "A triangle has base 10 cm and perpendicular height 6 cm. What is its area?",
+          "answer": 30,
+          "unit": "cm²",
+          "explanation": "The matching rectangle has area 60 cm². Half of that is 30 cm²."
+        }
+      ]
     },
     {
       "title": "The parallelogram",
@@ -202,17 +266,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "choice",
-        "prompt": "Which measurement belongs in A = base × ___ for a parallelogram?",
-        "options": [
-          "Sloping side",
-          "Perpendicular height",
-          "Perimeter"
-        ],
-        "answer": 1,
-        "explanation": "Use the height at a right angle to the base. The sloping side generally gives the wrong area."
-      }
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Which measurement belongs in A = base × ___ for a parallelogram?",
+          "options": [
+            "Sloping side",
+            "Perpendicular height",
+            "Perimeter",
+            "Diagonal",
+            "Sum of all sides",
+            "Half the base"
+          ],
+          "answer": 1,
+          "explanation": "Use the height at a right angle to the base. The sloping side generally gives the wrong area."
+        },
+        {
+          "type": "number",
+          "prompt": "A parallelogram has base 7 cm and perpendicular height 3 cm. What is its area?",
+          "answer": 21,
+          "unit": "cm²",
+          "explanation": "Multiply base by perpendicular height: 7 × 3 = 21 cm²."
+        }
+      ]
     },
     {
       "title": "The trapezoid",
@@ -246,13 +323,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "number",
-        "prompt": "A trapezoid has parallel sides 10 cm and 6 cm, and height 4 cm. What is its area?",
-        "answer": 32,
-        "unit": "cm²",
-        "explanation": "½ × (10 + 6) × 4 = 32 cm². Only the two parallel sides go inside the brackets."
-      }
+      "legacyQuestionIndex": 1,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Which two lengths are added in the trapezoid area formula?",
+          "options": [
+            "The two sloping sides",
+            "The height and one sloping side",
+            "All four sides",
+            "The two diagonals",
+            "One parallel side and the height",
+            "The two parallel sides"
+          ],
+          "answer": 5,
+          "explanation": "Add the parallel sides, multiply by the perpendicular height, then divide by two."
+        },
+        {
+          "type": "number",
+          "prompt": "A trapezoid has parallel sides 10 cm and 6 cm, and height 4 cm. What is its area?",
+          "answer": 32,
+          "unit": "cm²",
+          "explanation": "½ × (10 + 6) × 4 = 32 cm². Only the two parallel sides go inside the brackets."
+        }
+      ]
     },
     {
       "title": "The circle",
@@ -286,17 +380,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "choice",
-        "prompt": "A circle has diameter 10 cm. Which expression gives its area?",
-        "options": [
-          "π × 10²",
-          "π × 5²",
-          "2 × π × 5"
-        ],
-        "answer": 1,
-        "explanation": "The radius is 5 cm, so the area is π × 5² = 25π cm². The third expression gives circumference."
-      }
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "A circle has diameter 10 cm. Which expression gives its area?",
+          "options": [
+            "π × 10²",
+            "π × 5²",
+            "2 × π × 5",
+            "π × 10",
+            "π × 5",
+            "2 × π × 10"
+          ],
+          "answer": 1,
+          "explanation": "The radius is 5 cm, so the area is π × 5² = 25π cm². The third expression gives circumference."
+        },
+        {
+          "type": "number",
+          "prompt": "A circle has diameter 14 cm. What is its radius?",
+          "answer": 7,
+          "unit": "cm",
+          "explanation": "The radius is half the diameter: 14 ÷ 2 = 7 cm."
+        }
+      ]
     },
     {
       "title": "Put shapes together",
@@ -330,17 +437,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "choice",
-        "prompt": "When finding the perimeter of a compound shape, do you count the lines drawn inside to split it?",
-        "options": [
-          "Yes, every drawn line",
-          "No, only the outside boundary",
-          "Only the longest internal line"
-        ],
-        "answer": 1,
-        "explanation": "Internal dividing lines help with area. They are not part of a trip around the boundary."
-      }
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "When finding the perimeter of a compound shape, do you count the lines drawn inside to split it?",
+          "options": [
+            "Yes, every drawn line",
+            "No, only the outside boundary",
+            "Only the longest internal line",
+            "Only the shortest internal line",
+            "The outside plus every internal line twice",
+            "Only the internal lines"
+          ],
+          "answer": 1,
+          "explanation": "Internal dividing lines help with area. They are not part of a trip around the boundary."
+        },
+        {
+          "type": "number",
+          "prompt": "A shape is split into two rectangles with areas 12 m² and 8 m². They do not overlap. What is the total area?",
+          "answer": 20,
+          "unit": "m²",
+          "explanation": "Add the areas of the two non-overlapping parts: 12 + 8 = 20 m²."
+        }
+      ]
     },
     {
       "title": "Same perimeter, different area",
@@ -374,13 +494,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "number",
-        "prompt": "What is the area of a 9 cm by 1 cm rectangle?",
-        "answer": 9,
-        "unit": "cm²",
-        "explanation": "9 × 1 = 9 cm². Its perimeter is still 20 cm, but its area is smaller."
-      }
+      "legacyQuestionIndex": 1,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Which rectangle has the same perimeter as a 6 cm × 4 cm rectangle, but a smaller area?",
+          "options": [
+            "8 cm × 2 cm",
+            "5 cm × 5 cm",
+            "7 cm × 4 cm",
+            "6 cm × 3 cm",
+            "4 cm × 4 cm",
+            "8 cm × 3 cm"
+          ],
+          "answer": 0,
+          "explanation": "Both perimeters are 20 cm, but 8 × 2 = 16 cm² is smaller than 6 × 4 = 24 cm²."
+        },
+        {
+          "type": "number",
+          "prompt": "What is the area of a 9 cm by 1 cm rectangle?",
+          "answer": 9,
+          "unit": "cm²",
+          "explanation": "9 × 1 = 9 cm². Its perimeter is still 20 cm, but its area is smaller."
+        }
+      ]
     },
     {
       "title": "Design a little park",
@@ -414,17 +551,30 @@
           "seconds": 40
         }
       ],
-      "question": {
-        "type": "choice",
-        "prompt": "Which shopping list is correct for the whole 8 m × 5 m park?",
-        "options": [
-          "40 m of fence; 26 m² of turf",
-          "26 m of fence; 40 m² of turf",
-          "26 m² of fence; 40 m of turf"
-        ],
-        "answer": 1,
-        "explanation": "Fencing follows the 26 m boundary; turf covers the 40 m² interior."
-      }
+      "legacyQuestionIndex": 0,
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Which shopping list is correct for the whole 8 m × 5 m park?",
+          "options": [
+            "40 m of fence; 26 m² of turf",
+            "26 m of fence; 40 m² of turf",
+            "26 m² of fence; 40 m of turf",
+            "13 m of fence; 40 m² of turf",
+            "40 m of fence; 40 m² of turf",
+            "26 m of fence; 13 m² of turf"
+          ],
+          "answer": 1,
+          "explanation": "Fencing follows the 26 m boundary; turf covers the 40 m² interior."
+        },
+        {
+          "type": "number",
+          "prompt": "A park is 7 m long and 4 m wide. What area of turf covers the whole park?",
+          "answer": 28,
+          "unit": "m²",
+          "explanation": "Turf covers the inside: 7 × 4 = 28 m²."
+        }
+      ]
     }
   ]
 }

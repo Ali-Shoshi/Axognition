@@ -1,3 +1,4 @@
+const {solveCheckpoint}=require('./checkpoint-test-helpers.cjs');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {chromium}=require('playwright');
 const root=path.join(__dirname,'src/main/resources/lessons');
@@ -32,7 +33,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#next').isDisabled(),true);
   await page.evaluate(()=>$('next').onclick());
   assert.equal(await page.evaluate(()=>cue),0);
-  await advance(3500);
+  await advance(5000);
   assert.equal(await page.locator('#next').evaluate(e=>Number(e.style.getPropertyValue('--next-fill'))),.5);
   await page.screenshot({path:path.join(output,'dark-countdown-landscape.png')});
   await page.setViewportSize({width:823,height:1223});
@@ -45,13 +46,13 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.evaluate(()=>cue),0);
    assert.equal(await page.locator('#next').isDisabled(),true,'Speed does not bypass the wait');
   }
-  await advance(3499);assert.equal(await page.locator('#next').isDisabled(),true);
+  await advance(4999);assert.equal(await page.locator('#next').isDisabled(),true);
   await advance(1);assert.equal(await page.locator('#next').isEnabled(),true);
   await page.locator('#next').click();
   assert.equal(await page.evaluate(()=>cue),1);
   assert.equal(await page.locator('#next').isDisabled(),true,'New slide starts another wait');
   await page.evaluate(()=>setPlaying(false));
-  await advance(7000);assert.equal(await page.locator('#next').isEnabled(),true,'Wait also runs with narration paused');
+  await advance(10000);assert.equal(await page.locator('#next').isEnabled(),true,'Wait also runs with narration paused');
   await page.reload();await page.waitForFunction(()=>typeof lesson!=='undefined'&&lesson);
   assert.equal(await page.locator('#voiceSpeedValue').textContent(),'2×','Speed survives reload');
   await page.locator('#start').click();
@@ -77,24 +78,20 @@ const server=http.createServer((req,res)=>{
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('#voiceSpeedMenu').isHidden(),true,'Escape closes speed menu');
   assert.equal(await page.locator('#next').isDisabled(),true,'Reload starts a new wait');
-  await page.evaluate(()=>{move(3,3,false);showQuestion()});
+  await page.evaluate(()=>{move(3,3,false);showQuestion(1)});
   await page.locator('#answers input').fill('30');
   await page.locator('#answers input').press('Enter');
   assert.equal(await page.locator('#answers input').evaluate(e=>document.activeElement===e),false);
   assert.equal(await page.evaluate(()=>bridgeEvents.some(e=>e[0]==='keyboard')),true);
   assert.equal(await page.locator('#continue').isVisible(),true);
   await page.evaluate(()=>{move(9,3,false);showQuestion()});
-  await page.locator('#answers button').nth(await page.evaluate(()=>current().question.answer)).click();
-  await page.locator('#continue').click();
+  await solveCheckpoint(page,await page.evaluate(()=>current()));
   assert.equal(await page.locator('#finish').isDisabled(),true,'Skipping checkpoints cannot mark completion');
   await page.evaluate(()=>{started=true;$('welcome').hidden=true});
   // Complete all checkpoints through their answer controls.
   for(let ch=0;ch<10;ch++){
    await page.evaluate(ch=>{move(ch,3,false);showQuestion()},ch);
-   const q=await page.evaluate(()=>current().question);
-   if(q.type==='choice')await page.locator('#answers button').nth(q.answer).click();
-   else{await page.locator('#answers input').fill(String(q.answer));await page.locator('#answers input').press('Enter')}
-   await page.locator('#continue').click();
+   await solveCheckpoint(page,await page.evaluate(()=>current()));
   }
   assert.equal(await page.locator('#finish').isEnabled(),true);
   assert.equal(await page.locator('#progress').evaluate(e=>e.value===e.max),true,'Completed lecture shows full progress');
