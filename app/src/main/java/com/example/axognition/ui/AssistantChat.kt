@@ -126,6 +126,7 @@ fun AssistantChatPanel(
     expanded: Boolean,
     anchor: Offset,
     onMove: (Offset) -> Unit,
+    onMoveEnd: () -> Unit = {},
     messages: List<ChatMessage>,
     onMessage: (ChatMessage) -> Unit,
     onDismiss: () -> Unit,
@@ -329,7 +330,10 @@ fun AssistantChatPanel(
                 if (messages.isNotEmpty()) {
                     Row(
                         modifier = Modifier.pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
+                            detectDragGestures(
+                                onDragEnd = onMoveEnd,
+                                onDragCancel = onMoveEnd
+                            ) { change, dragAmount ->
                                 change.consume()
                                 dragPanel(dragAmount)
                             }

@@ -237,11 +237,12 @@ private fun AuthenticatedMainApp(
             chatPreferences.getFloat("anchorY", 0.1f) * containerHeightPx
         ) else null)
     }
-    LaunchedEffect(assistantButtonPosition) {
-        assistantButtonPosition?.let {
-            chatPreferences.edit().putFloat("anchorX", it.x / containerWidthPx)
-                .putFloat("anchorY", it.y / containerHeightPx).apply()
-        }
+    fun saveAssistantButtonPosition(position: Offset) {
+        if (containerWidthPx <= 0f || containerHeightPx <= 0f) return
+        chatPreferences.edit()
+            .putFloat("anchorX", position.x / containerWidthPx)
+            .putFloat("anchorY", position.y / containerHeightPx)
+            .apply()
     }
     LaunchedEffect(containerWidthPx, containerHeightPx) {
         assistantButtonPosition = assistantButtonPosition?.let { position ->
@@ -447,16 +448,16 @@ private fun AuthenticatedMainApp(
                 edgeMarginPx,
                 (containerHeightPx - groupHeightPx - edgeMarginPx).coerceAtLeast(edgeMarginPx)
             )
-            val displayedX by animateFloatAsState(targetX, tween(260), label = "assistantBubbleX")
-            val displayedY by animateFloatAsState(targetY, tween(260), label = "assistantBubbleY")
-
             if (!assistantOpen) Box(
                 modifier = Modifier
                     .zIndex(2f)
                     .width(groupWidth)
                     .height(groupHeight)
                     .align(Alignment.TopStart)
-                    .offset { IntOffset(displayedX.roundToInt(), displayedY.roundToInt()) }
+                    // Drag updates already arrive on the UI frame. Do not animate
+                    // each new target: a transition per pointer event makes the
+                    // button visibly trail behind the finger.
+                    .offset { IntOffset(targetX.roundToInt(), targetY.roundToInt()) }
             ) {
                 AnimatedVisibility(
                     visible = voiceBubble != null,
@@ -480,7 +481,14 @@ private fun AuthenticatedMainApp(
                         .then(if (needsTwoLines) Modifier.padding(top = 8.dp) else Modifier)
                         .zIndex(1f)
                         .pointerInput(containerWidthPx, containerHeightPx, groupWidthPx, groupHeightPx) {
-                            detectDragGestures { change, dragAmount ->
+                            detectDragGestures(
+                                onDragEnd = {
+                                    assistantButtonPosition?.let(::saveAssistantButtonPosition)
+                                },
+                                onDragCancel = {
+                                    assistantButtonPosition?.let(::saveAssistantButtonPosition)
+                                }
+                            ) { change, dragAmount ->
                                 change.consume()
                                 val current = assistantButtonPosition ?: defaultButtonPosition
                                 assistantButtonPosition = Offset(
@@ -497,6 +505,7 @@ private fun AuthenticatedMainApp(
                 expanded = assistantOpen,
                 anchor = assistantButtonPosition ?: defaultButtonPosition,
                 onMove = { assistantButtonPosition = it },
+                onMoveEnd = { assistantButtonPosition?.let(::saveAssistantButtonPosition) },
                 messages = chatMessages,
                 onMessage = appendChatMessage,
                 onDismiss = { assistantOpen = false },

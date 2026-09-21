@@ -18,7 +18,8 @@ class LectureProgressTest {
         state = LectureEvents.apply(definition, state, event("answer_submitted", question = 0, answer = correct), false)
         state = LectureEvents.apply(definition, state, event("slide_next"), false)
         state = LectureEvents.apply(definition, state, event("slide_back"), false)
-        assertEquals(listOf(true, false), state.questionAnswers["0"])
+        assertEquals(listOf(false, false), state.questionAnswers["0"])
+        assertEquals(listOf(true, false), state.attemptedAnswers["0"], "A wrong first answer is locked")
         assertEquals(setOf("0:0"), state.completedSlides)
         assertEquals(1, state.startCount); assertEquals(1, state.wrongAnswerCount); assertEquals(1, state.backCount)
         state = LectureEvents.apply(definition, state, event("reset"), false)
@@ -36,6 +37,8 @@ class LectureProgressTest {
             }
             state = LectureEvents.apply(definition, state, event("answer_submitted", chapter, question, answer), false)
         }
+        assertNull(state.completedAt, "The result is recorded at the end, not on the last answer")
+        state = LectureEvents.apply(definition, state, event("lecture_finished"), false)
         assertNotNull(state.completedAt)
         state = LectureEvents.apply(definition, state, event("slide_entered"), false)
         assertNotNull(state.completedAt)

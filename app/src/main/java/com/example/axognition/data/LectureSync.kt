@@ -124,7 +124,7 @@ object LectureSync {
             val response = request(session, "/me/lectures/$lecture/events", JSONObject().put("events", events))
             store.acknowledge(session.childId, origin, lecture, response)
             if (ChildSessionStore.load(context)?.childId == session.childId && !store.pending(session.childId, origin, lecture))
-                LectureProgressStore(context).setCompleted(lecture, !response.getJSONObject("state").isNull("completedAt"))
+                LectureProgressStore(context).saveResults(lecture, response.getJSONObject("state"))
         }
         return store.pending(session.childId, origin)
     }
@@ -137,7 +137,7 @@ object LectureSync {
         check(!store.pending(child, origin, lecture)) { "Lecture activity is waiting to sync." }
         val state = request(session!!, "/me/lectures/$lecture/progress")
         store.saveSnapshot(child, origin, lecture, state)
-        LectureProgressStore(context).setCompleted(lecture, !state.isNull("completedAt"))
+        LectureProgressStore(context).saveResults(lecture, state)
         return state
     }
     fun refreshCompletions(context: Context) {
@@ -154,7 +154,7 @@ object LectureSync {
                         if (ChildSessionStore.load(app)?.childId != session.childId) return@runCatching
                         val item = items.getJSONObject(i); val lecture = item.getString("lectureId")
                         if (!LectureOutbox.get(app).pending(session.childId, origin, lecture))
-                            LectureProgressStore(app).setCompleted(lecture, !item.getJSONObject("state").isNull("completedAt"))
+                            LectureProgressStore(app).saveResults(lecture, item.getJSONObject("state"))
                     }
                     cursor = if (page.isNull("nextCursor")) "" else page.getString("nextCursor")
                 } while (cursor.isNotEmpty())

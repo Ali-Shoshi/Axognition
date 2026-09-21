@@ -29,6 +29,10 @@ selection and checkpoints work exactly as in Around & inside. The approximately
 30-minute estimate includes practice and answering, not continuous speech.
 Captions contain the spoken explanation; reduced-motion mode shows the results.
 
+Starts, resumes and retries show a 15-second preparation screen with posture,
+scoring and retry rules. It pauses if the app is hidden. A 100% result permits
+immediate Review, beginning at the first teaching scene.
+
 English and Albanian content lives in `fractions.json` and `fractions.sq.json`.
 `fractions.html`, `fractions.js` and `fractions.css` supply the introduction and
 fraction diagrams. Shared `geometry.js` and `geometry.css` supply the player.
@@ -36,8 +40,10 @@ Edit the source resources and restart/rebuild the server to serve updates.
 
 Android follows the app's language and theme, stops speech on pause or exit,
 preserves the WebView on rotation, and uses speech-completion callbacks. Voice
-availability depends on the installed TTS engine. Finishing all ten checkpoints
-records Fractions as completed; Finish returns to the lecture list. Restart
+availability depends on the installed TTS engine. Answering every question
+records a score; more than 75% passes. Finish returns to the lecture list even
+after failure. The first failure waits one hour; other results below 100% wait
+24 hours before retry. Only 100% enables review without a cooldown. Restart
 clears only this lesson's current progress, preserving activity history. Progress
 and activity sync to PostgreSQL per student, with an offline queue on Android.
 See [Lecture progress](LECTURE-PROGRESS.md).
@@ -66,9 +72,10 @@ Physical-device speech quality and keyboard dismissal remain device checks.
 
 Each of the ten chapter checkpoints now has two questions: a multiple-choice
 question with exactly six distinct options, followed by a typed numeric answer.
-The second question asks for a calculation or a missing number. Both answers
-must be correct before the checkpoint counts as complete. All twenty answers
-are required to finish the lecture. English and Albanian use matching questions.
+The second question asks for a calculation or a missing number. Each question
+allows one answer and reveals the correct answer after an error. All questions
+must be attempted before the result is shown; the denominator follows the actual
+question count. English and Albanian use matching questions.
 
 The player labels Question 1 of 2 / Question 2 of 2, gives feedback for each,
 and saves progress between questions. Reloading resumes the current checkpoint.

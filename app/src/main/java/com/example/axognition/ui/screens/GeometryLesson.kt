@@ -73,13 +73,17 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
     }
     var web by remember { mutableStateOf<WebView?>(null) }
     var leaving by remember { mutableStateOf(false) }
-    val leaveLesson: () -> Unit = {
+    var showLeaveConfirmation by remember { mutableStateOf(false) }
+    val confirmLeaveLesson: () -> Unit = {
         if (!leaving) {
             leaving = true
             val view = web
             if (view == null) currentOnBack()
             else view.evaluateJavascript("window.geometryExit && window.geometryExit();") { currentOnBack() }
         }
+    }
+    val leaveLesson: () -> Unit = {
+        if (!leaving) showLeaveConfirmation = true
     }
     BackHandler(onBack = leaveLesson)
     // Reload the lesson data when the app language changes while the lesson is
@@ -137,6 +141,22 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
             web?.removeJavascriptInterface("GeometryVoice")
             web?.destroy()
         }
+    }
+    if (showLeaveConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showLeaveConfirmation = false },
+            title = { Text(tr("Are you sure you want to leave the lecture?")) },
+            text = { Text(tr("Your progress will be saved and you can resume later.")) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLeaveConfirmation = false
+                    confirmLeaveLesson()
+                }) { Text(tr("Leave")) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLeaveConfirmation = false }) { Text(tr("Stay")) }
+            }
+        )
     }
     Column(Modifier.fillMaxSize().background(background)) {
         Row {
@@ -236,8 +256,13 @@ private class GeometrySpeechBridge(private val progress: LectureProgressStore, p
     fun setCompleted(completed: Boolean): Boolean = !disposed && progress.setCompleted(lessonId, completed)
 
     @JavascriptInterface
+    fun saveResults(payload: String): Boolean = !disposed && runCatching {
+        progress.saveResults(lessonId, JSONObject(payload))
+    }.getOrDefault(false)
+
+    @JavascriptInterface
     fun finish(): Boolean {
-        if (disposed || lessonId !in progress.completedLectures()) return false
+        if (disposed || progress.score(lessonId) == null && lessonId !in progress.completedLectures()) return false
         speech?.stop()
         hideKeyboard()
         finishAction?.invoke()

@@ -80,6 +80,7 @@ const server = http.createServer((req,res) => {
         assert.equal(await page.locator('html').getAttribute('data-theme'),theme);
         await check(`${theme} ${width} welcome`);
         await page.locator('#start').click();
+        await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
         await page.locator('#next').focus();
         const interactionStyle = await page.locator('#next').evaluate(button => {
           const style = getComputedStyle(button);

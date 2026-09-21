@@ -71,6 +71,7 @@ const server=http.createServer((req,res)=>{
     assert.equal(await page.evaluate(()=>questionAnswers[1][0]),true);
     assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('axognition-geometry-v1')).chapter),7);
     await page.locator('#start').click();
+    await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
     assert.equal(await page.locator('#next').isDisabled(),true);
     await page.evaluate(()=>{testTime=9999;updateNext();$('next').onclick()});assert.equal(await page.evaluate(()=>cue),2);
     await page.evaluate(()=>{geometrySetTheme(true);selectVoiceSpeed(1.5)});
@@ -84,19 +85,16 @@ const server=http.createServer((req,res)=>{
     assert.equal(await page.locator('html').getAttribute('lang'),'sq');
     assert.equal(await page.evaluate(()=>questionAnswers[1][0]),true);
     await page.locator('#start').click();
+    await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
     assert.equal(await page.locator('#caption').textContent(),albanian.chapters[2].cues[3].text);
-    // Every checkpoint requires a correct answer, and completion is saved before exit.
-    await page.evaluate(()=>{answers={};questionAnswers={};save()});
+    // Every question is answered once, and completion is saved before exit.
+    await page.evaluate(()=>{answers={};questionAnswers={};attemptedAnswers={};save()});
     for(let ch=0;ch<10;ch++) {
       await page.evaluate(ch=>{move(ch,3,false);showQuestion()},ch);
       for(const q of albanian.chapters[ch].questions) {
       if(q.type==='choice') {
-        await page.locator('#answers button').nth((q.answer+1)%q.options.length).click();
-        assert.equal(await page.locator('#continue').isHidden(),true);
         await page.locator('#answers button').nth(q.answer).click();
       } else {
-        await page.locator('#answers input').fill(String(q.answer+1));await page.locator('#answers input').press('Enter');
-        assert.equal(await page.locator('#continue').isHidden(),true);
         await page.locator('#answers input').fill(String(q.answer));
         await page.setViewportSize({width:1316,height:730});
         assert.equal(await page.locator('#answers input').inputValue(),String(q.answer));
@@ -112,12 +110,13 @@ const server=http.createServer((req,res)=>{
     assert(await page.evaluate(()=>bridgeEvents.some(e=>e[0]==='complete'&&e[1]===true)));
     await page.locator('#review').click();page.once('dialog',dialog=>dialog.accept());
     await page.locator('#restart').click();assert.equal(await page.evaluate(()=>Object.keys(answers).length),0);
-    assert(await page.evaluate(()=>bridgeEvents.some(e=>e[0]==='complete'&&e[1]===false)));
+    assert.equal(await page.evaluate(()=>allCheckpointsComplete()),false);
     for(const language of ['en','sq'])for(const theme of ['light','dark']) {
       for(const [width,height] of [[360,640],[600,900],[823,1223],[1316,730],[820,360]]) {
         await page.setViewportSize({width,height});await load(language,theme);
         await audit(`${language} ${theme} ${width} welcome`);
         await page.locator('#start').click();await page.evaluate(()=>setPlaying(false));
+        await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
         for(let ch=0;ch<10;ch++) {
           for(let cue=0;cue<4;cue++) {
             await page.evaluate(([ch,cue])=>move(ch,cue,false),[ch,cue]);

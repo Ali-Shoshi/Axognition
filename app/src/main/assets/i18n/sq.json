@@ -547,5 +547,13 @@
   "The child account is unavailable.": "Llogaria e fëmijës nuk është e disponueshme.",
   "The local learning assistant is unavailable. Check that LM Studio is running and the model is loaded.": "Asistenti lokal nuk është i disponueshëm. Kontrollo nëse LM Studio është hapur dhe modeli është ngarkuar.",
   "Fractions · Share, see, solve": "Thyesat · Ndaj, shiko dhe zgjidh",
-  "Fractions: interactive guided unit": "Thyesat: një udhëtim pamor ndërveprues"
+  "Fractions: interactive guided unit": "Thyesat: një udhëtim pamor ndërveprues",
+  "No completed attempts yet.": "Ende asnjë përpjekje e përfunduar.",
+  "Not passed yet": "Ende nuk ke kaluar",
+  "{0}% · {1}/{2} correct · {3} completed attempts": "{0}% · {1}/{2} të sakta · {3} përpjekje të përfunduara",
+  "{0} of {1} units complete": "{0} nga {1} njësi të përfunduara",
+  "Unit {0}": "Njësia {0}",
+  "1 video lecture": "1 mësim me video",
+  "Ready to begin": "Gati për të filluar",
+  "Score available after the next attempt": "Rezultati shfaqet pas përpjekjes tjetër"
 }

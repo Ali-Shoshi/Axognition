@@ -30,6 +30,11 @@ const server=http.createServer((req,res)=>{
   await page.goto(`http://127.0.0.1:${server.address().port}/geometry.html?theme=dark`);
   await page.waitForFunction(()=>typeof lesson!=='undefined'&&lesson);
   await page.locator('#start').click();
+  assert.equal(await page.locator('#prepare').isVisible(),true,'First start shows preparation screen');
+  assert.equal(await page.evaluate(()=>started),false,'Preparation does not start playback early');
+  await page.evaluate(()=>{preparationRemaining=0;tickPreparation()});
+  assert.equal(await page.locator('#prepare').isHidden(),true,'Preparation finishes before playback');
+  assert.equal(await page.evaluate(()=>started),true);
   assert.equal(await page.locator('#next').isDisabled(),true);
   await page.evaluate(()=>$('next').onclick());
   assert.equal(await page.evaluate(()=>cue),0);
@@ -57,6 +62,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#voiceSpeedValue').textContent(),'2×','Speed survives reload');
   await page.locator('#start').click();
   await page.setViewportSize({width:1316,height:730});
+  await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
   await page.locator('#voiceSpeedButton').click();
   const menuShape=await page.evaluate(()=>{
    const button=$('voiceSpeedButton').getBoundingClientRect(),menu=$('voiceSpeedMenu').getBoundingClientRect(),style=getComputedStyle($('voiceSpeedMenu')),stage=$('stage').getBoundingClientRect();
@@ -90,6 +96,7 @@ const server=http.createServer((req,res)=>{
   await page.evaluate(()=>{started=true;$('welcome').hidden=true});
   // Complete all checkpoints through their answer controls.
   for(let ch=0;ch<10;ch++){
+   if(await page.evaluate(()=>Boolean(currentResult())))break;
    await page.evaluate(ch=>{move(ch,3,false);showQuestion()},ch);
    await solveCheckpoint(page,await page.evaluate(()=>current()));
   }
@@ -106,7 +113,8 @@ const server=http.createServer((req,res)=>{
   page.once('dialog',dialog=>dialog.accept());
   await page.locator('#restart').click();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(STORE)).completedAt),null);
-  assert.equal(await page.evaluate(()=>bridgeEvents.filter(e=>e[0]==='complete').at(-1)[1]),false);
+  assert.equal(await page.evaluate(()=>allCheckpointsComplete()),false);
+  assert.equal(await page.evaluate(()=>lectureResults.length),1,'Restart retains the earned result');
   assert.deepEqual(errors,[]);
   console.log('PASS: timed Next gating/fill/reset, pause/rotation/theme/rate invariants, seven native rates, reload persistence, Enter dismissal, incomplete Finish gating, completion, Finish exit and restart.');
  }finally{await browser.close();server.close()}

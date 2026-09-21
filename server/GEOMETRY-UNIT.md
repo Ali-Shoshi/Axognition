@@ -27,6 +27,10 @@ speech. Next fills for ten seconds on unfinished scenes. Previously completed
 scenes unlock immediately, as do all scenes in a completed lecture. Changing orientation, theme or voice speed does not
 reset or bypass that wait. The wait continues while narration is paused.
 
+Starts, resumes and retries show a 15-second preparation screen with posture,
+scoring and retry rules. It pauses if the app is hidden. A 100% result permits
+immediate Review, beginning at the first teaching scene.
+
 Models trace edges, fill with square tiles, assemble matching triangles, slide
 a parallelogram's cut piece, join trapezoids and fill circles with sectors.
 The square chapter includes an adjustable side length. Problems use multiple-choice
@@ -40,10 +44,12 @@ restarts active narration at the selected rate without advancing the scene.
 Submitting a numeric answer with Enter/Done dismisses the keyboard.
 Pause, backgrounding and exiting stop narration. Motion honours reduced-motion settings.
 
-Completing all ten checkpoints records the lecture as finished. The final review
-screen includes Finish, which saves completion before returning to the lecture
-list on Android. The lecture and unit show a Finished badge, and the Mathematics
-collection reflects actual completion. Restart clears this lecture's completion.
+Answering every question records a score; strictly more than 75% passes. Finish
+returns to the lecture list after either passing or failing. The first failure
+waits one hour; all other results below 100% wait 24 hours before retry. Only
+100% enables immediate review. Unit and lecture cards show the latest score and
+completed attempt count. Restart clears the current answers and slides while
+preserving previous results.
 Progress, completion and activity sync to PostgreSQL for the signed-in student,
 with a durable offline queue on Android. See [Lecture progress](LECTURE-PROGRESS.md).
 Existing device-wide Geometry
@@ -95,9 +101,10 @@ TTS playback still require a connected, authorized device.
 
 Each of the ten chapter checkpoints now has two questions: a multiple-choice
 question with exactly six distinct options, followed by a typed numeric answer.
-The second question asks for a calculation or a missing number. Both answers
-must be correct before the checkpoint counts as complete. All twenty answers
-are required to finish the lecture. English and Albanian use matching questions.
+The second question asks for a calculation or a missing number. Each question
+allows one answer and reveals the correct answer after an error. All questions
+must be attempted before the result is shown; the denominator follows the actual
+question count. English and Albanian use matching questions.
 
 The player labels Question 1 of 2 / Question 2 of 2, gives feedback for each,
 and saves progress between questions. Reloading resumes the current checkpoint.

@@ -5,6 +5,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.time.Instant
 import java.util.UUID
+import kotlin.math.roundToInt
 
 internal val progressJson = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
@@ -19,6 +20,7 @@ data class LectureEvent(
     val targetChapter: Int? = null, val targetCue: Int? = null,
     val revisit: Boolean = false, val value: String? = null,
     val importedAnswers: Map<String, List<Boolean>> = emptyMap(),
+    val importedAttempts: Map<String, List<Boolean>> = emptyMap(),
     val importedSlides: Set<String> = emptySet()
 )
 
@@ -27,15 +29,29 @@ data class LectureEventBatch(val events: List<LectureEvent>)
 
 @Serializable
 data class LectureState(
+    val scoringVersion: Int = 0,
     val generation: Long = 0, val lessonVersion: Int = 0,
     val chapter: Int = 0, val cue: Int = 0, val seconds: Double = 0.0,
     val questionIndex: Int = 0, val inCheckpoint: Boolean = false,
     val completedSlides: Set<String> = emptySet(),
     val questionAnswers: Map<String, List<Boolean>> = emptyMap(),
+    val attemptedAnswers: Map<String, List<Boolean>> = emptyMap(),
+    val lectureResults: List<LectureResult> = emptyList(),
+    val passed: Boolean = false, val legacyImported: Boolean = false,
     val checkpointRevisions: List<Int> = emptyList(),
     val completedAt: String? = null, val firstStartedAt: String? = null,
     val startCount: Long = 0, val wrongAnswerCount: Long = 0, val backCount: Long = 0,
     val cursorAt: String? = null, val updatedAt: String? = null
+)
+
+@Serializable
+data class LectureUnitResult(val correct: Int, val total: Int, val percent: Int)
+
+@Serializable
+data class LectureResult(
+    val generation: Long, val lessonVersion: Int, val checkpointRevisions: List<Int>,
+    val correct: Int, val total: Int, val percent: Int, val passed: Boolean,
+    val completedAt: String, val retryAt: String? = null, val units: List<LectureUnitResult>
 )
 
 @Serializable
@@ -56,12 +72,47 @@ data class LectureDefinition(val id: String, val version: Int, val chapters: Lis
                 state.checkpointRevisions.getOrNull(i) == revision(i) && state.questionAnswers[i.toString()]?.getOrNull(j) == true
             }
         }
-        val complete = answers.values.all { it.all { passed -> passed } }
-        return state.copy(lessonVersion = version, questionAnswers = answers,
+        val attempted = chapters.indices.associate { i ->
+            i.toString() to questions(i).indices.map { j ->
+                state.checkpointRevisions.getOrNull(i) == revision(i) &&
+                    (state.attemptedAnswers[i.toString()]?.getOrNull(j) == true || answers[i.toString()]!![j])
+            }
+        }
+        var normalized = state.copy(scoringVersion = 1, lessonVersion = version,
+            questionAnswers = answers, attemptedAnswers = attempted,
             checkpointRevisions = chapters.indices.map(::revision),
             chapter = state.chapter.coerceIn(chapters.indices), cue = state.cue.coerceIn(0, cues(state.chapter.coerceIn(chapters.indices)).lastIndex),
-            completedSlides = state.completedSlides.filter(::validSlide).toSet(),
-            completedAt = state.completedAt.takeIf { complete })
+            questionIndex = state.questionIndex.coerceIn(questions(state.chapter.coerceIn(chapters.indices)).indices),
+            completedSlides = state.completedSlides.filter(::validSlide).toSet())
+        // Keep pre-scoring completions reviewable. Earlier first-answer scores were not stored.
+        if (state.scoringVersion == 0 && state.completedAt != null && answers.values.all { it.all { right -> right } }) {
+            normalized = normalized.copy(lectureResults = listOf(result(normalized, Instant.parse(state.completedAt))))
+        }
+        return normalized.copy(completedAt = currentResult(normalized)?.completedAt,
+            passed = normalized.lectureResults.lastOrNull()?.let {
+                it.passed && it.checkpointRevisions == normalized.checkpointRevisions &&
+                    (it.generation != normalized.generation || allAttempted(normalized))
+            } == true)
+    }
+    fun currentResult(state: LectureState) = state.lectureResults.lastOrNull()?.takeIf {
+        it.generation == state.generation && it.checkpointRevisions == state.checkpointRevisions && allAttempted(state) &&
+            it.total == chapters.indices.sumOf { i -> questions(i).size } && it.correct == state.questionAnswers.values.sumOf { answers -> answers.count { right -> right } }
+    }
+    fun allAttempted(state: LectureState) = chapters.indices.all { i ->
+        questions(i).indices.all { state.attemptedAnswers[i.toString()]?.getOrNull(it) == true }
+    }
+    fun result(state: LectureState, at: Instant): LectureResult {
+        val units = chapters.indices.map { i ->
+            val total = questions(i).size
+            val correct = state.questionAnswers[i.toString()]!!.count { it }
+            LectureUnitResult(correct, total, (100.0 * correct / total).roundToInt())
+        }
+        val correct = units.sumOf { it.correct }; val total = units.sumOf { it.total }
+        val passed = correct * 4L > total * 3L
+        val wait = if (correct == total) 0L else if (!passed && state.lectureResults.none { !it.passed }) 3600L else 86400L
+        return LectureResult(state.generation, version, state.checkpointRevisions, correct, total,
+            (100.0 * correct / total).roundToInt(), passed, at.toString(),
+            if (wait == 0L) null else at.plusSeconds(wait).toString(), units)
     }
     fun validSlide(key: String): Boolean {
         val parts = key.split(':').map { it.toIntOrNull() }
@@ -108,8 +159,8 @@ object LectureEvents {
             require(e.value == null || e.value.length <= 80)
             require(e.targetChapter == null || e.targetChapter in 0..9999)
             require(e.targetCue == null || e.targetCue in 0..9999)
-            require(e.importedAnswers.size <= definition.chapters.size && e.importedSlides.size <= 10000)
-            e.importedAnswers.forEach { (chapter, answers) ->
+            require(e.importedAnswers.size <= definition.chapters.size && e.importedAttempts.size <= definition.chapters.size && e.importedSlides.size <= 10000)
+            (e.importedAnswers.entries + e.importedAttempts.entries).forEach { (chapter, answers) ->
                 require(chapter.toIntOrNull() in 0..9999 && answers.size <= 10000)
                 if (e.lessonVersion == definition.version) {
                     require(chapter.toIntOrNull() in definition.chapters.indices)
@@ -121,29 +172,50 @@ object LectureEvents {
     }
 
     /** Pure reducer: correctness comes from the server's lesson, never a client boolean. */
-    fun apply(definition: LectureDefinition, original: LectureState, event: LectureEvent, newSession: Boolean): LectureState {
+    fun apply(definition: LectureDefinition, original: LectureState, event: LectureEvent, newSession: Boolean,
+              receivedAt: Instant = Instant.now()): LectureState {
         var state = definition.normalize(original)
+        val at = minOf(Instant.parse(event.occurredAt), receivedAt)
         if (newSession) state = state.copy(startCount = state.startCount + 1,
             firstStartedAt = listOfNotNull(state.firstStartedAt, event.occurredAt).minOrNull())
-        if (event.type == "answer_submitted" && definition.correct(event) == false) state = state.copy(wrongAnswerCount = state.wrongAnswerCount + 1)
         if (event.type == "slide_back") state = state.copy(backCount = state.backCount + 1)
         // Stale offline events remain in history, but cannot undo a reset or award revised questions.
         if (event.generation != state.generation || event.lessonVersion != definition.version) return state
-        if (event.type == "reset") return definition.normalize(LectureState(generation = state.generation + 1,
-            firstStartedAt = state.firstStartedAt, startCount = state.startCount, wrongAnswerCount = state.wrongAnswerCount, backCount = state.backCount))
+        val result = definition.currentResult(state)
+        if (event.type == "reset") {
+            if (result?.retryAt?.let { at < Instant.parse(it) } == true) return state
+            return definition.normalize(LectureState(scoringVersion = 1, generation = state.generation + 1,
+                lectureResults = state.lectureResults, legacyImported = true,
+                firstStartedAt = state.firstStartedAt, startCount = state.startCount, wrongAnswerCount = state.wrongAnswerCount, backCount = state.backCount))
+        }
+        // Completed attempts cannot be changed. Non-perfect attempts must be reset after their cooldown.
+        if (result != null && result.correct != result.total) return state
         if (event.type in setOf("slide_next", "slide_auto")) state = state.copy(completedSlides = state.completedSlides + "${event.chapter}:${event.cue}")
-        if (definition.correct(event) == true) {
+        val correct = definition.correct(event)
+        if (correct != null && result == null && state.attemptedAnswers[event.chapter.toString()]?.get(event.question!!) != true) {
             val answers = state.questionAnswers[event.chapter.toString()]!!.toMutableList()
-            answers[event.question!!] = true
-            state = state.copy(questionAnswers = state.questionAnswers + (event.chapter.toString() to answers))
+            val attempted = state.attemptedAnswers[event.chapter.toString()]!!.toMutableList()
+            answers[event.question!!] = correct; attempted[event.question] = true
+            state = state.copy(questionAnswers = state.questionAnswers + (event.chapter.toString() to answers),
+                attemptedAnswers = state.attemptedAnswers + (event.chapter.toString() to attempted),
+                wrongAnswerCount = state.wrongAnswerCount + if (correct) 0 else 1)
         }
         // Legacy data has no raw responses; retain it explicitly as imported evidence, not new attempts.
-        if (event.type == "legacy_import" && state.generation == 0L) {
+        if (event.type == "legacy_import" && state.generation == 0L && !state.legacyImported && result == null) {
             val merged = state.questionAnswers.toMutableMap()
-            event.importedAnswers.forEach { (key, values) -> merged[key] = merged[key]!!.mapIndexed { i, old -> old || values[i] } }
-            state = state.copy(questionAnswers = merged, completedSlides = state.completedSlides + event.importedSlides)
+            val attempted = state.attemptedAnswers.toMutableMap()
+            event.importedAnswers.forEach { (key, values) ->
+                merged[key] = merged[key]!!.mapIndexed { i, old -> if (attempted[key]!![i]) old else values[i] }
+                attempted[key] = attempted[key]!!.mapIndexed { i, old -> old || values[i] || event.importedAttempts[key]?.getOrNull(i) == true }
+            }
+            state = state.copy(questionAnswers = merged, attemptedAnswers = attempted, legacyImported = true,
+                completedSlides = state.completedSlides + event.importedSlides)
         }
-        if (state.questionAnswers.values.all { it.all { passed -> passed } }) state = state.copy(completedAt = state.completedAt ?: Instant.now().toString())
+        if (event.type == "lecture_finished" && result == null && definition.allAttempted(state)) {
+            val finished = definition.result(state, at)
+            state = state.copy(lectureResults = state.lectureResults + finished, completedAt = finished.completedAt,
+                passed = finished.passed, inCheckpoint = false)
+        }
         if (state.cursorAt == null || Instant.parse(event.occurredAt) >= Instant.parse(state.cursorAt)) {
             if (event.type == "slide_entered") state = state.copy(chapter = event.chapter, cue = event.cue, seconds = event.seconds, inCheckpoint = false)
             if (event.type in setOf("question_shown", "answer_submitted")) state = state.copy(chapter = event.chapter, cue = event.cue, questionIndex = event.question ?: 0, inCheckpoint = true)

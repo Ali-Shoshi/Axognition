@@ -11,7 +11,7 @@ context.performance={now:()=>clock};
 function nextScene(){clock+=10000;el.get('next').onclick()}
 vm.runInContext(fs.readFileSync(path.join(root,'geometry.js'),'utf8'),context);
 setImmediate(()=>{
- el.get('start').onclick();assert.equal(el.get('caption').textContent,data.chapters[0].cues[0].text);
+ el.get('start').onclick();vm.runInContext('preparationRemaining=0;tickPreparation()',context);assert.equal(el.get('caption').textContent,data.chapters[0].cues[0].text);
  // Speech completion from a cancelled utterance cannot release the next cue.
  const firstId=voiced.at(-1)[1];
  el.get('next').onclick();assert.equal(vm.runInContext('cue',context),0);
@@ -24,8 +24,9 @@ setImmediate(()=>{
  el.get('play').onclick();assert.equal(vm.runInContext('playing',context),false);
  nextScene();nextScene();
  assert.equal(el.get('questionPanel').hidden,false);
- el.get('answers').children[0].onclick();assert.equal(el.get('continue').hidden,true);
+ el.get('answers').children[0].onclick();assert.equal(el.get('continue').hidden,false);
  el.get('answers').children[1].onclick();assert.equal(el.get('continue').hidden,false);
+ assert.equal(vm.runInContext('questionAnswers[0][0]',context),false,'A wrong first answer cannot be changed');
  assert.equal(vm.runInContext('answers[0]',context),undefined);
  el.get('continue').onclick();assert.equal(vm.runInContext('questionIndex',context),1);
  const second=el.get('answers').children[0];second.children[0].value=String(data.chapters[0].questions[1].answer);second.onsubmit({preventDefault(){}});
@@ -39,7 +40,7 @@ setImmediate(()=>{
   assert.equal(el.get('continue').hidden,false);el.get('continue').onclick();
  }
  }
- assert.equal(el.get('finished').hidden,false);assert(el.get('score').textContent.includes('All ten'));
+ assert.equal(el.get('finished').hidden,false);assert(el.get('score').textContent.includes('19 / 20'));
  const saved=JSON.parse(storage['axognition-geometry-v1']);assert.equal(Object.keys(saved.answers).length,10);
  assert.equal(typeof saved.completedAt,'string');
  assert.equal(el.get('finish').disabled,false);

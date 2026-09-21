@@ -32,7 +32,7 @@ const server=http.createServer((req,res)=>{
  });
  const go=async language=>{await page.goto(`http://127.0.0.1:${server.address().port}/geometry.html?lang=${language}&theme=dark`);await page.waitForFunction(()=>typeof lesson!=='undefined'&&lesson&&$('start').disabled===false);};
  try{
-  await go('en');await page.locator('#start').click();
+  await go('en');await page.locator('#start').click();await page.evaluate(()=>{preparationRemaining=0;tickPreparation()});
   await page.evaluate(()=>{move(1,3,false);showQuestion()});
   await solveCheckpoint(page,en.chapters[1]);
   await page.evaluate(()=>selectVoiceSpeed(1.5));
@@ -42,7 +42,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#voiceSpeedValue').textContent(),'1.50×');
   assert.equal(await page.locator('#start').textContent(),sq.ui['Resume exploring ▶']);
   assert.equal(await page.locator('.voice-speed-label').textContent(),sq.ui['Voice Speed']);
-  await page.locator('#start').click();assert.equal(await page.locator('#next').isDisabled(),true);
+  await page.locator('#start').click();await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});assert.equal(await page.locator('#next').isDisabled(),true);
   assert.equal(await page.evaluate(()=>spoken.at(-1)),sq.chapters[2].cues[0].text,'Native narration gets Albanian text');
   for(let i=0;i<10;i++){
    await page.evaluate(i=>{move(i,3,false);showQuestion()},i);
@@ -64,6 +64,7 @@ const server=http.createServer((req,res)=>{
   });
   await standalone.goto(`http://127.0.0.1:${server.address().port}/geometry.html?lang=sq`);
   await standalone.locator('#start').click();
+  await standalone.evaluate(()=>{preparationRemaining=0;tickPreparation()});
   assert.equal(await standalone.evaluate(()=>speechCalls.at(-1).lang),'sq-AL');
   assert.equal(await standalone.evaluate(()=>speechCalls.at(-1).text),sq.chapters[0].cues[0].text);
   console.log(`PASS: ${Object.keys(catalog).length} Albanian app strings, all 40 translated scenes/10 checkpoints, shared progress/completion, saved speed, Albanian native and browser narration.`);

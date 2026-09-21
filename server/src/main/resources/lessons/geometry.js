@@ -28,7 +28,9 @@ let chapter=0, cue=0, seconds=0, playing=false, started=false;
 let muted=false, speaking=false, token=0, voiceTimer, lastFrame=0, savedAt=0;
 let answers={};
 let questionAnswers={}, questionIndex=0, inCheckpoint=false;
-let completedSlides={}, generation=0, importedToServer=false;
+let attemptedAnswers={}, lectureResults=[], attemptStarted=false;
+let progressReady=false, reviewing=false;
+let completedSlides={}, generation=0, importedToServer=false, hasStarted=false;
 let sessionId=null, eventSequence=0, exitSent=false, visitId=null;
 let visitStarted=0, activeStarted=null, activeElapsed=0, lastAttemptAt=0;
 let activityOutbox=[];
@@ -82,7 +84,8 @@ function beginSession(reason) {
   sessionId=activityId();eventSequence=0;exitSent=false;visitId=null;
   trackActivity('lecture_started',{value:reason});
   if(!importedToServer && window.GeometryVoice?.trackEvent) {
-    trackActivity('legacy_import',{importedAnswers:questionAnswers,importedSlides:Object.keys(completedSlides)});
+    trackActivity('legacy_import',{importedAnswers:questionAnswers,importedAttempts:attemptedAnswers,importedSlides:Object.keys(completedSlides)});
+    if(currentResult()&&allQuestionsAttempted())trackActivity('lecture_finished');
     importedToServer=true;
   }
 }
@@ -92,32 +95,35 @@ function finishSlide(type) {
   completedSlides[key]=true;
 }
 function applyServerProgress(state,restorePosition=false) {
-  if(!lesson||!state||state.lessonVersion!==lesson.version||state.generation<generation)return;
-  if(state.generation>generation || (restorePosition && importedToServer)) {
-    generation=state.generation;completedSlides={};questionAnswers={};answers={};completedAt=null;
-  }
+  if(!lesson||!state||state.lessonVersion!==lesson.version||state.scoringVersion!==1)return;
+  // An empty account snapshot must not discard progress waiting for its one-time import.
+  if(!importedToServer && !state.startCount && !state.lectureResults?.length && Object.values(attemptedAnswers).some(a=>a.some(Boolean)))return;
+  generation=state.generation;completedSlides={};questionAnswers={};attemptedAnswers={};answers={};
+  lectureResults=state.lectureResults||[];completedAt=state.completedAt||null;
   for(const key of state.completedSlides||[])completedSlides[key]=true;
   lesson.chapters.forEach((c,i)=>{
     if(state.checkpointRevisions?.[i] !== (c.checkpointRevision||1))return;
-    questionAnswers[i]=c.questions.map((_,j)=>questionAnswers[i]?.[j]===true||state.questionAnswers?.[i]?.[j]===true);
-    if(questionAnswers[i].every(Boolean))answers[i]=true;
+    questionAnswers[i]=c.questions.map((_,j)=>state.questionAnswers?.[i]?.[j]===true);
+    attemptedAnswers[i]=c.questions.map((_,j)=>state.attemptedAnswers?.[i]?.[j]===true);
+    if(attemptedAnswers[i].every(Boolean))answers[i]=true;
   });
-  if(allCheckpointsComplete())completedAt=state.completedAt||completedAt||new Date().toISOString();
-  if(restorePosition && state.cursorAt) {
-    chapter=Math.max(0,Math.min(lesson.chapters.length-1,state.chapter));
-    cue=Math.max(0,Math.min(current().cues.length-1,state.cue));seconds=Math.max(0,Math.min(40,state.seconds||0));
-    questionIndex=state.questionIndex===1?1:0;inCheckpoint=Boolean(state.inCheckpoint);
+  reviewing=false;
+  attemptStarted=!currentResult() && Boolean(state.cursorAt||Object.keys(completedSlides).length||Object.values(attemptedAnswers).some(a=>a.some(Boolean)));
+  if(restorePosition) {
+    chapter=Math.max(0,Math.min(lesson.chapters.length-1,state.chapter||0));
+    cue=Math.max(0,Math.min(current().cues.length-1,state.cue||0));seconds=Math.max(0,Math.min(40,state.seconds||0));
+    questionIndex=Math.max(0,Math.min(current().questions.length-1,state.questionIndex||0));inCheckpoint=Boolean(state.inCheckpoint);
   }
-  if(state.generation>0)importedToServer=true;
-  save();updateNext();updateProgress();
+  if(state.startCount>0||state.legacyImported)importedToServer=true;
+  if(state.startCount>0||state.firstStartedAt)hasStarted=true;
+  save();updateNext();updateProgress();updateStartAvailability();
 }
 window.lessonProgressLoaded=(id,payload)=>{
   let response;try{response=JSON.parse(payload);}catch(_){return;}
   const resolve=progressRequests.get(id);
   if(resolve){progressRequests.delete(id);resolve(response);}
-  else if(response.state&&!response.pending&&!activityOutbox.length) {
-    applyServerProgress(response.state,false);
-    if(started&&inCheckpoint)showQuestion(questionIndex);
+  else if(response.state&&!response.pending&&!activityOutbox.length&&!started&&!preparing) {
+    applyServerProgress(response.state,true);
   }
   if(response.error||response.pending||activityOutbox.length)$('notice').textContent=g('Saved on this device. Waiting to sync with the server.');
   else if(response.state)$('notice').textContent=g('Progress synced with the server.');
@@ -132,6 +138,7 @@ function loadServerProgress() {
   });
 }
 window.geometryExit=()=>{
+  cancelPreparation();
   if(started&&!exitSent){trackActivity('lecture_exit');exitSent=true;}
   setActivityVisible(false);setPlaying(false);save();drainActivity();
 };
@@ -139,9 +146,100 @@ let customSide=5;
 const NEXT_WAIT_MS = 10000;
 const VOICE_SPEEDS = [0.5, 0.7, 1, 1.25, 1.5, 1.75, 2];
 let nextUnlockAt = 0, voiceSpeed = 1, lastSpeechText = '', completedAt = null;
+let preparing=false, preparationRemaining=15000, preparationLast=null, preparationTimer=null;
+const totalQuestions=()=>lesson.chapters.reduce((n,c)=>n+c.questions.length,0);
+const correctQuestions=()=>lesson.chapters.reduce((n,c,i)=>n+c.questions.filter((_,j)=>questionAnswers[i]?.[j]===true).length,0);
+const attempted=(i,j)=>attemptedAnswers[i]?.[j]===true;
+const allQuestionsAttempted=()=>lesson.chapters.every((c,i)=>c.questions.every((_,j)=>attempted(i,j)));
+const lastResult=()=>lectureResults.at(-1);
+const revisions=()=>lesson.chapters.map(c=>c.checkpointRevision||1);
+const latestPassed=()=>Boolean(lastResult()?.passed&&JSON.stringify(lastResult().checkpointRevisions)===JSON.stringify(revisions())&&(lastResult().generation!==generation||allQuestionsAttempted()));
+const currentResult=()=>lectureResults.findLast(r=>r.generation===generation&&r.total===totalQuestions()&&r.correct===correctQuestions()&&JSON.stringify(r.checkpointRevisions)===JSON.stringify(revisions())&&allQuestionsAttempted());
+const canReview=()=>Boolean(currentResult()&&currentResult().correct===currentResult().total);
+const cooldownUntil=()=>Date.parse(currentResult()?.retryAt||'')||0;
+function cooldownText(){const minutes=Math.ceil(Math.max(0,cooldownUntil()-Date.now())/60000);return minutes?Math.floor(minutes/60)+'h '+minutes%60+'m':'';}
+function resultSummary(result){return result.correct+' / '+result.total+g(' correct')+' ('+result.percent+'%). '+(result.passed?g('Passed!'):g('Not passed. More than 75% is required.'));}
+function updateStartAvailability(){
+  if(!lesson)return;
+  const left=cooldownText();
+  $('start').disabled=!progressReady||Boolean(left);
+  $('start').textContent=left?g('Retry available in ')+left:canReview()?g('Review lecture ▶'):currentResult()?g('Try again ▶'):attemptStarted?g('Resume exploring ▶'):g('Start exploring ▶');
+  if($('attemptSummary'))$('attemptSummary').textContent=lastResult()?resultSummary(lastResult())+' '+lectureResults.length+' '+g('completed attempts'):g('No completed attempts yet.');
+  $('review').hidden=!canReview();
+  if($('retry')){$('retry').hidden=!currentResult()||canReview();$('retry').disabled=Boolean(left);$('retry').textContent=left?g('Retry available in ')+left:g('Try again ▶');}
+  $('restart').disabled=Boolean(left);
+  $('restart').textContent=left?g('Retry available in ')+left:g('Restart this unit');
+}
+if(typeof setInterval==='function')setInterval(()=>{if(progressReady)updateStartAvailability();},1000);
+function resetAttempt(){
+  if(cooldownText())return false;
+  if(!sessionId){sessionId=activityId();eventSequence=0;}
+  trackActivity('reset');
+  chapter=0;cue=0;seconds=0;questionIndex=0;inCheckpoint=false;questionAnswers={};attemptedAnswers={};answers={};completedSlides={};completedAt=null;attemptStarted=false;reviewing=false;generation++;
+  save();return true;
+}
+function finalizeAttempt(){
+  if(!allQuestionsAttempted())return false;
+  if(!currentResult()){
+    const correct=correctQuestions(),total=totalQuestions(),passed=correct*4>total*3;
+    const at=Date.now(),wait=correct===total?0:!passed&&!lectureResults.some(r=>!r.passed)?3600000:86400000;
+    lectureResults.push({generation,lessonVersion:lesson.version,checkpointRevisions:revisions(),correct,total,percent:Math.round(correct/total*100),passed,
+      completedAt:new Date(at).toISOString(),retryAt:wait?new Date(at+wait).toISOString():null,
+      units:lesson.chapters.map((c,i)=>{const correct=c.questions.filter((_,j)=>questionAnswers[i]?.[j]===true).length;return {correct,total:c.questions.length,percent:Math.round(correct/c.questions.length*100)};})});
+    completedAt=currentResult().completedAt;attemptStarted=false;
+    trackActivity('lecture_finished');
+  }
+  return recordCompletion();
+}
+function showResult(){
+  if(!currentResult())return;
+  setPlaying(false);inCheckpoint=false;reviewing=false;
+  $('welcome').hidden=true;$('questionPanel').hidden=true;$('finished').hidden=false;
+  $('score').textContent=resultSummary(currentResult())+' '+lectureResults.length+' '+g('completed attempts')+(cooldownText()?'. '+g('Retry available in ')+cooldownText()+'.':'');
+  $('finish').disabled=false;
+  updateStartAvailability();updateNext();updateProgress();save();
+}
+function cancelPreparation() {
+  clearTimeout(preparationTimer);
+  preparationTimer=null;preparationLast=null;preparing=false;
+  $('prepare').hidden=true;
+}
+function pausePreparation() {
+  if(!preparing)return;
+  if(preparationLast!==null)preparationRemaining-=Math.max(0,performance.now()-preparationLast);
+  preparationLast=null;
+  clearTimeout(preparationTimer);
+  preparationTimer=null;
+  $('prepareSeconds').textContent=String(Math.max(1,Math.ceil(preparationRemaining/1000)));
+}
+function tickPreparation() {
+  if(!preparing||document.hidden)return;
+  const now=performance.now();
+  if(preparationLast!==null)preparationRemaining-=Math.max(0,now-preparationLast);
+  preparationLast=now;
+  if(preparationRemaining<=0){
+    cancelPreparation();
+    beginLesson(false);
+    return;
+  }
+  $('prepareSeconds').textContent=String(Math.ceil(preparationRemaining/1000));
+  clearTimeout(preparationTimer);
+  preparationTimer=setTimeout(tickPreparation,100);
+}
+function beginPreparation(durationMs) {
+  if(preparing)return;
+  preparing=true;preparationRemaining=durationMs;
+  preparationLast=document.hidden?null:performance.now();
+  $('welcome').hidden=true;
+  $('prepare').hidden=false;
+  $('prepareSeconds').textContent=String(Math.ceil(preparationRemaining/1000));
+  setPlaying(false);
+  updateNext();
+  tickPreparation();
+}
 function updateNext() {
   const remaining = completedSlides[chapter+':'+cue]||allCheckpointsComplete()?0:Math.max(0, nextUnlockAt - performance.now());
-  const inScene = started && $('welcome').hidden && $('questionPanel').hidden && $('finished').hidden;
+  const inScene = started && !preparing && (!currentResult()||reviewing) && $('welcome').hidden && $('questionPanel').hidden && $('finished').hidden;
   const waiting = inScene && remaining > 0;
   $('next').disabled = !inScene || waiting || Boolean($('contents').open);
   $('next').classList.toggle('next-waiting', waiting);
@@ -153,11 +251,12 @@ function allCheckpointsComplete() {
   return Boolean(lesson) && lesson.chapters.every((_, index) => answers[index] === true);
 }
 function recordCompletion() {
-  if (!allCheckpointsComplete()) return false;
-  completedAt ||= new Date().toISOString();
+  if (!allQuestionsAttempted()||!currentResult()) return false;
+  completedAt = currentResult().completedAt;
   const saved = save();
+  if(!saved)return false;
   if (window.GeometryVoice?.setCompleted) {
-    if (!GeometryVoice.setCompleted(true)) {
+    if (!GeometryVoice.setCompleted(latestPassed())) {
       $('notice').textContent = g('Could not save completion. Please try Finish again.');
       return false;
     }
@@ -330,11 +429,14 @@ function save() {
   if(!lesson)return;
   try {
     localStorage.setItem(STORE,JSON.stringify( {
-      version:2,chapter,cue,seconds,answers,questionAnswers,questionIndex,inCheckpoint,voiceSpeed,completedAt,
+      version:3,scoringVersion:1,lessonVersion:lesson.version,checkpointRevisions:revisions(),chapter,cue,seconds,answers,questionAnswers,questionIndex,inCheckpoint,voiceSpeed,completedAt,
       finalCheckpointRevision:lesson.chapters[lesson.chapters.length-1].checkpointRevision,
-      completedSlides,generation,importedToServer
+      completedSlides,generation,importedToServer,hasStarted,attemptedAnswers,lectureResults,attemptStarted
     }
     ));
+    if(window.GeometryVoice?.saveResults && !GeometryVoice.saveResults(JSON.stringify({lectureResults,passed:latestPassed()}))){
+      $('notice').textContent=g('Could not save completion. Please try again.');return false;
+    }
     return true;
   }
   catch(e) {
@@ -392,9 +494,9 @@ function setPlaying(value) {
 }
 function updateProgress() {
   $('progress').value=!$('finished').hidden && allCheckpointsComplete() ? 1600 : chapter*160+cue*40+Math.min(seconds,40);
-  $('progressText').textContent=Object.values(answers).filter(Boolean).length+g(' / 10 checkpoints');
+  $('progressText').textContent=correctQuestions()+g(' / ')+totalQuestions()+g(' correct');
   $('sceneCount').textContent=g('Scene ')+(cue+1)+g(' of 4');
-  $('previous').disabled=chapter===0&&cue===0;
+  $('previous').disabled=!started||preparing||Boolean(currentResult()&&!reviewing)||chapter===0&&cue===0;
 }
 function renderCue(narrate=true) {
   inCheckpoint=false;
@@ -420,6 +522,7 @@ function renderCue(narrate=true) {
   if(playing&&narrate)speak(s.text);
 }
 function move(ch,sc,play=playing) {
+  if(currentResult()&&!reviewing)return;
   stopVoice();
   chapter=ch;
   cue=sc;
@@ -429,57 +532,78 @@ function move(ch,sc,play=playing) {
   save();
 }
 function start() {
-  if(!lesson||$('start').disabled)return;
-  beginSession(allCheckpointsComplete()?'review':'start');
+  if(!lesson||$('start').disabled||preparing||started)return;
+  if(cooldownText()){updateStartAvailability();return;}
+  if(canReview()){beginLesson(true);return;}
+  if(currentResult()&&!resetAttempt())return;
+  beginPreparation(15000);
+}
+function beginLesson(review) {
+  if(cooldownText())return;
+  reviewing=review&&canReview();
+  beginSession(review?'review':'start');
+  hasStarted=true;
+  attemptStarted=!review;
   started=true;
   $('welcome').hidden=true;
+  $('prepare').hidden=true;
+  if(reviewing){
+    chapter=0;cue=0;seconds=0;inCheckpoint=false;
+    setPlaying(true);
+    renderCue();
+    save();
+    return;
+  }
   if(inCheckpoint) {
     showQuestion(questionIndex);
+    save();
     return;
   }
   setPlaying(true);
   renderCue();
+  save();
 }
 function showQuestion(index) {
+  if(currentResult()&&!reviewing)return;
   setPlaying(false);
   inCheckpoint=true;
   const questions=current().questions;
-  const unanswered=questions.findIndex((_,i)=>questionAnswers[chapter]?.[i]!==true);
+  const unanswered=questions.findIndex((_,i)=>!attempted(chapter,i));
   questionIndex=Number.isInteger(index) ? Math.max(0,Math.min(questions.length-1,index)) : Math.max(0,unanswered);
   $('questionPanel').hidden=false;
   updateNext();
   $('answers').replaceChildren();
   $('feedback').textContent='';
-  let solved=questionAnswers[chapter]?.[questionIndex]===true;
+  let solved=attempted(chapter,questionIndex);
   $('continue').hidden=!solved;
-  $('continue').textContent=questionIndex===0?g('Next question →'):g('Complete checkpoint →');
-  $('questionCount').textContent=g('Question ')+(questionIndex+1)+g(' of 2');
+  $('continue').textContent=questionIndex<questions.length-1?g('Next question →'):g('Complete checkpoint →');
+  $('questionCount').textContent=g('Question ')+(questionIndex+1)+g(' of ')+questions.length;
   const q=questions[questionIndex];
   beginVisit();trackActivity('question_shown',{question:questionIndex,revisit:solved});
   $('question').textContent=q.prompt;
   $('caption').textContent=q.prompt;
   $('speaker').textContent=g('THINK IT THROUGH');
   function check(value,button) {
-    if(solved||!Number.isFinite(value))return;
+    if(solved||currentResult()||!Number.isFinite(value))return;
     const correct=value===q.answer;
     trackActivity('answer_submitted',{question:questionIndex,answer:value});
     lastAttemptAt=performance.now();
     if(button)button.classList.add(correct?'correct':'incorrect');
-    const feedback=(correct?g('Exactly. '):g('Let’s check that. '))+q.explanation;
+    const right=q.type==='choice'?q.options[q.answer]:q.answer+(q.unit?' '+g(q.unit):'');
+    const feedback=(correct?g('Exactly. '):g('Correct answer: ')+right+'. ')+q.explanation;
     $('feedback').textContent=feedback;
     $('caption').textContent=feedback;
     speak(feedback);
-    if(correct) {
-      solved=true;
-      questionAnswers[chapter] ||= [];
-      questionAnswers[chapter][questionIndex]=true;
-      if(questions.every((_,i)=>questionAnswers[chapter][i]===true))answers[chapter]=true;
-      document.querySelectorAll('#answers button, #answers input').forEach(element=>element.disabled=true);
-      $('continue').hidden=false;
-      updateProgress();
-      save();
-      if (allCheckpointsComplete()) recordCompletion();
-    }
+    solved=true;
+    attemptedAnswers[chapter] ||= [];
+    attemptedAnswers[chapter][questionIndex]=true;
+    questionAnswers[chapter] ||= [];
+    questionAnswers[chapter][questionIndex]=correct;
+    if(questions.every((_,i)=>attempted(chapter,i)))answers[chapter]=true;
+    document.querySelectorAll('#answers button, #answers input').forEach(element=>element.disabled=true);
+    if(q.type==='choice')$('answers').children[q.answer].classList.add('correct');
+    $('continue').hidden=false;
+    updateProgress();save();
   }
   if(q.type==='choice')q.options.forEach((option,i)=> {
     const b=document.createElement('button');
@@ -515,14 +639,14 @@ function showQuestion(index) {
   if(solved) {
     if(q.type==='choice')$('answers').children[q.answer].classList.add('correct');
     else $('answers').children[0].children[0].value=String(q.answer);
-    $('feedback').textContent=g('Exactly. ')+q.explanation;
+    $('feedback').textContent=(questionAnswers[chapter]?.[questionIndex]?g('Exactly. '):g('Correct answer: ')+(q.type==='choice'?q.options[q.answer]:q.answer+(q.unit?' '+g(q.unit):''))+'. ')+q.explanation;
     document.querySelectorAll('#answers button, #answers input').forEach(element=>element.disabled=true);
   }
   speak(q.prompt);
   save();
 }
 function completeOrContinue() {
-  if(!inCheckpoint||questionAnswers[chapter]?.[questionIndex]!==true)return;
+  if(!inCheckpoint||!attempted(chapter,questionIndex))return;
   trackActivity('question_next',{question:questionIndex});
   if(questionIndex<current().questions.length-1) {
     showQuestion(questionIndex+1);
@@ -532,32 +656,30 @@ function completeOrContinue() {
   inCheckpoint=false;
   $('speaker').textContent=g('YOUR GUIDE');
   stopVoice();
-  if(chapter<lesson.chapters.length-1)move(chapter+1,0,true);
-  else {
-    $('questionPanel').hidden=true;
-    $('finished').hidden=false;
-    updateNext();
-    updateProgress();
-    const count=Object.values(answers).filter(Boolean).length;
-    $('score').textContent=count===10?g('All ten checkpoints completed. Well done!'):count+g(' of ten checkpoints completed. Revisit the remaining chapters to finish your journey.');
-    $('finish').disabled = !allCheckpointsComplete();
-    if (allCheckpointsComplete()) recordCompletion();
-    speak($('score').textContent);
-    save();
+  if(allQuestionsAttempted()&&(!reviewing||chapter===lesson.chapters.length-1)){
+    finalizeAttempt();showResult();speak($('score').textContent);return;
   }
+  const next=chapter<lesson.chapters.length-1?chapter+1:lesson.chapters.findIndex((c,i)=>c.questions.some((_,j)=>!attempted(i,j)));
+  if(next>=0)move(next,0,true);
 }
 function openContents() {
-  if(!lesson||$('start').disabled)return;
+  if(!lesson||!progressReady||preparing)return;
   if(started)trackActivity('pause',{value:'chapters'});
   setActivityVisible(false);
   setPlaying(false);
   $('chapterList').replaceChildren();
   lesson.chapters.forEach((c,i)=> {
     const b=document.createElement('button');
-    b.textContent=String(i+1).padStart(2,'0')+'  '+c.title+(answers[i]?'   ✓':'');
+    const results=lectureResults.filter(r=>r.units?.[i]);
+    const latest=results.at(-1)?.units[i];
+    b.textContent=String(i+1).padStart(2,'0')+'  '+c.title+(latest?' · '+latest.correct+'/'+latest.total+' ('+latest.percent+'%) · '+results.length+' '+g('completed attempts'):g(' · Not completed yet'));
+    b.disabled=Boolean(currentResult()&&!canReview());
     b.onclick=()=> {
+      if(currentResult()&&!canReview())return;
+      if(!started&&!canReview()){$('contents').close();start();return;}
       $('contents').close();
       if(!started)beginSession('chapter');
+      if(canReview())reviewing=true;
       trackActivity('chapter_selected',{targetChapter:i,targetCue:0});
       started=true;
       $('welcome').hidden=true;
@@ -568,6 +690,7 @@ function openContents() {
     $('chapterList').append(b);
   }
   );
+  updateStartAvailability();
   if(!$('contents').open)$('contents').showModal();
 }
 $('start').onclick=start;
@@ -577,7 +700,7 @@ $('play').onclick=()=> {
     start();
     return;
   }
-  if(!$('questionPanel').hidden||!$('finished').hidden)return;
+  if(preparing||currentResult()&&!reviewing||!$('questionPanel').hidden||!$('finished').hidden)return;
   trackActivity(playing?'pause':'resume',{value:'play_button'});
   if(playing)setPlaying(false);
   else {
@@ -595,7 +718,7 @@ $('next').onclick=()=> {
 }
 ;
 $('previous').onclick=()=> {
-  if(!lesson||!started)return;
+  if(!lesson||!started||preparing||currentResult()&&!reviewing)return;
   if(cue===0&&chapter===0)return;
   const targetChapter=cue>0?chapter:chapter-1,targetCue=cue>0?cue-1:3;
   trackActivity('slide_back',{targetChapter,targetCue,revisit:Boolean(completedSlides[targetChapter+':'+targetCue])||allCheckpointsComplete()});
@@ -622,7 +745,6 @@ $('mute').onclick=()=> {
 $('continue').onclick=completeOrContinue;
 $('finish').onclick=()=> {
   if (!recordCompletion()) return;
-  trackActivity('lecture_finished');
   window.geometryExit();
   setPlaying(false);
   window.GeometryVoice?.hideKeyboard?.();
@@ -631,7 +753,7 @@ $('finish').onclick=()=> {
   } else {
     $('finish').textContent=g('Finished ✓');
     $('finish').disabled=true;
-    $('score').textContent=g('Lecture finished. Your completion is saved on this device.');
+    $('notice').textContent=g('Lecture result saved on this device.');
   }
 };
 function closeVoiceSpeedMenu(returnFocus=false) {
@@ -671,28 +793,22 @@ document.addEventListener('keydown',event=> {
 });
 $('contentsButton').onclick=openContents;
 $('review').onclick=openContents;
+if($('retry'))$('retry').onclick=()=>{
+  if(cooldownText()||!currentResult()||canReview())return;
+  if(!resetAttempt())return;
+  started=false;$('finished').hidden=true;updateStartAvailability();start();
+};
 $('closeContents').onclick=()=>$('contents').close();
 $('contents').addEventListener?.('close',()=>setActivityVisible(!document.hidden));
 $('restart').onclick=()=> {
+  if(cooldownText()){$('notice').textContent=g('Retry available in ')+cooldownText();$('contents').close();return;}
   if(confirm(g('Restart this unit and clear its saved checkpoints?'))) {
-    if (window.GeometryVoice?.setCompleted && !GeometryVoice.setCompleted(false)) {
-      $('notice').textContent=g('Could not reset completion. Please try again.');
-      return;
-    }
-    completedAt = null;
-    if(!sessionId){sessionId=activityId();eventSequence=0;}
-    trackActivity('reset');generation++;completedSlides={};
-    questionAnswers={};
-    questionIndex=0;
-    answers= {
-    }
-    ;
+    if(!resetAttempt())return;
     $('contents').close();
     $('speaker').textContent=g('YOUR GUIDE');
-    started=true;
-    $('welcome').hidden=true;
-    beginSession('restart');
-    move(0,0,false);
+    started=false;
+    $('welcome').hidden=false;$('finished').hidden=true;$('questionPanel').hidden=true;
+    save();updateStartAvailability();start();
   }
 }
 ;
@@ -704,6 +820,10 @@ $('side').oninput=()=> {
 }
 ;
 document.addEventListener('visibilitychange',()=> {
+  if(preparing){
+    if(document.hidden)pausePreparation();
+    else {preparationLast=performance.now();tickPreparation();}
+  }
   if(started)trackActivity(document.hidden?'hidden':'visible');
   setActivityVisible(!document.hidden);
   if(document.hidden) {
@@ -717,6 +837,7 @@ window.addEventListener('pagehide',()=> {
 }
 );
 window.geometryPause=()=> {
+  pausePreparation();
   if(started)trackActivity('hidden',{value:'app_background'});
   setActivityVisible(false);
   setPlaying(false);
@@ -724,6 +845,7 @@ window.geometryPause=()=> {
 }
 ;
 window.geometryResume=()=> {
+  if(preparing&&!document.hidden){preparationLast=performance.now();tickPreparation();}
   if(started)trackActivity('visible',{value:'app_foreground'});
   setActivityVisible(!document.hidden);
 };
@@ -766,35 +888,60 @@ fetch('./'+(presentation.id || 'geometry')+(lessonLanguage === 'sq' ? '.sq' : ''
     }
     const parsed=JSON.parse(stored);
     const saved=presentation.migrateSaved ? presentation.migrateSaved(parsed) : parsed;
-    if(saved?.version===1 || saved?.version===2) {
+    if(saved?.version===1 || saved?.version===2 || saved?.version===3) {
       chapter=Math.min(lesson.chapters.length-1,Math.max(0,Math.floor(Number(saved.chapter)||0)));
       cue=Math.min(3,Math.max(0,Math.floor(Number(saved.cue)||0)));
       seconds=Math.min(40,Math.max(0,Number(saved.seconds)||0));
       if (VOICE_SPEEDS.includes(saved.voiceSpeed)) voiceSpeed = saved.voiceSpeed;
       generation=Number.isSafeInteger(saved.generation)&&saved.generation>=0?saved.generation:0;
       importedToServer=saved.importedToServer===true;
+      hasStarted=saved.hasStarted===true||saved.version===1&&Boolean(saved.answers&&Object.values(saved.answers).some(Boolean))||
+        Boolean(saved.completedAt||saved.inCheckpoint||saved.chapter||saved.cue||saved.seconds||
+          saved.completedSlides&&Object.values(saved.completedSlides).some(Boolean));
+      attemptedAnswers=saved.attemptedAnswers||{};
+      lectureResults=Array.isArray(saved.lectureResults)?saved.lectureResults:[];
+      attemptStarted=saved.attemptStarted===true;
       lesson.chapters.forEach((c,i)=>c.cues.forEach((_,j)=>{if(saved.completedSlides?.[i+':'+j]===true)completedSlides[i+':'+j]=true;}));
       for(let i=0;i<lesson.chapters.length;i++) {
         const questions=lesson.chapters[i].questions;
-        questionAnswers[i]=questions.map((_,j)=>saved.version===2
+        questionAnswers[i]=questions.map((_,j)=>saved.version>=2
           ? saved.questionAnswers?.[i]?.[j]===true
           : saved.answers?.[i]===true && j===lesson.chapters[i].legacyQuestionIndex);
-        if(questionAnswers[i].every(Boolean))answers[i]=true;
+        if(saved.attemptedAnswers?.[i])questionAnswers[i].forEach((right,j)=>{if(right)attemptedAnswers[i][j]=true;});
+        else attemptedAnswers[i]=questionAnswers[i].map(Boolean);
+        if(questions.every((_,j)=>attempted(i,j)))answers[i]=true;
         if(answers[i]&&!saved.completedSlides)lesson.chapters[i].cues.forEach((_,j)=>completedSlides[i+':'+j]=true);
       }
       if(saved.version===1 && Object.values(saved.answers||{}).some(value=>value===true)) {
         $('notice').textContent=g('Checkpoint updated: complete both questions to finish each chapter.');
       }
-      resumeCheckpoint=saved.version===2 && saved.inCheckpoint===true;
-      questionIndex=saved.questionIndex===1?1:0;
+      resumeCheckpoint=saved.version>=2 && saved.inCheckpoint===true;
+      questionIndex=Math.max(0,Math.min(current().questions.length-1,Math.floor(Number(saved.questionIndex)||0)));
       const finalChapter=lesson.chapters.length-1;
       const finalRevision=lesson.chapters[finalChapter].checkpointRevision;
       if(finalRevision && saved.finalCheckpointRevision!==finalRevision) {
         questionAnswers[finalChapter]=lesson.chapters[finalChapter].questions.map(()=>false);
+        attemptedAnswers[finalChapter]=lesson.chapters[finalChapter].questions.map(()=>false);
         delete answers[finalChapter];
         if(chapter===finalChapter && resumeCheckpoint)questionIndex=0;
         completedAt=null;
         $('notice').textContent=g('The final checkpoint has new questions. Complete both to finish.');
+      }
+      if(saved.version===3)lesson.chapters.forEach((c,i)=>{
+        if(saved.checkpointRevisions?.[i]!==revisions()[i]){
+          questionAnswers[i]=c.questions.map(()=>false);attemptedAnswers[i]=c.questions.map(()=>false);delete answers[i];completedAt=null;
+        }
+      });
+      if(saved.version<3){
+        lectureResults=lectureResults.map((r,i)=>({...r,generation:i===lectureResults.length-1&&!attemptStarted?generation:Math.max(0,generation-1),lessonVersion:lesson.version,checkpointRevisions:revisions(),
+          retryAt:r.correct===r.total?null:new Date(Date.parse(r.completedAt)+(!r.passed&&!lectureResults.slice(0,i).some(p=>!p.passed)?3600000:86400000)).toISOString()}));
+        if(!allQuestionsAttempted())lectureResults=lectureResults.filter(r=>r.generation!==generation);
+        if(!lectureResults.length&&saved.completedAt&&allQuestionsAttempted()){
+          // Preserve an older completed lecture as a reviewable result.
+          const correct=correctQuestions(),total=totalQuestions();
+          if(correct===total)lectureResults.push({generation,lessonVersion:lesson.version,checkpointRevisions:revisions(),correct,total,percent:100,passed:true,completedAt:saved.completedAt,retryAt:null,
+            units:lesson.chapters.map(c=>({correct:c.questions.length,total:c.questions.length,percent:100}))});
+        }
       }
       if (allCheckpointsComplete() && typeof saved.completedAt === 'string') completedAt = saved.completedAt;
       $('start').textContent=g('Resume exploring ▶');
@@ -812,13 +959,13 @@ fetch('./'+(presentation.id || 'geometry')+(lessonLanguage === 'sq' ? '.sq' : ''
   renderCue(false);
   inCheckpoint=resumeCheckpoint;
   selectVoiceSpeed(voiceSpeed);
-  if (allCheckpointsComplete()) {
+  if (canReview()) {
     recordCompletion();
     $('start').textContent=g('Review lecture ▶');
   } else if(window.GeometryVoice?.setCompleted) {
-    if(!GeometryVoice.setCompleted(false))$('notice').textContent=g('Could not reset completion. Please try again.');
+    if(!GeometryVoice.setCompleted(latestPassed()))$('notice').textContent=g('Could not save completion. Please try again.');
   }
-  $('start').disabled=false;
+  progressReady=true;updateStartAvailability();
 }
 ).catch(e=> {
   $('heading').textContent=lessonLanguage === 'sq' ? 'Mësimi nuk mund të ngarkohej' : 'The lesson could not load';

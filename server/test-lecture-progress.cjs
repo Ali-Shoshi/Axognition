@@ -23,6 +23,7 @@ const server=http.createServer((req,res)=>{
    await page.goto(`http://127.0.0.1:${server.address().port}/${id}.html`);
    await page.waitForFunction(()=>typeof lesson!=='undefined'&&lesson&&!$('start').disabled);
    await page.locator('#start').click();
+   await page.evaluate(()=>{preparationRemaining=0;tickPreparation()});
    const advance=ms=>page.evaluate(ms=>{testTime+=ms;updateNext()},ms);
    assert.equal(await page.locator('#next').isDisabled(),true);
    await advance(10000);await page.locator('#next').click();
@@ -41,11 +42,11 @@ const server=http.createServer((req,res)=>{
    await page.evaluate(()=>showQuestion(0));
    const answer=await page.evaluate(()=>current().questions[0].answer);
    await advance(2300);await page.locator('#answers > button').nth((answer+1)%6).click();
-   await advance(1100);await page.locator('#answers > button').nth((answer+2)%6).click();
-   await advance(900);await page.locator('#answers > button').nth(answer).click();
+   await advance(1100);assert.equal(await page.locator('#answers > button').nth((answer+2)%6).isDisabled(),true);
+   await advance(900);assert.equal(await page.locator('#answers > button').nth(answer).isDisabled(),true);
    events=(await page.evaluate(()=>sent)).filter(e=>e.type==='answer_submitted');
-   assert.deepEqual(events.map(e=>e.elapsedMs),[2300,3400,4300]);
-   assert.deepEqual(events.map(e=>e.sinceAttemptMs),[2300,1100,900]);
+   assert.deepEqual(events.map(e=>e.elapsedMs),[2300]);
+   assert.deepEqual(events.map(e=>e.sinceAttemptMs),[2300]);
    assert.equal(new Set(events.map(e=>e.visitId)).size,1);
    await page.locator('#continue').click();
    await advance(1000);await page.evaluate(()=>window.geometryPause());
@@ -65,12 +66,15 @@ const server=http.createServer((req,res)=>{
    assert.deepEqual(await page.evaluate(()=>sent[0]),pending[0]);
    assert.deepEqual(await page.evaluate(()=>JSON.parse(localStorage.getItem(STORE+':outbox'))),[]);
    await page.locator('#start').click();
+   await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
    await page.evaluate(()=>move(0,0,false));assert.equal(await page.locator('#next').isEnabled(),true,'Finished slide survives reload');
    // Server progress on another device grants review and prefills both question types.
    await page.evaluate(()=>{
-    const state={lessonVersion:lesson.version,generation:0,checkpointRevisions:lesson.chapters.map(c=>c.checkpointRevision||1),
+    const state={scoringVersion:1,lessonVersion:lesson.version,generation:0,checkpointRevisions:lesson.chapters.map(c=>c.checkpointRevision||1),
      completedSlides:[],questionAnswers:Object.fromEntries(lesson.chapters.map((c,i)=>[i,c.questions.map(()=>true)])),completedAt:new Date().toISOString()};
-    applyServerProgress(state);move(9,0,false);
+    state.attemptedAnswers=state.questionAnswers;
+    state.lectureResults=[{generation:0,lessonVersion:lesson.version,checkpointRevisions:state.checkpointRevisions,correct:totalQuestions(),total:totalQuestions(),percent:100,passed:true,completedAt:state.completedAt,retryAt:null,units:[]}];
+    applyServerProgress(state);beginLesson(true);move(9,0,false);
    });
    assert.equal(await page.locator('#next').isEnabled(),true,'Completed lecture skips every slide, even previously unvisited slides');
    await page.evaluate(()=>showQuestion(0));assert.equal(await page.locator('#answers > button.correct').count(),1);
@@ -80,7 +84,7 @@ const server=http.createServer((req,res)=>{
    assert.equal(await page.locator('#answers input').isDisabled(),true);
    // A remote reset removes local completion and the review bypass.
    await page.evaluate(()=>{
-    applyServerProgress({lessonVersion:lesson.version,generation:1,checkpointRevisions:lesson.chapters.map(c=>c.checkpointRevision||1),
+    applyServerProgress({scoringVersion:1,lessonVersion:lesson.version,generation:1,checkpointRevisions:lesson.chapters.map(c=>c.checkpointRevision||1),
      completedSlides:[],questionAnswers:{},completedAt:null});move(0,0,false);
    });
    assert.equal(await page.locator('#next').isDisabled(),true);

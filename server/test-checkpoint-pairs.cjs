@@ -32,16 +32,15 @@ const server=http.createServer((req,res)=>{
       const url=`http://127.0.0.1:${server.address().port}/${id}.html?lang=${language}&theme=dark`;
       const ready=()=>page.waitForFunction(()=>typeof lesson!=='undefined'&&lesson&&$('start').disabled===false);
       await page.goto(url);await ready();await page.locator('#start').click();
+      await page.evaluate(()=>{preparationRemaining=0;tickPreparation()});
       for(let chapter=0;chapter<10;chapter++) {
         await page.evaluate(ch=>{move(ch,3,false);showQuestion()},chapter);
         assert.equal(await page.locator('#answers > button').count(),6);
         assert.equal(await page.evaluate(()=>questionIndex),0);
         assert.equal(await page.locator('#continue').isHidden(),true);
-        // Calling Continue before a correct answer cannot skip a question.
+        // Calling Continue before an answer cannot skip a question.
         await page.evaluate(()=>completeOrContinue());assert.equal(await page.evaluate(()=>questionIndex),0);
         const [choice,typed]=data.chapters[chapter].questions;
-        await page.locator('#answers > button').nth((choice.answer+1)%6).click();
-        assert.equal(await page.locator('#continue').isHidden(),true);
         if(chapter===0)await page.screenshot({path:path.join(output,`${id}-${language}-six-choices.png`)});
         await page.locator('#answers > button').nth(choice.answer).click();
         assert.equal(await page.evaluate(ch=>answers[ch]===true,chapter),false,'First answer alone is not a checkpoint');
@@ -53,7 +52,7 @@ const server=http.createServer((req,res)=>{
         assert.equal(await page.locator('#answers input').count(),1);
         if(chapter===0) {
           // Reload while the second question is unanswered: keep the first result.
-          await page.reload();await ready();await page.locator('#start').click();
+          await page.reload();await ready();await page.locator('#start').click();await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
           assert.equal(await page.evaluate(()=>questionIndex),1);
           assert.equal(await page.locator('#question').textContent(),typed.prompt);
           assert.equal(await page.evaluate(()=>questionAnswers[0][0]),true);
@@ -63,10 +62,6 @@ const server=http.createServer((req,res)=>{
           // No keyboard or orientation change can complete an unanswered question.
           await page.setViewportSize({width:360,height:640});
         }
-        await page.locator('#answers input').fill(String(typed.answer+1));
-        await page.locator('#answers input').press('Enter');
-        assert.equal(await page.locator('#continue').isHidden(),true);
-        assert.equal(await page.evaluate(ch=>answers[ch]===true,chapter),false);
         await page.locator('#answers input').fill(String(typed.answer));
         await page.locator('#answers input').press('Enter');
         assert.equal(await page.evaluate(ch=>answers[ch],chapter),true);
@@ -87,7 +82,9 @@ const server=http.createServer((req,res)=>{
           sessionStorage.setItem('old-final-checkpoint-seeded','true');
           const key='axognition-fractions-v1';
           const saved=JSON.parse(localStorage.getItem(key));
-          delete saved.finalCheckpointRevision;
+          saved.finalCheckpointRevision=1;
+          saved.checkpointRevisions[saved.checkpointRevisions.length-1]=1;
+          saved.lectureResults.forEach(r=>r.checkpointRevisions[r.checkpointRevisions.length-1]=1);
           localStorage.setItem(key,JSON.stringify(saved));
         });
         await page.reload();await ready();
@@ -97,6 +94,7 @@ const server=http.createServer((req,res)=>{
         assert.equal(await page.evaluate(()=>allCheckpointsComplete()),false);
         assert.equal(await page.evaluate(()=>events.at(-1)),false);
         await page.locator('#start').click();
+        await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
         await page.evaluate(()=>{move(9,3,false);showQuestion()});
         assert.equal(await page.locator('#question').textContent(),data.chapters[9].questions[0].prompt);
         await page.locator('#answers > button').nth(data.chapters[9].questions[0].answer).click();
@@ -110,7 +108,7 @@ const server=http.createServer((req,res)=>{
       await page.locator('#contentsButton').click();page.once('dialog',d=>d.accept());
       await page.locator('#restart').click();
       assert.equal(await page.evaluate(()=>Object.keys(questionAnswers).length),0);
-      assert.equal(await page.evaluate(()=>events.at(-1)),false);
+      assert.equal(await page.evaluate(()=>allCheckpointsComplete()),false);
       assert.deepEqual(errors,[]);await page.close();
     }
     console.log('PASS: both lectures/languages, 80 questions, six unique choices, typed answers, wrong/empty answer gates, partial resume, 20-answer completion, revised final checkpoint and restart.');

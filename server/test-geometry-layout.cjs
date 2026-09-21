@@ -79,6 +79,7 @@ const server = http.createServer((req, res) => {
       await page.waitForFunction(() => typeof lesson !== 'undefined' && lesson);
       await audit(`${width}x${height} welcome`);
       await page.locator('#start').click();
+      await page.evaluate(()=>{if(preparing){preparationRemaining=0;tickPreparation()}});
       await page.evaluate(() => setPlaying(false));
       for(let ch=0;ch<data.chapters.length;ch++) {
         for(let cue=0;cue<4;cue++) {

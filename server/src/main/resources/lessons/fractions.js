@@ -8,7 +8,7 @@ window.lessonPresentation = {
   hasExplorer:(chapter,cue)=>chapter.cues[cue].model.type==='explore',
   explorerValue:value=>'1/'+value,
   migrateSaved(saved) {
-    if (!saved || saved.version === 1 || saved.version === 2) return saved;
+    if (!saved || saved.version === 1 || saved.version === 2 || saved.version === 3) return saved;
     // The earlier player used three 45-second scenes and a 135-second checkpoint.
     // Preserve earned checkpoints and resume near the corresponding explanation.
     return {version:1,chapter:saved.index,cue:Math.min(3,Math.floor((Number(saved.elapsed)||0)/45)),

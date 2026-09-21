@@ -17,8 +17,20 @@ The authenticated Android app collects and syncs activity for each child.
 - Advancing with Next or automatic playback completes that slide. Back retains
   completed slide markers, so Next is immediately available on those slides.
   The next unfinished slide still has its ten-second wait.
-- Completing every question enables immediate Next on every slide, and correct
-  choices/numeric answers are prefilled when revisiting checkpoints.
+- Each question accepts one answer per attempt. Wrong answers reveal the correct
+  answer and allow Continue; they cannot be corrected until a new attempt.
+- Every question must be answered before a result is recorded. Passing requires
+  strictly more than 75% correct using the actual question count, not a rounded
+  percentage. The first failed result has a one-hour cooldown; all other results
+  below 100% have a 24-hour cooldown. A 100% result allows immediate review with
+  answers prefilled. Reviews do not add attempts.
+- Starts, resumes and retries show a 15-second preparation screen with posture,
+  scoring and retry rules. The timer pauses while hidden. Perfect-score reviews
+  skip preparation and start at the first teaching slide.
+- Retrying clears every answer and slide and emits a generation reset before
+  the new session. Results remain in history. The chapter menu, lecture cards
+  and unit cards show scores and completed attempt counts, including during a
+  cooldown. Finish returns to the lecture list after either passing or failing.
 - Resume loads the server snapshot after uploading pending work. A slow network
   does not hold the welcome screen longer than 3.5 seconds; local progress works
   while native syncing continues. New devices can resume synced progress.
@@ -33,7 +45,7 @@ The authenticated Android app collects and syncs activity for each child.
 
 | Table | Purpose |
 |---|---|
-| `child_lecture_progress` | One small snapshot per child/lecture: cursor, completed slides, answers, completion timestamp, first start, lifetime counters, reset generation and content revisions. |
+| `child_lecture_progress` | JSON snapshot per child/lecture: cursor, slides, correctness and first-answer locks, scored attempt history (totals, per-chapter scores, pass status and retry timestamps), lifetime counters, generation and revisions. |
 | `child_lecture_sessions` | Unique start sessions and start timestamps. Opening the welcome screen alone does not count; Start, Resume, Review or Restart does. |
 | `child_lecture_events` | Append-only activity with UUID, child, lecture, session, event type, client timestamp, server receipt timestamp, server-graded correctness and event details. |
 
@@ -41,7 +53,10 @@ Event details include content version, reset generation, session sequence, slide
 question, visit UUID, submitted answer, destination for navigation, revisit flag,
 playback position and timing. Each wrong submission is retained separately.
 The server grades answers against its lesson definition; client correctness flags
-are not accepted. Old content events remain in history with unknown correctness
+are not accepted. Later answers cannot change a question's first result, and
+early resets cannot bypass a completed attempt's cooldown. `completedAt` means
+the attempt ended, including a failed attempt; `passed` controls completion badges.
+Old content events remain in history with unknown correctness
 and cannot award current answers. Legacy imports are explicitly identified and
 retain previously earned local answers; they are not fabricated answer attempts.
 
@@ -84,6 +99,14 @@ child's queue is uploaded using their JWT; tokens never enter the page or URL.
 Sign back into the same child if authentication expires. Unsynced data survives
 normal app/process restarts, but clearing app data or uninstalling removes it.
 The native SharedPreferences completion badges are a local server-backed cache.
+The same cache stores score summaries for offline unit and lecture cards. The
+new scoring fields use the existing JSON column, so no additional SQL migration
+is required. Existing old-style completions remain reviewable; their original
+first-answer accuracy was not recorded and cannot be reconstructed from that snapshot.
+
+Scoring regressions: `node server/test-lecture-scoring.cjs` (Playwright/Chrome),
+plus `LectureScoringTest` in the server test suite. These exercise 75% versus 80%,
+variable totals, first-answer locks, retries, cooldowns, review, reload, and sync.
 
 ## API
 
@@ -135,6 +158,7 @@ From the repository root (Playwright/Chrome required for browser checks):
 
 ```powershell
 node server/test-lecture-progress.cjs
+node server/test-lesson-start.cjs
 node server/test-checkpoint-pairs.cjs
 node server/test-geometry-controls.cjs
 ```
