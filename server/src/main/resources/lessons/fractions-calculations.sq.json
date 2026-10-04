@@ -1,0 +1,1713 @@
+{
+  "id": "fractions-calculations",
+  "version": 1,
+  "subject": "Matematikë",
+  "title": "Llogarit, thjeshto dhe kontrollo",
+  "subtitle": "Një udhëzues i animuar për veprime më të gjata me thyesa",
+  "estimatedMinutes": 35,
+  "chapters": [
+    {
+      "title": "Mbledhja e tri thyesave",
+      "shape": "calculation",
+      "accent": "#5265ec",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Tri thyesa kanë nevojë për një njësi të përbashkët.",
+          "text": "Veprimi ynë është një e dyta plus një e treta plus një e gjashta. Shiritat paraqesin të njëjtën të plotë, por pjesët kanë madhësi të ndryshme. Nuk mund t’i numërojmë gjysmat, të tretat dhe të gjashtat si pjesë të barabarta. Fillimisht gjejmë një emërues të përbashkët. Gjashta pjesëtohet me dy, tre dhe gjashtë.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 1/3 + 1/6",
+                "note": "Use a common denominator of 6."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              },
+              {
+                "d": 3,
+                "n": 1,
+                "caption": "1/3"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "1/6"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Ndrysho emërtimet, ruaj sasitë.",
+          "text": "Shiko si gjysma ndahet në tri të gjashta. Shumëzo të dy numrat e një të dytës me tre për të marrë tre të gjashta. Një e treta ndahet në dy të gjashta, prandaj shumëzo të dy numrat me dy. Një e gjashta ka tashmë emëruesin e duhur. Sasia e ngjyrosur nuk ndryshoi; ndryshoi vetëm ndarja.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 = 3/6",
+                "note": "Multiply top and bottom by 3."
+              },
+              {
+                "expression": "1/3 = 2/6",
+                "note": "Multiply top and bottom by 2."
+              },
+              {
+                "expression": "3/6 + 2/6 + 1/6",
+                "note": "All the pieces are sixths now."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 3,
+                "caption": "3/6"
+              },
+              {
+                "d": 6,
+                "n": 2,
+                "caption": "2/6"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "1/6"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Mblidh pjesët, ruaj madhësinë e tyre.",
+          "text": "Pjesët e ngjyrosura bashkohen në tri grupe: tri të gjashta, dy të gjashta dhe një e gjashta. Numëro pjesët: tre plus dy plus një bëjnë gjashtë. Mbaj emëruesin gjashtë, sepse çdo pjesë mbetet një e gjashta. Mbledhja e emëruesve do të krijonte pjesë më të vogla që nuk i kemi prerë. Shuma është gjashtë të gjashta.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/6 + 2/6 + 1/6",
+                "note": "Add 3 + 2 + 1, not 6 + 6 + 6."
+              },
+              {
+                "expression": "3/6 + 2/6 + 1/6 = 6/6",
+                "note": "Keep the common denominator."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "6/6",
+                "groups": [
+                  3,
+                  5,
+                  6
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Gjashtë të gjashta mbushin një të plotë.",
+          "text": "Çdo pjesë e shiritit është e ngjyrosur, prandaj gjashtë të gjashta janë një. Kontrollo veprimin fillestar: një e dyta dhe një e treta bëjnë pesë të gjashta, pak më pak se një e plotë. E gjashta e fundit mbush saktësisht boshllëkun. Emëruesi i përbashkët na ndihmoi të mbledhim tri thyesa pa ndryshuar vlerat e tyre.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 1/3 + 1/6 = 6/6",
+                "note": "All six parts are selected."
+              },
+              {
+                "expression": "6/6 = 1",
+                "note": "The result is one whole."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 2/3 + 1/4 + 1/12. Cili rezultat është i saktë?",
+          "options": [
+            "5/6",
+            "1",
+            "7/12",
+            "4/9",
+            "13/12",
+            "3/4"
+          ],
+          "answer": 1,
+          "explanation": "Përdor të dymbëdhjetat: 8/12 + 3/12 + 1/12 = 12/12 = 1.",
+          "calculation": {
+            "expression": "2/3 + 1/4 + 1/12",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 1/3 + 1/4 + 1/6 dhe thjeshto. Shkruaj vetëm numëruesin e rezultatit.",
+          "answer": 3,
+          "unit": "",
+          "explanation": "4/12 + 3/12 + 2/12 = 9/12 = 3/4. Numëruesi është 3.",
+          "calculation": {
+            "expression": "1/3 + 1/4 + 1/6",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Zbritja me hapa",
+      "shape": "calculation",
+      "accent": "#008e80",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Hiq dy sasi nga shtatë të tetat.",
+          "text": "Fillo me shtatë të tetat. Duam të heqim një të katërtën, pastaj një të tetën. Pa kllapa, zbritja bëhet nga e majta në të djathtë. Para se të heqim pjesët, i bëjmë me të njëjtën madhësi. Të tetat përshtaten me të dy emëruesit. Një e katërta është dy të teta, sepse mbulon dy pjesë të vogla.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "7/8 − 1/4 − 1/8",
+                "note": "Work from left to right."
+              },
+              {
+                "expression": "1/4 = 2/8",
+                "note": "Rename the quarter as eighths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 7,
+                "caption": "7/8"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Së pari hiq të katërtën.",
+          "text": "Dy të teta të ngjyrosura zhduken. Ato paraqesin të katërtën që po zbresim. Shtatë të teta minus dy të teta lënë pesë të teta. Emëruesi mbetet tetë, sepse po heqim pjesë pa ndryshuar madhësinë e tyre. Mbaj parasysh zbritjen e dytë: duhet të heqim edhe një të tetën. Pesë të teta është rezultat i ndërmjetëm.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "7/8 − 2/8 − 1/8",
+                "note": "The quarter removes two pieces."
+              },
+              {
+                "expression": "7/8 − 2/8 = 5/8",
+                "note": "One subtraction still remains."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 7,
+                "caption": "5/8",
+                "removeFrom": 5
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Tani hiq edhe një të tetën.",
+          "text": "Nis me pesë të tetat e mbetura pas zbritjes së parë. Hiq edhe një pjesë të ngjyrosur. Pesë minus një lënë katër, prandaj rezultati është katër të teta. Mund të bashkosh edhe sasitë e hequra: dy të teta plus një e teta bëjnë tri të teta. Shtatë të teta minus tri të teta japin po katër të teta.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/8 − 1/8 = 4/8",
+                "note": "Remove the final eighth."
+              },
+              {
+                "expression": "7/8 − 3/8 = 4/8",
+                "note": "Check by combining what was removed."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 5,
+                "caption": "4/8",
+                "removeFrom": 4
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Katër të teta janë një e dyta.",
+          "text": "Pjesëto numëruesin dhe emëruesin e katër të tetave me katër. Forma më e thjeshtë është një e dyta. Shiriti e vërteton: mbetet e ngjyrosur saktësisht gjysma. Kontrollo duke shtuar pjesët e hequra. Një e dyta plus një e katërta plus një e teta bëjnë shtatë të teta, sasinë fillestare. Ky kontroll ndihmon të kapësh gabimet.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "4/8 = 1/2",
+                "note": "Divide both numbers by 4."
+              },
+              {
+                "expression": "1/2 + 1/4 + 1/8 = 7/8",
+                "note": "Adding back checks the subtraction."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 4,
+                "caption": "1/2"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 11/12 − 1/3 − 1/4.",
+          "options": [
+            "1/4",
+            "5/12",
+            "1/3",
+            "1/2",
+            "2/3",
+            "1/12"
+          ],
+          "answer": 2,
+          "explanation": "11/12 − 4/12 − 3/12 = 4/12 = 1/3.",
+          "calculation": {
+            "expression": "11/12 − 1/3 − 1/4",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 9/10 − 1/5 − 1/10. Thjeshto dhe shkruaj vetëm numëruesin.",
+          "answer": 3,
+          "unit": "",
+          "explanation": "9/10 − 2/10 − 1/10 = 6/10 = 3/5. Numëruesi është 3.",
+          "calculation": {
+            "expression": "9/10 − 1/5 − 1/10",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Mbledhja dhe zbritja së bashku",
+      "shape": "calculation",
+      "accent": "#c06924",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Mbaj çdo shenjë bashkë me thyesën.",
+          "text": "Llogarit pesë të gjashta plus tri të katërta minus një të dytën. Të tri thyesat kanë nevojë për një emërues të përbashkët. Dymbëdhjeta pjesëtohet me gjashtë, katër dhe dy. Vëre shenjat: dy sasitë e para mblidhen, ndërsa e fundit hiqet. Kopjimi i saktë i shenjës minus është po aq i rëndësishëm sa kthimi i thyesave.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 + 3/4 − 1/2",
+                "note": "Twelve works for all three denominators."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6"
+              },
+              {
+                "d": 4,
+                "n": 3,
+                "caption": "3/4"
+              },
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Shkruaji të gjitha si të dymbëdhjeta.",
+          "text": "Shumëzo të dy numrat e pesë të gjashtave me dy dhe merr dhjetë të dymbëdhjeta. Shumëzo numrat e tri të katërtave me tre dhe merr nëntë të dymbëdhjeta. Shumëzo numrat e një të dytës me gjashtë dhe merr gjashtë të dymbëdhjeta. Në çdo kthim përdoret i njëjti faktor në numërues dhe emërues, prandaj vlerat nuk ndryshojnë.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 = 10/12",
+                "note": "Multiply by 2/2."
+              },
+              {
+                "expression": "3/4 = 9/12",
+                "note": "Multiply by 3/3."
+              },
+              {
+                "expression": "1/2 = 6/12",
+                "note": "Multiply by 6/6."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 10,
+                "caption": "10/12"
+              },
+              {
+                "d": 12,
+                "n": 9,
+                "caption": "9/12"
+              },
+              {
+                "d": 12,
+                "n": 6,
+                "caption": "6/12"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Shuma mund të jetë më e madhe se një.",
+          "text": "Mblidh së pari dhjetë dhe nëntë të dymbëdhjeta. Nëntëmbëdhjetë të dymbëdhjeta janë më shumë se një e plotë, prandaj shiriti kalon kufirin e së parës. Tani hiq gjashtë të dymbëdhjeta. Nëntëmbëdhjetë minus gjashtë bëjnë trembëdhjetë. Rezultati është trembëdhjetë të dymbëdhjeta. Numëruesi mund të jetë më i madh se emëruesi; vlera është më e madhe se një.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "10/12 + 9/12 = 19/12",
+                "note": "Combine the positive amounts first."
+              },
+              {
+                "expression": "19/12 − 6/12 = 13/12",
+                "note": "Then subtract six twelfths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 19,
+                "caption": "13/12",
+                "removeFrom": 13
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Një e plotë dhe një e dymbëdhjeta.",
+          "text": "Trembëdhjeta dhe dymbëdhjeta nuk kanë faktor të përbashkët më të madh se një, prandaj thyesa është e thjeshtuar. Ndaje në dymbëdhjetë të dymbëdhjeta plus një të dymbëdhjetën. Kjo është një e plotë dhe një e dymbëdhjeta, një numër i përzier. Të dyja format tregojnë të njëjtën sasi. Gjatë veprimeve mund të mbash thyesën e parregullt.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "13/12 = 12/12 + 1/12",
+                "note": "Separate one complete whole."
+              },
+              {
+                "expression": "13/12 = 1 + 1/12",
+                "note": "Improper and mixed forms have equal value."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 13,
+                "caption": "13/12"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 3/4 + 5/6 − 1/3. Jep thyesën më të thjeshtë.",
+          "options": [
+            "7/6",
+            "1",
+            "5/12",
+            "5/4",
+            "4/3",
+            "11/12"
+          ],
+          "answer": 3,
+          "explanation": "9/12 + 10/12 − 4/12 = 15/12 = 5/4.",
+          "calculation": {
+            "expression": "3/4 + 5/6 − 1/3",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 2/3 + 3/4 − 1/6. Thjeshto dhe shkruaj vetëm emëruesin.",
+          "answer": 4,
+          "unit": "",
+          "explanation": "8/12 + 9/12 − 2/12 = 15/12 = 5/4. Emëruesi është 4.",
+          "calculation": {
+            "expression": "2/3 + 3/4 − 1/6",
+            "component": "denominator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Veprime me numra të përzier",
+      "shape": "calculation",
+      "accent": "#b45087",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Ktheji numrat e përzier në thyesa të parregullta.",
+          "text": "Llogarit një e një e dyta plus dy e dy të treta minus tri të katërtat. Ktheji numrat e përzier para se t’i bashkosh. Një e një e dyta është tri të dyta: një herë dy plus një bëjnë tre. Dy e dy të treta është tetë të treta: dy herë tre plus dy bëjnë tetë. Ruaj emëruesit fillestarë.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1 + 1/2 = 3/2",
+                "note": "One whole contains two halves."
+              },
+              {
+                "expression": "2 + 2/3 = 8/3",
+                "note": "Two wholes contain six thirds."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 3,
+                "caption": "3/2"
+              },
+              {
+                "d": 3,
+                "n": 8,
+                "caption": "8/3"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Përdor të dymbëdhjetat për të gjithë veprimin.",
+          "text": "Shprehja e re është tri të dyta plus tetë të treta minus tri të katërta. Dymbëdhjeta është emëruesi i përbashkët. Tri të dyta bëhen tetëmbëdhjetë të dymbëdhjeta. Tetë të treta bëhen tridhjetë e dy të dymbëdhjeta. Tri të katërta bëhen nëntë të dymbëdhjeta. Edhe me numërues të mëdhenj, rregulli mbetet: shumëzo të dy numrat me të njëjtin faktor.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/2 + 8/3 − 3/4",
+                "note": "Keep the same plus and minus signs."
+              },
+              {
+                "expression": "18/12 + 32/12 − 9/12",
+                "note": "All three amounts are in twelfths."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Bashko numëruesit me kujdes.",
+          "text": "Mblidh tetëmbëdhjetë dhe tridhjetë e dy: bëjnë pesëdhjetë. Pastaj zbrit nëntë dhe merr dyzet e një. Emëruesi mbetet dymbëdhjetë gjatë gjithë veprimit. Rezultati është dyzet e një të dymbëdhjeta, një thyesë e thjeshtuar. Mos mblidh emëruesit dhe mos zbrit veçmas pjesët e plota tani; thyesat e parregullta i përfshijnë tashmë ato.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "18/12 + 32/12 = 50/12",
+                "note": "18 + 32 = 50."
+              },
+              {
+                "expression": "50/12 − 9/12 = 41/12",
+                "note": "50 − 9 = 41."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 41,
+                "caption": "41/12"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Ktheje rezultatin nëse nevojitet.",
+          "text": "Tri të plota përmbajnë tridhjetë e gjashtë të dymbëdhjeta. Nga dyzet e një hiq tridhjetë e gjashtë dhe mbeten pesë të dymbëdhjeta. Numri i përzier është tre e pesë të dymbëdhjeta. Vlerëso veprimin fillestar: një e gjysmë plus dy e dy të treta, minus tri të katërtat, duhet të jetë pak më shumë se tre. Rezultati përputhet.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "41/12 = 36/12 + 5/12",
+                "note": "Three wholes use 36 twelfths."
+              },
+              {
+                "expression": "41/12 = 3 + 5/12",
+                "note": "The remainder is five twelfths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 41,
+                "caption": "3 + 5/12"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 1 2/3 + 2 1/4 − 5/6. Zgjidh thyesën e parregullt më të thjeshtë.",
+          "options": [
+            "25/12",
+            "37/12",
+            "43/12",
+            "49/12",
+            "35/12",
+            "41/12"
+          ],
+          "answer": 1,
+          "explanation": "5/3 + 9/4 − 5/6 = 20/12 + 27/12 − 10/12 = 37/12.",
+          "calculation": {
+            "expression": "5/3 + 9/4 − 5/6",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 2 1/2 − 3/4 + 1 1/3. Thjeshto si thyesë të parregullt dhe shkruaj numëruesin.",
+          "answer": 37,
+          "unit": "",
+          "explanation": "5/2 − 3/4 + 4/3 = 30/12 − 9/12 + 16/12 = 37/12. Numëruesi është 37.",
+          "calculation": {
+            "expression": "5/2 − 3/4 + 4/3",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Shumëzimi i tri thyesave",
+      "shape": "calculation",
+      "accent": "#247dc0",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "multiply",
+          "headline": "Një pjesë e një thyese është prodhim.",
+          "text": "Llogarit tri të katërta herë dy të treta herë pesë të gjashta. Shumëzimi do të thotë të marrësh një pjesë të një sasie. Së pari mendo dy të tretat e tri të katërtave. Rrjeta ndan të plotën në katër shtylla dhe tre rreshta. Tri shtylla tregojnë tri të katërtat. Dy rreshta tregojnë dy të tretat. Mbivendosja tregon prodhimin.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 × 2/3 × 5/6",
+                "note": "Multiply, rather than match denominators."
+              },
+              {
+                "expression": "3/4 × 2/3 = 6/12",
+                "note": "The overlap covers 6 of 12 cells."
+              }
+            ],
+            "grid": {
+              "cols": 4,
+              "rows": 3,
+              "selectedCols": 3,
+              "selectedRows": 2,
+              "caption": "6/12 = 1/2"
+            }
+          }
+        },
+        {
+          "mode": "multiply",
+          "headline": "Shumëzo të gjithë numëruesit dhe emëruesit.",
+          "text": "Për tri thyesa, shumëzo tre numëruesit: tre herë dy herë pesë bëjnë tridhjetë. Shumëzo tre emëruesit: katër herë tre herë gjashtë bëjnë shtatëdhjetë e dy. Prodhimi i pathjeshtuar është tridhjetë mbi shtatëdhjetë e dy. Ndryshe nga mbledhja, shumëzimi nuk kërkon emërues të barabartë. Rrjeta ndihmon të kuptosh pse emëruesit shumëzohen.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 × 2/3 × 5/6 = 30/72",
+                "note": "Top: 3 × 2 × 5. Bottom: 4 × 3 × 6."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Thjeshto prodhimin e parë për më pak punë.",
+          "text": "Ka një rrugë më të shkurtër. Tri të katërta herë dy të treta bëjnë gjashtë të dymbëdhjeta, që thjeshtohen në një të dytën. Tani shumëzo një të dytën me pesë të gjashta. Një herë pesë bëjnë pesë; dy herë gjashtë bëjnë dymbëdhjetë. Prodhimi përfundimtar është pesë të dymbëdhjeta. Thjeshtimi gjatë veprimeve i zvogëlon llogaritjet.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 × 2/3 = 1/2",
+                "note": "Simplify 6/12 before continuing."
+              },
+              {
+                "expression": "1/2 × 5/6 = 5/12",
+                "note": "Then multiply by the third fraction."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 5,
+                "caption": "5/12"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Kontrollo nëse madhësia ka kuptim.",
+          "text": "Të tre faktorët janë pozitivë dhe më të vegjël se një. Marrja e një pjese të një pjese e zvogëlon sasinë. Pesë të dymbëdhjeta janë më pak se tri të katërta, dy të treta dhe pesë të gjashta, prandaj madhësia ka kuptim. Mund të thjeshtojmë edhe 30/72 duke pjesëtuar të dy numrat me gjashtë. Marrim po 5/12.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "30/72 = 5/12",
+                "note": "Divide both numbers by 6."
+              },
+              {
+                "expression": "3/4 × 2/3 × 5/6 = 5/12",
+                "note": "Both calculation routes agree."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 5,
+                "caption": "5/12"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 2/3 × 3/5 × 5/8.",
+          "options": [
+            "1/8",
+            "2/15",
+            "3/8",
+            "5/12",
+            "1/4",
+            "2/3"
+          ],
+          "answer": 4,
+          "explanation": "Prodhimi është 30/120. Pjesëto të dy numrat me 30 dhe merr 1/4.",
+          "calculation": {
+            "expression": "2/3 × 3/5 × 5/8",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 5/6 × 3/10 × 4/5. Thjeshto dhe shkruaj vetëm emëruesin.",
+          "answer": 5,
+          "unit": "",
+          "explanation": "60/300 = 1/5. Emëruesi është 5.",
+          "calculation": {
+            "expression": "5/6 × 3/10 × 4/5",
+            "component": "denominator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Thjeshto para shumëzimit",
+      "shape": "calculation",
+      "accent": "#a36a20",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Prodhimet e mëdha mund të japin përgjigje të thjeshtë.",
+          "text": "Shprehja jonë është 8/15 herë 9/16 herë 5/6. Shumëzimi i menjëhershëm jep 360/1440. Këta numra janë të saktë, por të mëdhenj për t’u përdorur. Mund të pjesëtojmë një numërues dhe një emërues me një faktor të përbashkët para shumëzimit. Këtë mënyrë përdore vetëm te faktorët e një prodhimi.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "8/15 × 9/16 × 5/6",
+                "note": "Look for shared factors across top and bottom."
+              },
+              {
+                "expression": "8/15 × 9/16 × 5/6 = 360/1440",
+                "note": "We can avoid these large numbers."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "cancel",
+          "headline": "Thjeshto tetën dhe pesën.",
+          "text": "Pjesëto numëruesin tetë dhe emëruesin gjashtëmbëdhjetë me tetë. Ata bëhen një dhe dy. Pastaj pjesëto numëruesin pesë dhe emëruesin pesëmbëdhjetë me pesë. Ata bëhen një dhe tre. Hoqëm faktorë të njëjtë nga numëruesi dhe emëruesi i prodhimit të plotë. Vlera nuk ndryshon, sepse të dy pjesët pjesëtohen në mënyrë të barabartë.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "8/15 × 9/16 × 5/6",
+                "note": "8 and 16 share a factor of 8."
+              },
+              {
+                "expression": "1/15 × 9/2 × 5/6",
+                "note": "5 and 15 share a factor of 5."
+              },
+              {
+                "expression": "1/3 × 9/2 × 1/6",
+                "note": "The product is unchanged."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "cancel",
+          "headline": "Përfundo thjeshtimin, pastaj shumëzo.",
+          "text": "Nëntë në numërues dhe tre në emërues kanë faktor të përbashkët tre. Zëvendësoji me tre dhe një. Tani tre në numërues dhe gjashtë në emërues kanë faktor të përbashkët tre. Zëvendësoji me një dhe dy. Prodhimi i mbetur është një herë një herë një, mbi një herë dy herë dy. Rezultati është një e katërta.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/3 × 9/2 × 1/6 = 1/1 × 3/2 × 1/6",
+                "note": "Divide 9 and 3 by 3."
+              },
+              {
+                "expression": "1/1 × 1/2 × 1/2 = 1/4",
+                "note": "Divide 3 and 6 by 3, then multiply."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 1,
+                "caption": "1/4"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Thjeshtimi në kryq vlen për prodhime, jo shuma.",
+          "text": "Kontrollo rezultatin duke thjeshtuar thyesën e madhe: 360/1440 është një e katërta. Thjeshtimi në kryq dha të njëjtën përgjigje me më pak punë. Kujto kufizimin: nuk mund të thjeshtosh numra përtej shenjave të mbledhjes ose zbritjes. Së pari përfundo shumën në kllapa, pastaj përdore rezultatin si faktor.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "360/1440 = 1/4",
+                "note": "Both methods produce one quarter."
+              },
+              {
+                "expression": "8/15 × 9/16 × 5/6 = 1/4",
+                "note": "Cancel common factors only in products."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 1,
+                "caption": "1/4"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Përdor thjeshtimin në kryq për 14/15 × 5/21 × 9/10.",
+          "options": [
+            "1/3",
+            "3/5",
+            "2/5",
+            "1/7",
+            "2/7",
+            "1/5"
+          ],
+          "answer": 5,
+          "explanation": "Thjeshto faktorët e përbashkët ose thyesën 630/3150. Rezultati është 1/5.",
+          "calculation": {
+            "expression": "14/15 × 5/21 × 9/10",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 16/21 × 7/8 × 3/10. Thjeshto dhe shkruaj vetëm numëruesin.",
+          "answer": 1,
+          "unit": "",
+          "explanation": "Thjeshto 16 me 8, 7 me 21 dhe 3 me 3 që mbetet. Rezultati është 2/10 = 1/5.",
+          "calculation": {
+            "expression": "16/21 × 7/8 × 3/10",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pjesëtimi me një thyesë",
+      "shape": "calculation",
+      "accent": "#7961ca",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Pjesëtimi pyet sa grupe futen.",
+          "text": "Pesë të gjashta pjesëtuar me dy të treta pyet sa grupe me dy të treta futen në pesë të gjashta. Shkruaji dy të tretat si katër të gjashta. Një grup i plotë përdor katër të gjashta të ngjyrosura. Mbetet një e gjashta. Kjo pjesë është një e katërta e grupit, sepse grupi ka katër të gjashta.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 ÷ 2/3",
+                "note": "How many groups of 2/3 fit?"
+              },
+              {
+                "expression": "2/3 = 4/6",
+                "note": "Each group contains four sixths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6",
+                "group": 4,
+                "groupLabel": "2/3"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Ruaj thyesën e parë; përmbys pjesëtuesin.",
+          "text": "Thyesa e anasjelltë e dy të tretave është tri të dyta. Ktheje pjesëtimin në shumëzim dhe përdor thyesën e anasjelltë. Pesë të gjashta mbeten pesë të gjashta. Veprimi i ri është pesë të gjashta herë tri të dyta. Përmbyset vetëm pjesëtuesi. Përmbysja e të dy thyesave ose ruajtja e pjesëtimit do të ndryshonte veprimin.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 ÷ 2/3 = 5/6 × 3/2",
+                "note": "Only the divisor becomes its reciprocal."
+              },
+              {
+                "expression": "5/6 × 3/2 = 15/12",
+                "note": "Now use ordinary multiplication."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Përgjigjja numëron një e një të katërtën grupe.",
+          "text": "Thjeshto pesëmbëdhjetë të dymbëdhjetat duke pjesëtuar të dy numrat me tre. Rezultati është pesë të katërta, ose një e një e katërta. Kjo përputhet me figurën: një grup i plotë dhe një e katërta e një tjetri. Edhe pse sasia fillestare është më pak se një e plotë, numri i grupeve mund të jetë më i madh se një.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "15/12 = 5/4",
+                "note": "Divide top and bottom by 3."
+              },
+              {
+                "expression": "5/4 = 1 + 1/4",
+                "note": "One complete group, plus a quarter group."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 5,
+                "caption": "5/4"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Shumëzo mbrapsht për të kontrolluar pjesëtimin.",
+          "text": "Shumëzo përgjigjen pesë të katërta me pjesëtuesin dy të treta. Dhjetë të dymbëdhjeta thjeshtohen në pesë të gjashta, sasinë fillestare. Ky është një kontroll i dobishëm: herësi herë pjesëtuesi duhet të japë të pjesëtueshmin. Pjesëtimi me një thyesë pozitive më të vogël se një e rrit vlerën numerike, prandaj pesë të katërta është përgjigje e arsyeshme.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/4 × 2/3 = 10/12 = 5/6",
+                "note": "Answer × divisor = starting amount."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 7/8 ÷ 7/12.",
+          "options": [
+            "2/3",
+            "3/2",
+            "7/8",
+            "49/96",
+            "1/2",
+            "7/12"
+          ],
+          "answer": 1,
+          "explanation": "7/8 × 12/7 = 12/8 = 3/2. Përmbys vetëm 7/12.",
+          "calculation": {
+            "expression": "7/8 ÷ 7/12",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 4/5 ÷ 2/3. Thjeshto dhe shkruaj vetëm numëruesin.",
+          "answer": 6,
+          "unit": "",
+          "explanation": "4/5 × 3/2 = 12/10 = 6/5. Numëruesi është 6.",
+          "calculation": {
+            "expression": "4/5 ÷ 2/3",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Më shumë se një pjesëtim",
+      "shape": "calculation",
+      "accent": "#5265ec",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "order",
+          "headline": "Pjesëtimet radhazi bëhen nga e majta në të djathtë.",
+          "text": "Llogarit tri të katërta pjesëtuar me një të dytën, pastaj pjesëtuar me tri të dyta. Dy shenjat e pjesëtimit kanë të njëjtën përparësi, prandaj fillo nga e majta. Së pari pjesëto tri të katërta me një të dytën. Mos krijo kllapa të reja rreth pjesëtuesve. Ndryshimi i grupimit mund të ndryshojë rezultatin.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 ÷ 1/2 ÷ 3/2",
+                "note": "Start with the left-hand division."
+              },
+              {
+                "expression": "( 3/4 ÷ 1/2 ) ÷ 3/2",
+                "note": "These brackets show the original order."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Përfundo pjesëtimin e parë.",
+          "text": "Thyesa e anasjelltë e një të dytës është dy. Shumëzo tri të katërta me dy dhe merr gjashtë të katërta, që thjeshtohen në tri të dyta. Ky është rezultat i ndërmjetëm. Ruaj shenjën e fundit të pjesëtimit dhe pjesëtuesin e saj. Ende duhet të pjesëtojmë tri të dyta me tri të dyta.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 ÷ 1/2 = 3/4 × 2/1",
+                "note": "Use the reciprocal of one half."
+              },
+              {
+                "expression": "3/4 × 2/1 = 3/2",
+                "note": "Carry 3/2 into the next division."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 3,
+                "caption": "3/2"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Përdor thyesën tjetër të anasjelltë dhe thjeshto.",
+          "text": "Tani pjesëto tri të dyta me tri të dyta. Zëvendëso pjesëtuesin me thyesën e anasjelltë, dy të treta, dhe shumëzo. Prodhimi është gjashtë të gjashta, që janë një. Pjesëtimi i një sasie jozero me vetveten jep një. Përdorëm dy thyesa të anasjellta në dy hapa, secila për pjesëtuesin e vet.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/2 ÷ 3/2 = 3/2 × 2/3",
+                "note": "Flip the second divisor."
+              },
+              {
+                "expression": "3/2 × 2/3 = 6/6 = 1",
+                "note": "Equal nonzero amounts divide to one."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "1"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Një varg mund të bëhet një prodhim.",
+          "text": "Ka edhe një mënyrë të shkurtër të barasvlershme. Ruaj thyesën e parë dhe shumëzo me thyesën e anasjelltë të çdo pjesëtuesi pas saj. Tri të katërta herë dy herë dy të treta bëjnë një. Kjo përputhet me punën nga e majta në të djathtë. Thyesa e parë nuk u përmbys. Shumëzimi dhe pjesëtimi kanë të njëjtën përparësi.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 ÷ 1/2 ÷ 3/2 = 3/4 × 2/1 × 2/3",
+                "note": "Invert each divisor, not the starting fraction."
+              },
+              {
+                "expression": "3/4 × 2/1 × 2/3 = 1",
+                "note": "The full chain gives one."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 4,
+                "caption": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 2/3 ÷ 4/9 ÷ 3/2 nga e majta në të djathtë.",
+          "options": [
+            "1/2",
+            "2/3",
+            "1",
+            "3/2",
+            "9/4",
+            "4/9"
+          ],
+          "answer": 2,
+          "explanation": "2/3 × 9/4 = 3/2. Pastaj 3/2 × 2/3 = 1.",
+          "calculation": {
+            "expression": "2/3 ÷ 4/9 ÷ 3/2",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 5/6 ÷ 5/12 ÷ 4/3. Thjeshto dhe shkruaj vetëm emëruesin.",
+          "answer": 2,
+          "unit": "",
+          "explanation": "Pjesëtimi i parë jep 2. Pastaj 2 × 3/4 = 3/2. Emëruesi është 2.",
+          "calculation": {
+            "expression": "5/6 ÷ 5/12 ÷ 4/3",
+            "component": "denominator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Zgjedhja e rendit të duhur",
+      "shape": "calculation",
+      "accent": "#008e80",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "order",
+          "headline": "Shumëzimi bëhet para mbledhjes.",
+          "text": "Shiko një të dytën plus dy të treta herë tri të katërta minus një të gjashtën. Këtë herë nuk mund të bëjmë çdo veprim nga e majta në të djathtë. Shumëzimi dhe pjesëtimi kryhen para mbledhjes dhe zbritjes. Gjej prodhimin në mes: dy të treta herë tri të katërta. Ruaj gjysmën e parë dhe zbritjen e fundit.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 2/3 × 3/4 − 1/6",
+                "note": "Find the multiplication before adding."
+              },
+              {
+                "expression": "2/3 × 3/4 = 1/2",
+                "note": "Compute only the product first."
+              }
+            ],
+            "grid": {
+              "cols": 3,
+              "rows": 4,
+              "selectedCols": 2,
+              "selectedRows": 3,
+              "caption": "6/12 = 1/2"
+            }
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Zëvendëso prodhimin me rezultatin e tij.",
+          "text": "Dy të treta herë tri të katërta bëjnë gjashtë të dymbëdhjeta, ose një të dytën. Vendose këtë rezultat në shprehjen fillestare. Tani ajo është një e dyta plus një e dyta minus një e gjashta. Rishkrimi i të gjithë shprehjes pas çdo hapi ndihmon të mos harrosh një thyesë ose të ndryshosh një shenjë.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 2/3 × 3/4 − 1/6",
+                "note": "Replace just the multiplication."
+              },
+              {
+                "expression": "1/2 + 1/2 − 1/6",
+                "note": "The plus and minus signs stay in place."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 3,
+                "caption": "3/6"
+              },
+              {
+                "d": 6,
+                "n": 3,
+                "caption": "3/6"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "1/6"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Tani bashko të gjashtat e mbetura.",
+          "text": "Çdo gjysmë është tri të gjashta. Shprehja e mbetur bëhet tri të gjashta plus tri të gjashta minus një të gjashtën. Mblidh gjysmat për të marrë gjashtë të gjashta, pastaj hiq një të gjashtën. Mbeten pesë të gjashta. Në këtë hap emëruesi i përbashkët është gjashtë. Na nevojitej vetëm pasi përfunduam shumëzimin.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/6 + 3/6 − 1/6",
+                "note": "Use sixths for addition and subtraction."
+              },
+              {
+                "expression": "6/6 − 1/6 = 5/6",
+                "note": "Take one sixth away from the whole."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "5/6",
+                "removeFrom": 5
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Kontrollo rendin e veprimeve çdo herë.",
+          "text": "Rezultati është pesë të gjashta. Në shprehje më të gjata ndiq këtë rend: së pari kllapat; pastaj shumëzimi dhe pjesëtimi nga e majta në të djathtë; në fund mbledhja dhe zbritja po nga e majta në të djathtë. Thjeshto kur të ndihmon dhe kontrollo madhësinë në fund. Dy gjysma bëjnë një të plotë, ndaj heqja e një të gjashtës lë pak më pak se një.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 2/3 × 3/4 − 1/6 = 5/6",
+                "note": "Brackets → multiply/divide → add/subtract."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit 1/3 + 3/4 × 2/3 − 1/6.",
+          "options": [
+            "1/3",
+            "1/2",
+            "5/6",
+            "2/3",
+            "7/12",
+            "1"
+          ],
+          "answer": 3,
+          "explanation": "Shumëzo së pari: 3/4 × 2/3 = 1/2. Pastaj 2/6 + 3/6 − 1/6 = 4/6 = 2/3.",
+          "calculation": {
+            "expression": "1/3 + 3/4 × 2/3 − 1/6",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit 3/4 − 1/2 × 2/3 + 1/6. Thjeshto dhe shkruaj vetëm numëruesin.",
+          "answer": 7,
+          "unit": "",
+          "explanation": "Shumëzo së pari dhe merr 1/3. Pastaj 9/12 − 4/12 + 2/12 = 7/12. Numëruesi është 7.",
+          "calculation": {
+            "expression": "3/4 − 1/2 × 2/3 + 1/6",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Sfida me katër veprime",
+      "shape": "calculation",
+      "accent": "#c06924",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "brackets",
+          "headline": "Një shprehje përdor të katër veprimet.",
+          "text": "Sfida përfundimtare është tri të katërta plus një të gjashtën në kllapa, pjesëtuar me pesë të gjashta minus një të dytën në kllapa, pastaj herë dy të njëmbëdhjetat. Përfshin mbledhje, zbritje, pjesëtim dhe shumëzim. Fillo me dy kllapat. Secila bëhet një thyesë. Mos thjeshto një numër brenda një shume me një numër jashtë kllapës.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "( 3/4 + 1/6 ) ÷ ( 5/6 − 1/2 ) × 2/11",
+                "note": "Resolve both brackets before dividing."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "brackets",
+          "headline": "Zgjidh çdo kllapë me pjesë të barabarta.",
+          "text": "Në kllapën e parë përdor të dymbëdhjetat. Tri të katërta janë nëntë të dymbëdhjeta dhe një e gjashta është dy të dymbëdhjeta; shuma është njëmbëdhjetë të dymbëdhjeta. Në kllapën e dytë përdor të gjashtat. Pesë të gjashta minus tri të gjashta bëjnë dy të gjashta, ose një të tretën. Tani mbeten pjesëtimi dhe shumëzimi.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 + 1/6 = 9/12 + 2/12 = 11/12",
+                "note": "The first bracket adds two amounts."
+              },
+              {
+                "expression": "5/6 − 1/2 = 5/6 − 3/6 = 1/3",
+                "note": "The second bracket subtracts an amount."
+              },
+              {
+                "expression": "11/12 ÷ 1/3 × 2/11",
+                "note": "Now work from left to right."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 11,
+                "caption": "11/12"
+              },
+              {
+                "d": 6,
+                "n": 2,
+                "caption": "1/3"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Pjesëto, pastaj shumëzo me faktorin e mbetur.",
+          "text": "Thyesa e anasjelltë e një të tretës është tre. Njëmbëdhjetë të dymbëdhjeta herë tre bëjnë tridhjetë e tri të dymbëdhjeta, ose njëmbëdhjetë të katërta. Tani shumëzo me dy të njëmbëdhjetat. Thjeshto njëmbëdhjetën sipër me njëmbëdhjetën poshtë. Dy të katërtat e mbetura thjeshtohen në një të dytën. Çdo shenjë u përdor saktësisht një herë.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "11/12 ÷ 1/3 = 11/12 × 3/1 = 11/4",
+                "note": "Flip the divisor and simplify."
+              },
+              {
+                "expression": "11/4 × 2/11 = 2/4 = 1/2",
+                "note": "Cancel 11, then simplify the result."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 2,
+                "caption": "1/2"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Shpjego hapat, jo vetëm përgjigjen.",
+          "text": "Përgjigjja përfundimtare është një e dyta. Para pyetjeve, shpjego hapat me zë: gjej emëruesit e përbashkët brenda kllapave, përfundo kllapat, përdor thyesën e anasjelltë për pjesëtimin, thjeshto faktorët e përbashkët në prodhime dhe thjeshto rezultatin. Veprimet e gjata me thyesa përdorin të njëjtat rregulla të vogla në rend të kujdesshëm. Shkruaj hapat që t’i kontrollosh.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "( 3/4 + 1/6 ) ÷ ( 5/6 − 1/2 ) × 2/11",
+                "note": "All four operations, in the right order."
+              },
+              {
+                "expression": "11/12 × 3/1 × 2/11 = 1/2",
+                "note": "Your complete result is one half."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Llogarit (2/3 + 1/6) ÷ (3/4 − 1/4) × 3/5.",
+          "options": [
+            "1/2",
+            "5/6",
+            "3/2",
+            "2/3",
+            "1",
+            "5/3"
+          ],
+          "answer": 4,
+          "explanation": "Kllapat japin 5/6 dhe 1/2. Pastaj 5/6 × 2/1 × 3/5 = 1.",
+          "calculation": {
+            "expression": "(2/3 + 1/6) ÷ (3/4 − 1/4) × 3/5",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Llogarit (1/2 + 1/3) ÷ (3/4 − 1/4) × 3/10. Thjeshto dhe shkruaj vetëm numëruesin.",
+          "answer": 1,
+          "unit": "",
+          "explanation": "Kllapat japin 5/6 dhe 1/2. Pastaj 5/6 × 2 × 3/10 = 1/2. Numëruesi është 1.",
+          "calculation": {
+            "expression": "(1/2 + 1/3) ÷ (3/4 − 1/4) × 3/10",
+            "component": "numerator"
+          }
+        }
+      ]
+    }
+  ],
+  "ui": {
+    "Around & inside · Axognition": "Rreth dhe brenda · Axognition",
+    "Around & inside": "Rreth dhe brenda",
+    "Math": "Matematikë",
+    "Subject": "Lënda",
+    "Lesson subject": "Lënda e mësimit",
+    "Perimeter + area": "Perimetri + syprina",
+    "Choose chapter": "Zgjidh kapitullin",
+    "Chapters": "Kapitujt",
+    "MATHEMATICS • SHAPE LAB": "MATEMATIKË • LABORATORI I FIGURAVE",
+    "About 30 min · at your pace": "Rreth 30 min · me ritmin tënd",
+    "Animated lesson stage": "Figurat e animuara të mësimit",
+    "Animated geometric shapes": "Figura gjeometrike të animuara",
+    "WATCH & DISCOVER": "SHIKO DHE ZBULO",
+    "Voice Speed": "Shpejtësia e zërit",
+    "Narration speed": "Shpejtësia e narracionit",
+    "Voice speed, ": "Shpejtësia e zërit, ",
+    " times": " herë",
+    "A new way to see shapes.": "Një mënyrë e re për të parë figurat.",
+    "Trace the outside. Discover the inside.": "Ndiq kufirin. Zbulo brendësinë.",
+    "Side length": "Gjatësia e brinjës",
+    "YOUR GUIDE": "UDHËZUESI YT",
+    "Ready when you are": "Gati kur të jesh ti",
+    "Explore perimeter and area through moving shapes, colour, and a little curiosity.": "Eksploro perimetrin dhe syprinën përmes figurave në lëvizje, ngjyrave dhe kureshtjes.",
+    "A VISUAL MATHEMATICS JOURNEY": "NJË UDHËTIM PAMOR NË MATEMATIKË",
+    "Around.": "Rreth.",
+    "And inside.": "Dhe brenda.",
+    "Watch edges glow and shapes become tiles.": "Shiko si ndriçojnë brinjët dhe figurat mbushen me pllaka.",
+    "Then put your ideas to the test.": "Pastaj provo njohuritë e tua.",
+    "Start exploring": "Fillo eksplorimin",
+    "10 chapters · narrated scenes · interactive checkpoints": "10 kapituj · shpjegime me zë · pyetje ndërvepruese",
+    "YOUR TURN": "RADHA JOTE",
+    "Continue →": "Vazhdo →",
+    "LOOK WHAT YOU LEARNED": "SHIKO ÇFARË MËSOVE",
+    "You've got shape sense.": "Tani i kupton figurat.",
+    "Perimeter follows the edge. Area covers the inside.": "Perimetri ndjek kufirin. Syprina mat pjesën e brendshme.",
+    "Finish": "Përfundo",
+    "Review chapters": "Përsërit kapitujt",
+    "Previous scene": "Pamja e mëparshme",
+    "Play": "Luaj",
+    "Pause": "Ndalo",
+    "Next scene": "Pamja tjetër",
+    "Skip to next scene": "Kalo te pamja tjetër",
+    "Next →": "Tjetra →",
+    "Next · ": "Tjetra · ",
+    "Next scene available in ": "Pamja tjetër hapet pas ",
+    " seconds": " sekondash",
+    "Scene ": "Pamja ",
+    " of 4": " nga 4",
+    "Scene 1 of 4": "Pamja 1 nga 4",
+    "Lesson playback progress": "Ecuria e mësimit",
+    "0 / 10 checkpoints": "0 / 10 pyetje",
+    " / 10 checkpoints": " / 10 pyetje",
+    "Replay narration": "Përsërit narracionin",
+    "Replay voice": "Përsërit zërin",
+    "Sound on": "Zëri aktiv",
+    "Sound off": "Zëri i fikur",
+    "Your journey": "Udhëtimi yt",
+    "Close chapters": "Mbyll kapitujt",
+    "Restart this unit": "Rifillo këtë njësi",
+    "Progress is saved on this device. Guided time includes exploring and answering.": "Ecuria ruhet në këtë pajisje. Koha përfshin eksplorimin dhe përgjigjet.",
+    "Could not save completion. Please try Finish again.": "Përfundimi nuk u ruajt. Provo përsëri butonin Përfundo.",
+    "Storage is unavailable; keep this page open to retain your progress.": "Ruajtja nuk është e disponueshme; mbaje hapur faqen për të ruajtur ecurinë.",
+    "Explore the model": "Eksploro modelin",
+    "Read along": "Lexo tekstin",
+    "Narration is unavailable. Captions remain available; check that an English voice is installed.": "Narracioni nuk është i disponueshëm. Teksti mbetet i lexueshëm; kontrollo nëse është instaluar një zë në shqip.",
+    "Captions on": "Teksti aktiv",
+    "Speaking…": "Duke folur…",
+    "MEET THE SHAPE": "NJIHE FIGURËN",
+    "TRACE THE BOUNDARY": "NDIQ KUFIRIN",
+    "COVER THE INSIDE": "MBULO BRENDËSINË",
+    "SPLIT & DISCOVER": "NDAJ DHE ZBULO",
+    "MOVE THE PIECES": "LËVIZ PJESËT",
+    "MAKE A CONNECTION": "GJEJ LIDHJEN",
+    "THINK IT THROUGH": "MENDOJE ME KUJDES",
+    "Exactly. ": "Saktë. ",
+    "Let’s check that. ": "Le ta kontrollojmë. ",
+    "Your answer in ": "Përgjigjja jote në ",
+    "Check answer": "Kontrollo përgjigjen",
+    "All ten checkpoints completed. Well done!": "I përfundove të dhjeta pyetjet. Të lumtë!",
+    " of ten checkpoints completed. Revisit the remaining chapters to finish your journey.": " nga dhjetë pyetje të përfunduara. Kthehu te kapitujt e mbetur për ta përfunduar udhëtimin.",
+    "Could not finish. Please try again.": "Nuk mund të përfundohej. Provo përsëri.",
+    "Finished ✓": "Përfunduar ✓",
+    "Lecture finished. Your completion is saved on this device.": "Mësimi përfundoi. Përfundimi yt ruhet në këtë pajisje.",
+    "Restart this unit and clear its saved checkpoints?": "Ta rifilloj këtë njësi dhe t'i fshij përgjigjet e ruajtura?",
+    "Could not reset completion. Please try again.": "Përfundimi nuk mund të rivendosej. Provo përsëri.",
+    "Resume exploring ▶": "Vazhdo eksplorimin ▶",
+    "Review lecture ▶": "Përsërit mësimin ▶",
+    "The lesson could not load": "Mësimi nuk mund të ngarkohej",
+    "Check your server connection, then reload. ": "Kontrollo lidhjen me serverin dhe ringarko faqen. ",
+    "base = 6 cm": "baza = 6 cm",
+    "height = 4 cm": "lartësia = 4 cm",
+    "sloping side ≈ 7.21 cm": "brinja e pjerrët ≈ 7,21 cm",
+    "side ≈ 4.47 cm": "brinja ≈ 4,47 cm",
+    "matching copy": "kopje e njëjtë",
+    "Share, see & solve · Axognition": "Ndaj, shiko dhe zgjidh · Axognition",
+    "Share, see & solve": "Ndaj, shiko dhe zgjidh",
+    "Fractions": "Thyesat",
+    "MATHEMATICS • FRACTION LAB": "MATEMATIKË • LABORATORI I THYESAVE",
+    "A whole new way to see fractions.": "Një mënyrë e re për të parë thyesat.",
+    "Share a whole. See the parts.": "Ndaj të plotën. Shiko pjesët.",
+    "Share a whole.": "Ndaj të plotën.",
+    "See the parts.": "Shiko pjesët.",
+    "Watch wholes split and equal shares come together.": "Shiko të plotat që ndahen dhe pjesët që bashkohen.",
+    "Equal parts": "Pjesë të barabarta",
+    "You've got fraction sense.": "Tani i kupton thyesat.",
+    "Equal parts. One whole. So many ways to see it.": "Pjesë të barabarta. Një e plotë. Shumë mënyra për ta parë.",
+    "Animated fraction models": "Modele të animuara të thyesave",
+    "Explore fractions through equal shares, moving pieces, and a little curiosity.": "Zbulo thyesat me pjesë të barabarta, lëvizje dhe pak kureshtje.",
+    "MEET THE WHOLE": "NJIH TË PLOTËN",
+    "MAKE EQUAL SHARES": "NDAJ NË PJESË TË BARABARTA",
+    "COUNT THE PARTS": "NUMËRO PJESËT",
+    "BRING PARTS TOGETHER": "BASHKO PJESËT",
+    "NAME WHAT YOU SEE": "EMËRTO ATË QË SHEH",
+    "TRY IT YOURSELF": "PROVOJE VETË",
+    "FOLLOW THE FRACTION": "NDIQ THYESËN",
+    "TAKE PARTS AWAY": "HIQ PJESË",
+    "1 whole": "1 e plotë",
+    "Unequal pieces ≠ halves": "Pjesë të pabarabarta ≠ gjysma",
+    "1/2 · one half": "1/2 · një gjysmë",
+    "4 equal parts": "4 pjesë të barabarta",
+    "3 selected parts": "3 pjesë të zgjedhura",
+    "The whole stays the same size": "Madhësia e së plotës nuk ndryshon",
+    "Same whole. One selected part.": "E njëjta e plotë. Një pjesë e zgjedhur.",
+    "Numerator: selected parts": "Numëruesi: pjesët e zgjedhura",
+    "Denominator: all equal parts": "Emëruesi: të gjitha pjesët",
+    "Same-sized wholes": "Të plota me madhësi të njëjtë",
+    "8 equal parts each": "Secila ka 8 pjesë të barabarta",
+    "Ready to compare": "Gati për krahasim",
+    "Two more eighths": "Dy të teta më shumë",
+    "8 counters": "8 gurë",
+    "3/4 of 8 = 6": "3/4 e 8 = 6",
+    "1/4 of 8 = 2": "1/4 e 8 = 2",
+    "Your answer in counters": "Përgjigjja jote në gurë",
+    "counters": "gurë",
+    "Question ": "Pyetja ",
+    " of 2": " nga 2",
+    "Next question →": "Pyetja tjetër →",
+    "Complete checkpoint →": "Përfundo kontrollin →",
+    "Your answer": "Përgjigjja jote",
+    "parts": "pjesë",
+    "pieces": "pjesë",
+    "steps": "hapa",
+    "GET READY": "BËHU GATI",
+    "Student sitting upright at a desk": "Nxënës i ulur drejt në tavolinë",
+    "Sit upright and get comfortable.": "Ulu drejt dhe rehat.",
+    "Place your tablet where you can see the lesson clearly.": "Vendose tabletin aty ku e sheh qartë mësimin.",
+    "Find a quiet place and stay focused.": "Gjej një vend të qetë dhe përqendrohu.",
+    "Watch each explanation before moving on.": "Shiko çdo shpjegim para se të vazhdosh.",
+    "Answer both questions by yourself at each checkpoint.": "Përgjigju vetë të dyja pyetjeve në çdo kontroll.",
+    "Take your time. You can pause or replay.": "Mos u nxito. Mund ta ndalosh ose ta përsëritësh.",
+    "Lesson begins in": "Mësimi fillon pas",
+    "seconds": "sekondash",
+    "Activity could not be saved. Keep this lesson open and try again.": "Veprimtaria nuk mund të ruhej. Mbaje këtë mësim hapur dhe provo përsëri.",
+    "Saved on this device. Waiting to sync with the server.": "U ruajt në këtë pajisje. Në pritje të sinkronizimit me serverin.",
+    "Progress synced with the server.": "Përparimi u sinkronizua me serverin.",
+    "Checkpoint updated: complete both questions to finish each chapter.": "Kontrolli u përditësua: plotëso të dyja pyetjet për të përfunduar çdo kapitull.",
+    "The final checkpoint has new questions. Complete both to finish.": "Kontrolli i fundit ka pyetje të reja. Plotëso të dyja për ta përfunduar.",
+    "Each question has one answer attempt. Wrong answers reveal the correct answer.": "Për çdo pyetje ke vetëm një përpjekje. Pas një përgjigjeje të gabuar shfaqet përgjigjja e saktë.",
+    "Finish every question. More than 75% correct is needed to pass.": "Përgjigju çdo pyetjeje. Për të kaluar duhen më shumë se 75% përgjigje të sakta.",
+    "Your first failure has a 1-hour wait. All other results below 100% have a 24-hour wait.": "Pas dështimit të parë prit 1 orë. Pas çdo rezultati tjetër nën 100%, prit 24 orë.",
+    "Trying again resets every question and scene. Your past results are kept.": "Kur provon përsëri, të gjitha pyetjet dhe pamjet rifillojnë. Rezultatet e mëparshme ruhen.",
+    "A 100% result can be reviewed at any time.": "Me rezultat 100% mund ta përsëritësh mësimin në çdo kohë.",
+    "Your lecture result": "Rezultati yt i mësimit",
+    " correct": " të sakta",
+    "Correct answer: ": "Përgjigjja e saktë: ",
+    "Passed!": "Kalove!",
+    "Not passed. More than 75% is required.": "Nuk kalove. Duhen më shumë se 75%.",
+    "Retry available in ": "Mund të provosh përsëri pas ",
+    "Try again ▶": "Provo përsëri ▶",
+    "Start exploring ▶": "Fillo eksplorimin ▶",
+    "completed attempts": "përpjekje të përfunduara",
+    "No completed attempts yet.": "Ende asnjë përpjekje e përfunduar.",
+    " · Not completed yet": " · Ende i papërfunduar",
+    " of ": " nga ",
+    "Lecture result saved on this device.": "Rezultati i mësimit u ruajt në këtë pajisje.",
+    "Could not save completion. Please try again.": "Përfundimi nuk mund të ruhej. Provo përsëri.",
+    "Use a common denominator of 6.": "Përdor emëruesin e përbashkët 6.",
+    "Multiply top and bottom by 3.": "Shumëzo numëruesin dhe emëruesin me 3.",
+    "Multiply top and bottom by 2.": "Shumëzo numëruesin dhe emëruesin me 2.",
+    "All the pieces are sixths now.": "Tani të gjitha pjesët janë të gjashta.",
+    "Add 3 + 2 + 1, not 6 + 6 + 6.": "Mblidh 3 + 2 + 1, jo 6 + 6 + 6.",
+    "Keep the common denominator.": "Ruaj emëruesin e përbashkët.",
+    "All six parts are selected.": "Të gjashta pjesët janë zgjedhur.",
+    "The result is one whole.": "Rezultati është një e plotë.",
+    "Work from left to right.": "Puno nga e majta në të djathtë.",
+    "Rename the quarter as eighths.": "Shkruaje të katërtën si të teta.",
+    "The quarter removes two pieces.": "E katërta heq dy pjesë.",
+    "One subtraction still remains.": "Mbetet edhe një zbritje.",
+    "Remove the final eighth.": "Hiq të tetën e fundit.",
+    "Check by combining what was removed.": "Kontrollo duke bashkuar pjesët e hequra.",
+    "Divide both numbers by 4.": "Pjesëto të dy numrat me 4.",
+    "Adding back checks the subtraction.": "Mbledhja mbrapsht kontrollon zbritjen.",
+    "Twelve works for all three denominators.": "Dymbëdhjeta përshtatet me të tre emëruesit.",
+    "Multiply by 2/2.": "Shumëzo me 2/2.",
+    "Multiply by 3/3.": "Shumëzo me 3/3.",
+    "Multiply by 6/6.": "Shumëzo me 6/6.",
+    "Combine the positive amounts first.": "Bashko së pari sasitë pozitive.",
+    "Then subtract six twelfths.": "Pastaj zbrit gjashtë të dymbëdhjeta.",
+    "Separate one complete whole.": "Veço një të plotë.",
+    "Improper and mixed forms have equal value.": "Thyesa e parregullt dhe numri i përzier janë të barabartë.",
+    "One whole contains two halves.": "Një e plotë përmban dy gjysma.",
+    "Two wholes contain six thirds.": "Dy të plota përmbajnë gjashtë të treta.",
+    "Keep the same plus and minus signs.": "Ruaj të njëjtat shenja plus dhe minus.",
+    "All three amounts are in twelfths.": "Të tri sasitë janë në të dymbëdhjeta.",
+    "18 + 32 = 50.": "18 + 32 = 50.",
+    "50 − 9 = 41.": "50 − 9 = 41.",
+    "Three wholes use 36 twelfths.": "Tri të plota përdorin 36 të dymbëdhjeta.",
+    "The remainder is five twelfths.": "Mbetja është pesë të dymbëdhjeta.",
+    "Multiply, rather than match denominators.": "Shumëzo; nuk kërkohet emërues i përbashkët.",
+    "The overlap covers 6 of 12 cells.": "Mbivendosja mbulon 6 nga 12 qeliza.",
+    "Top: 3 × 2 × 5. Bottom: 4 × 3 × 6.": "Sipër: 3 × 2 × 5. Poshtë: 4 × 3 × 6.",
+    "Simplify 6/12 before continuing.": "Thjeshto 6/12 para se të vazhdosh.",
+    "Then multiply by the third fraction.": "Pastaj shumëzo me thyesën e tretë.",
+    "Divide both numbers by 6.": "Pjesëto të dy numrat me 6.",
+    "Both calculation routes agree.": "Të dyja rrugët japin të njëjtin rezultat.",
+    "Look for shared factors across top and bottom.": "Kërko faktorë të përbashkët sipër dhe poshtë.",
+    "We can avoid these large numbers.": "Mund t’i shmangim këta numra të mëdhenj.",
+    "8 and 16 share a factor of 8.": "8 dhe 16 kanë faktor të përbashkët 8.",
+    "5 and 15 share a factor of 5.": "5 dhe 15 kanë faktor të përbashkët 5.",
+    "The product is unchanged.": "Prodhimi nuk ndryshon.",
+    "Divide 9 and 3 by 3.": "Pjesëto 9 dhe 3 me 3.",
+    "Divide 3 and 6 by 3, then multiply.": "Pjesëto 3 dhe 6 me 3, pastaj shumëzo.",
+    "Both methods produce one quarter.": "Të dyja mënyrat japin një të katërtën.",
+    "Cancel common factors only in products.": "Thjeshto faktorë të përbashkët vetëm në prodhime.",
+    "How many groups of 2/3 fit?": "Sa grupe me 2/3 futen?",
+    "Each group contains four sixths.": "Çdo grup përmban katër të gjashta.",
+    "Only the divisor becomes its reciprocal.": "Vetëm pjesëtuesi bëhet thyesa e anasjelltë.",
+    "Now use ordinary multiplication.": "Tani përdor shumëzimin e zakonshëm.",
+    "Divide top and bottom by 3.": "Pjesëto numëruesin dhe emëruesin me 3.",
+    "One complete group, plus a quarter group.": "Një grup i plotë, plus një e katërta e grupit.",
+    "Answer × divisor = starting amount.": "Përgjigjja × pjesëtuesi = sasia fillestare.",
+    "Start with the left-hand division.": "Fillo me pjesëtimin në të majtë.",
+    "These brackets show the original order.": "Këto kllapa tregojnë rendin fillestar.",
+    "Use the reciprocal of one half.": "Përdor thyesën e anasjelltë të një të dytës.",
+    "Carry 3/2 into the next division.": "Përdor 3/2 në pjesëtimin tjetër.",
+    "Flip the second divisor.": "Përmbys pjesëtuesin e dytë.",
+    "Equal nonzero amounts divide to one.": "Sasitë e barabarta jozero japin herësin një.",
+    "Invert each divisor, not the starting fraction.": "Përmbys çdo pjesëtues, jo thyesën e parë.",
+    "The full chain gives one.": "I gjithë vargu jep një.",
+    "Find the multiplication before adding.": "Gjej shumëzimin para se të mbledhësh.",
+    "Compute only the product first.": "Së pari llogarit vetëm prodhimin.",
+    "Replace just the multiplication.": "Zëvendëso vetëm shumëzimin.",
+    "The plus and minus signs stay in place.": "Shenjat plus dhe minus mbeten në vend.",
+    "Use sixths for addition and subtraction.": "Përdor të gjashtat për mbledhje dhe zbritje.",
+    "Take one sixth away from the whole.": "Hiq një të gjashtën nga e plota.",
+    "Brackets → multiply/divide → add/subtract.": "Kllapa → shumëzim/pjesëtim → mbledhje/zbritje.",
+    "Resolve both brackets before dividing.": "Përfundo të dyja kllapat para pjesëtimit.",
+    "The first bracket adds two amounts.": "Kllapa e parë mbledh dy sasi.",
+    "The second bracket subtracts an amount.": "Kllapa e dytë zbret një sasi.",
+    "Now work from left to right.": "Tani puno nga e majta në të djathtë.",
+    "Flip the divisor and simplify.": "Përmbys pjesëtuesin dhe thjeshto.",
+    "Cancel 11, then simplify the result.": "Thjeshto 11, pastaj rezultatin.",
+    "All four operations, in the right order.": "Të katër veprimet, në rendin e duhur.",
+    "Your complete result is one half.": "Rezultati përfundimtar është një e dyta.",
+    "Fraction calculations · Axognition": "Veprime me thyesa · Axognition",
+    "Fraction calculations": "Veprime me thyesa",
+    "Calculate, simplify & check": "Llogarit, thjeshto dhe kontrollo",
+    "A moving guide to longer fraction calculations": "Një udhëzues i animuar për veprime më të gjata me thyesa",
+    "MATHEMATICS • CALCULATION LAB": "MATEMATIKË • LABORATORI I VEPRIMEVE",
+    "About 35 min · at your pace": "Rreth 35 min · me ritmin tënd",
+    "Build on what you know about fractions.": "Përdor njohuritë që ke për thyesat.",
+    "Follow each step. Check the result.": "Ndiq çdo hap. Kontrollo rezultatin.",
+    "Animated fraction calculations": "Veprime të animuara me thyesa",
+    "Calculate.": "Llogarit.",
+    "Then check.": "Pastaj kontrollo.",
+    "Add, subtract, multiply, and divide several fractions.": "Mblidh, zbrit, shumëzo dhe pjesëto disa thyesa.",
+    "Watch each calculation unfold with equal parts and animated steps.": "Shiko çdo veprim me pjesë të barabarta dhe hapa të animuar.",
+    "Four operations. Clear steps. A result you can explain.": "Katër veprime. Hapa të qartë. Një rezultat që mund ta shpjegosh.",
+    "PLAN THE CALCULATION": "PLANIFIKO VEPRIMIN",
+    "MATCH THE DENOMINATORS": "BARAZO EMËRUESIT",
+    "WORK THROUGH THE STEPS": "PUNO HAP PAS HAPI",
+    "SIMPLIFY & CHECK": "THJESHTO DHE KONTROLLO",
+    "MULTIPLY THE FRACTIONS": "SHUMËZO THYESAT",
+    "CANCEL COMMON FACTORS": "THJESHTO FAKTORËT E PËRBASHKËT",
+    "MULTIPLY BY THE RECIPROCAL": "SHUMËZO ME THYESËN E ANASJELLTË",
+    "FOLLOW THE ORDER": "NDIQ RENDIN",
+    "START INSIDE THE BRACKETS": "FILLO BRENDA KLLAPAVE",
+    "Incorrect. ": "Gabim. ",
+    "Calculation pad": "Fletë për llogaritje",
+    "Working only · not submitted": "Vetëm për llogaritje · nuk dorëzohet",
+    "Drawing tools": "Mjetet e vizatimit",
+    "Pen": "Laps",
+    "Eraser": "Gomë",
+    "Clear all": "Fshi gjithçka",
+    "Pen thickness": "Trashësia e lapsit",
+    "Drawing area for calculations": "Hapësirë për të shkruar llogaritjet",
+    "Write with your stylus or finger. Hold the stylus button to erase.": "Shkruaj me lapsin elektronik ose me gisht. Mbaje shtypur butonin e lapsit për të fshirë."
+  }
+}

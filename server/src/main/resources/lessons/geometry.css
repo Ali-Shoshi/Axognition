@@ -415,11 +415,23 @@ progress::-moz-progress-bar {
   border-color:var(--correct-border)!important
 }
 .incorrect {
-  border-color:var(--warning)!important
+  background:#d60000!important;
+  color:#fff!important;
+  border:3px solid #ff2929!important;
+  transition:none;
 }
+.incorrect:disabled, .correct:disabled { opacity:1; }
 #feedback {
   line-height:1.5;
   color:var(--correct-text)
+}
+#feedback.answer-incorrect {
+  color:#fff;
+  background:#d60000;
+  border:3px solid #ff2929;
+  border-radius:12px;
+  padding:12px 14px;
+  font-weight:650;
 }
 .dialog-head {
   display:flex;
@@ -960,6 +972,67 @@ dialog { max-height:calc(var(--lesson-height,100dvh) - 32px); padding:20px; over
 .voice-speed-menu button:hover,
 .voice-speed-menu button[aria-selected="true"] { background:var(--hover); }
 .completion-actions { display:flex; flex-wrap:wrap; gap:10px; }
+/* Keep the original question width, then give all remaining space to scratch work. */
+#questionPanel {
+  grid-template-columns:min(760px,100%) minmax(0,1fr);
+  gap:16px;
+  place-items:stretch;
+  align-items:stretch;
+}
+#questionPanel > .question-card { width:100%; align-self:safe center; }
+.calculation-pad {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:0;
+  min-height:0;
+  padding:16px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:18px;
+}
+.pad-heading { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 12px; }
+.pad-heading h3 { margin:0; font-size:18px; }
+.pad-heading span, #padHint { color:var(--muted); font-size:12px; line-height:1.4; }
+.pad-tools { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.pad-tools button { padding:8px 10px; min-height:44px; }
+.pad-tools button[aria-pressed="true"] { background:var(--control); color:var(--on-control); }
+.pad-tools label { font-size:13px; }
+#padThickness { flex:1 1 90px; min-width:70px; width:90px; max-width:100%; min-height:36px; }
+#padThicknessValue { font-size:12px; min-width:34px; }
+.pad-paper {
+  position:relative;
+  flex:1 1 auto;
+  min-height:160px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background-color:var(--surface);
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+#calculationCanvas {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+  cursor:crosshair;
+}
+#calculationCanvas.erasing { cursor:cell; }
+#padHint { margin:0; }
+@media(max-width:1100px) {
+  #questionPanel {
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:max-content minmax(360px,1fr);
+    align-content:start;
+  }
+  #questionPanel > .question-card { width:min(760px,100%); max-height:none; justify-self:start; align-self:start; }
+  .calculation-pad { min-height:360px; }
+}
 button:focus-visible { box-shadow:0 0 0 3px var(--focus)!important; }
 .transport { gap:6px; }
 .runner {

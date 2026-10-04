@@ -77,11 +77,13 @@ internal fun LectureCollections(completedLectures: Set<String> = emptySet(), onS
                     // Preview progress only: no invented completion records are saved to the database.
                     val mathematics = subject.name.contains("Mathematics", ignoreCase = true)
                     val total = if (mathematics) 2 else 8 + index % 5
-                    val done = if (mathematics) listOf("geometry", "fractions").count { it in completedLectures } else (index * 3 + 2) % total
+                    val done = if (mathematics) listOf(listOf("geometry"), listOf("fractions", "fractions-calculations"))
+                        .count { lectures -> lectures.all { it in completedLectures } } else (index * 3 + 2) % total
                     LectureSubjectCard(subject, index, done, total) {
                         val units = if (subject.name.contains("Mathematics", ignoreCase = true)) {
                             listOf(UnitData("fractions", "Fractions · Share, see, solve",
-                                listOf(VideoLecture("fractions", "Fractions: interactive guided unit", "30 min"))),
+                                listOf(VideoLecture("fractions", "Fractions: interactive guided unit", "30 min"),
+                                    VideoLecture("fractions-calculations", "Fraction calculations: animated practice", "About 35 min"))),
                                 UnitData("geometry", "Around & inside · Perimeter and area",
                                     listOf(VideoLecture("geometry", "Around & inside: a moving shape lab", "About 30 min"))))
                         } else List(total) { unit ->

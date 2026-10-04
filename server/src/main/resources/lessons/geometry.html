@@ -144,6 +144,24 @@
             <p id="feedback" role="status"></p>
             <button id="continue" class="primary" hidden>Continue →</button>
           </div>
+          <section class="calculation-pad" aria-label="Calculation pad">
+            <div class="pad-heading">
+              <h3>Calculation pad</h3>
+              <span>Working only · not submitted</span>
+            </div>
+            <div class="pad-tools" role="group" aria-label="Drawing tools">
+              <button id="padPen" type="button" aria-pressed="true">✎ <span>Pen</span></button>
+              <button id="padEraser" type="button" aria-pressed="false">▱ <span>Eraser</span></button>
+              <button id="padClear" type="button">⌫ <span>Clear all</span></button>
+              <label for="padThickness">Pen thickness</label>
+              <input id="padThickness" type="range" min="1" max="18" step="1" value="4">
+              <output id="padThicknessValue" for="padThickness">4 px</output>
+            </div>
+            <div class="pad-paper">
+              <canvas id="calculationCanvas" aria-label="Drawing area for calculations" aria-describedby="padHint"></canvas>
+            </div>
+            <p id="padHint">Write with your stylus or finger. Hold the stylus button to erase.</p>
+          </section>
         </div>
 
         <div id="finished" class="question-panel" hidden>

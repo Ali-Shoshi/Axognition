@@ -2,9 +2,11 @@
 
 ## Lecture progress and analytics
 
-Both mathematics lectures now save individual progress and activity on the server.
+All mathematics lectures save individual progress and activity on the server.
 See [LECTURE-PROGRESS.md](LECTURE-PROGRESS.md) for deployment, endpoints, event
 definitions, offline syncing, database scaling and verification.
+The Fractions unit includes an introduction and a separate animated calculations
+lecture. See [FRACTIONS-UNIT.md](FRACTIONS-UNIT.md) for content and preview links.
 
 ## Local child authentication setup
 

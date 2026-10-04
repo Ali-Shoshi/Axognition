@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f4f3ef">
     <meta name="color-scheme" content="light dark">
-    <title>Share, see &amp; solve · Axognition</title>
+    <title>Fraction calculations · Axognition</title>
     <script>
       // Apply the app's preference before the first paint; standalone browsers
       // follow their system preference until the Android player supplies one.
@@ -18,6 +18,7 @@
     </script>
     <link rel="stylesheet" href="./geometry.css">
     <link rel="stylesheet" href="./fractions.css">
+    <link rel="stylesheet" href="./fractions-calculations.css">
   </head>
   <body>
     <main>
@@ -27,7 +28,7 @@
           <small>Subject</small>
         </div>
         <div class="unit-title">
-          Share, see &amp; solve
+          Fraction calculations
           <span>Fractions</span>
         </div>
         <button id="contentsButton" aria-label="Choose chapter">
@@ -36,8 +37,8 @@
       </header>
 
       <div class="chapter-line">
-        <span id="eyebrow">MATHEMATICS • FRACTION LAB</span>
-        <span id="time">About 30 min · at your pace</span>
+        <span id="eyebrow">MATHEMATICS • CALCULATION LAB</span>
+        <span id="time">About 35 min · at your pace</span>
       </div>
 
       <section id="stage" class="stage paused" aria-label="Animated lesson stage">
@@ -60,8 +61,8 @@
             </div>
           </div>
           </div>
-          <h1 id="heading">A whole new way to see fractions.</h1>
-          <p id="headline">Share a whole. See the parts.</p>
+          <h1 id="heading">Build on what you know about fractions.</h1>
+          <p id="headline">Follow each step. Check the result.</p>
         </div>
 
         <div class="scene-frame">
@@ -69,7 +70,7 @@
             id="scene"
             viewBox="0 0 1000 460"
             role="img"
-            aria-label="Animated fraction models"
+            aria-label="Animated fraction calculations"
           ></svg>
         </div>
 
@@ -89,7 +90,7 @@
               <span id="voiceState">Ready when you are</span>
             </div>
             <p id="caption" aria-live="polite">
-              Explore fractions through equal shares, moving pieces, and a little curiosity.
+              Watch each calculation unfold with equal parts and animated steps.
             </p>
           </div>
         </div>
@@ -97,8 +98,8 @@
         <div id="welcome" class="welcome">
           <div class="intro">
             <span class="pill">A VISUAL MATHEMATICS JOURNEY</span>
-            <h2>Share a whole.<br><em>See the parts.</em></h2>
-            <p>Watch wholes split and equal shares come together.<br>Then put your ideas to the test.</p>
+            <h2>Calculate.<br><em>Then check.</em></h2>
+            <p>Add, subtract, multiply, and divide several fractions.<br>Then put your ideas to the test.</p>
             <button id="start" class="primary" disabled>Start exploring <span>▶</span></button>
             <p id="attemptSummary" role="status"></p>
             <small>10 chapters · narrated scenes · interactive checkpoints</small>
@@ -170,7 +171,7 @@
             <span class="pill">LOOK WHAT YOU LEARNED</span>
             <h2>Your lecture result</h2>
             <p id="score"></p>
-            <p>Equal parts. One whole. So many ways to see it.</p>
+            <p>Four operations. Clear steps. A result you can explain.</p>
             <div class="completion-actions">
               <button id="finish" class="primary" disabled>Finish</button>
               <button id="review">Review chapters</button>
@@ -210,7 +211,7 @@
       </dialog>
     </main>
 
-    <script src="./fractions.js"></script>
+    <script src="./fractions-calculations.js"></script>
     <script src="./geometry.js"></script>
   </body>
 </html>

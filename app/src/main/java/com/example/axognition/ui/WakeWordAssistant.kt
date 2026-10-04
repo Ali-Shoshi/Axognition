@@ -39,6 +39,7 @@ data class VoiceAssistantBubble(
 fun WakeWordAssistant(
     listeningMode: VoiceListeningMode,
     suspended: Boolean = false,
+    conversationId: String = "default",
     conversation: () -> List<ChatMessage>,
     onMessage: (ChatMessage) -> Unit,
     content: @Composable (VoiceAssistantBubble?, () -> Unit, () -> Unit) -> Unit
@@ -70,7 +71,7 @@ fun WakeWordAssistant(
             controller.close()
         }
     }
-    LaunchedEffect(listeningMode, suspended, foreground, controller, permissionRevision) {
+    LaunchedEffect(listeningMode, suspended, foreground, controller, permissionRevision, conversationId) {
         controller.configure(VoiceListeningMode.OFF)
         if (listeningMode != VoiceListeningMode.OFF && foreground && !suspended) {
             if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {

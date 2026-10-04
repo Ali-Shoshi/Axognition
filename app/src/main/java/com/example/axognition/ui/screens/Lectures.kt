@@ -54,7 +54,7 @@ data class Subject(
 
 
 @Composable
-fun LecturesScreen(onBack: () -> Unit) {
+fun LecturesScreen(onBack: () -> Unit, onPlayerOpenChanged: (Boolean) -> Unit = {}) {
     val context = LocalContext.current
     val progress = remember(context) { LectureProgressStore(context) }
     LaunchedEffect(Unit) { LectureSync.refreshCompletions(context) }
@@ -71,6 +71,11 @@ fun LecturesScreen(onBack: () -> Unit) {
     var selectedSubject by remember { mutableStateOf<Subject?>(null) }
     var selectedUnit by remember { mutableStateOf<UnitData?>(null) }
     var playingVideo by remember { mutableStateOf<VideoLecture?>(null) }
+    val notifyPlayerOpen by rememberUpdatedState(onPlayerOpenChanged)
+    DisposableEffect(playingVideo != null) {
+        notifyPlayerOpen(playingVideo != null)
+        onDispose { notifyPlayerOpen(false) }
+    }
 
     // Keep back navigation inside the lecture flow before allowing NavController to leave it.
     BackHandler(enabled = playingVideo != null || selectedUnit != null || selectedSubject != null) {
@@ -90,6 +95,7 @@ fun LecturesScreen(onBack: () -> Unit) {
     when {
         video?.id == "geometry" -> GeometryLesson(onBack = { playingVideo = null })
         video?.id == "fractions" -> FractionsLesson(onBack = { playingVideo = null })
+        video?.id == "fractions-calculations" -> GuidedMathLesson("fractions-calculations", onBack = { playingVideo = null })
         video != null -> {
             // Video Player Simulation Screen
             Box(

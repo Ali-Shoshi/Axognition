@@ -1,0 +1,23 @@
+/* Keep the existing lecture layout; only calculation diagrams need new styles. */
+.bubble p { font-size:clamp(16px,1.5vw,21px); line-height:1.45; }
+.calc-number { fill:var(--ink); font-size:26px; font-weight:700; }
+.calc-rule { fill:none; stroke:var(--ink); stroke-width:2; }
+#scene .calc-note { font-size:16px; fill:var(--muted); }
+.calc-step, .calc-visual { animation:calc-reveal .7s both; animation-delay:calc(var(--step)*1.1s); }
+.calc-piece { fill:var(--piece); fill-opacity:.8; animation:calc-reveal .45s both; animation-delay:calc(3s + var(--i)*.12s); }
+.calc-away { animation:calc-remove 3s both; animation-delay:3s; }
+.calc-whole { stroke:var(--ink); stroke-width:4; }
+.calc-group { fill:none; stroke:var(--accent); stroke-width:3; }
+.calc-grid-cell { fill:none; stroke:var(--measure); stroke-width:2; }
+.calc-factor-a { fill:var(--accent); fill-opacity:.22; animation:calc-reveal 1s both; }
+.calc-factor-b { fill:var(--control); fill-opacity:.25; animation:calc-reveal 1s 1.2s both; }
+.calc-overlap { fill:var(--accent); fill-opacity:.8; animation:calc-reveal 1s 2.4s both; }
+@keyframes calc-reveal { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes calc-remove { 0%,35% { opacity:.8; } 100% { opacity:0; } }
+.paused .calc-step, .paused .calc-visual, .paused .calc-piece,
+.paused .calc-factor-a, .paused .calc-factor-b, .paused .calc-overlap { animation:none; }
+.paused .calc-away { opacity:0; }
+@media(prefers-reduced-motion:reduce) {
+  .calc-step, .calc-visual, .calc-piece, .calc-factor-a, .calc-factor-b, .calc-overlap { animation:none; }
+  .calc-away { opacity:0; }
+}

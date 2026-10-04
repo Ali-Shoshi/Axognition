@@ -26,8 +26,8 @@ class LectureScoringTest {
         return apply(def, state, "lecture_finished", at)
     }
 
-    @Test fun `both lectures enforce scores cooldowns reset and immutable first answers`() {
-        for (id in listOf("geometry", "fractions")) {
+    @Test fun `all lectures enforce scores cooldowns reset and immutable first answers`() {
+        for (id in listOf("geometry", "fractions", "fractions-calculations")) {
             val def = LectureCatalog.find(id)!!
             var state = finish(def, LectureState(), 15)
             assertEquals(75, state.lectureResults.single().percent)

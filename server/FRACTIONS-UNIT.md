@@ -3,6 +3,23 @@
 A narrated visual fractions lesson using the same layout, controls, pacing and
 Android host as Around & inside.
 
+The Fractions unit also includes **Fraction calculations: animated practice**,
+a separate, more challenging lecture with the same player and design. Preview it
+at http://localhost:8080/lessons/fractions-calculations.html. Its ten chapters
+cover adding and subtracting several fractions, mixed numbers, multiplying
+three fractions, cancelling common factors, division and division chains,
+operation order, and a final calculation using brackets and all four operations.
+Forty narrated scenes reveal calculation steps, fraction bars, removed pieces,
+and overlapping multiplication grids. Each chapter ends with a six-option
+multiple-choice question and a typed calculation question (20 questions total).
+
+The new lecture has its own `fractions-calculations` ID, progress and scores.
+Its English and Albanian JSON files, HTML, diagram renderer and CSS live beside
+the introductory lecture. Both use shared `geometry.js` and `geometry.css`,
+including narration, preparation, ten-second slide waits, pause, checkpoints,
+review and server activity syncing. The Mathematics progress card counts the
+Fractions unit complete when both of its lectures are complete.
+
 ## Run
 
 From the server directory, run `.\run-server.bat`, then open
@@ -57,6 +74,7 @@ From the repository root:
 ```powershell
 node server/test-fractions.cjs
 node server/test-fractions-browser.cjs
+node server/test-fractions-calculations.cjs
 node server/test-geometry.cjs
 ```
 
@@ -68,7 +86,36 @@ are written to `server/build/fractions-preview`.
 
 Physical-device speech quality and keyboard dismissal remain device checks.
 
+The calculations test independently verifies fraction arithmetic and all
+checkpoint answers, checks 480 diagram layouts across both languages and
+themes on phone/tablet viewports, and exercises start, resume, navigation,
+completion, review and independent progress. Preview captures are written to
+`server/build/fractions-calculations-preview`. Server scoring coverage includes
+the new lecture in `LectureScoringTest`.
+
 ## Two questions per checkpoint
+
+All three mathematics lectures include a calculation pad at every question.
+Wide screens keep the original 760px question card on the left and use the
+remaining space on the right for scratch work. Smaller screens place the pad
+below the question without reducing the question's width. The pad supports pen
+and finger input, a pen-thickness slider, an eraser and Clear all. Holding the
+stylus barrel button temporarily erases; the Android host also forwards native
+stylus button and eraser-tip state for WebView compatibility.
+The app disables navigation-drawer swipe gestures while a lecture player is
+open, so horizontal handwriting strokes cannot open the menu. The WebView also
+keeps parent views from intercepting an active touch stroke. Drawer gestures are
+restored when the player closes or the lecture screen is disposed.
+
+Scratch work is kept separately for each question during the open lesson,
+survives resizing and question revisits, and clears on a new attempt or page
+reload. It is not submitted as an answer or uploaded as activity data. Wrong
+answers use solid red fields/options and a red feedback banner beginning with
+"Incorrect", including when a wrong result is revisited or resumed.
+
+Run `node server/test-checkpoint-pad.cjs` for drawing, erasing, stylus-button,
+thickness, resize, layout, language/theme and wrong-answer feedback checks across
+all three lectures. Browser checks do not verify physical stylus hardware.
 
 Each of the ten chapter checkpoints now has two questions: a multiple-choice
 question with exactly six distinct options, followed by a typed numeric answer.

@@ -1139,6 +1139,16 @@
     " · Not completed yet": " · Ende i papërfunduar",
     " of ": " nga ",
     "Lecture result saved on this device.": "Rezultati i mësimit u ruajt në këtë pajisje.",
-    "Could not save completion. Please try again.": "Përfundimi nuk mund të ruhej. Provo përsëri."
+    "Could not save completion. Please try again.": "Përfundimi nuk mund të ruhej. Provo përsëri.",
+    "Incorrect. ": "Gabim. ",
+    "Calculation pad": "Fletë për llogaritje",
+    "Working only · not submitted": "Vetëm për llogaritje · nuk dorëzohet",
+    "Drawing tools": "Mjetet e vizatimit",
+    "Pen": "Laps",
+    "Eraser": "Gomë",
+    "Clear all": "Fshi gjithçka",
+    "Pen thickness": "Trashësia e lapsit",
+    "Drawing area for calculations": "Hapësirë për të shkruar llogaritjet",
+    "Write with your stylus or finger. Hold the stylus button to erase.": "Shkruaj me lapsin elektronik ose me gisht. Mbaje shtypur butonin e lapsit për të fshirë."
   }
 }

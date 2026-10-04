@@ -1,0 +1,1424 @@
+{
+  "id": "fractions-calculations",
+  "version": 1,
+  "subject": "Math",
+  "title": "Calculate, simplify & check",
+  "subtitle": "A moving guide to longer fraction calculations",
+  "estimatedMinutes": 35,
+  "chapters": [
+    {
+      "title": "Adding three fractions",
+      "shape": "calculation",
+      "accent": "#5265ec",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Three fractions need one shared unit.",
+          "text": "Our calculation is one half plus one third plus one sixth. The strips represent the same size whole, but their pieces are different sizes. We cannot count halves, thirds, and sixths as if they were equal pieces. First find a denominator that all three fractions can use. Six is divisible by two, three, and six.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 1/3 + 1/6",
+                "note": "Use a common denominator of 6."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              },
+              {
+                "d": 3,
+                "n": 1,
+                "caption": "1/3"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "1/6"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Change the names, keep the amounts.",
+          "text": "Watch each half split into three sixths. Multiply both numbers of one half by three to make three sixths. Each third splits into two sixths, so multiply both numbers by two. One sixth already has the right denominator. The shaded amounts have not grown. Only the size and number of the pieces have changed.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 = 3/6",
+                "note": "Multiply top and bottom by 3."
+              },
+              {
+                "expression": "1/3 = 2/6",
+                "note": "Multiply top and bottom by 2."
+              },
+              {
+                "expression": "3/6 + 2/6 + 1/6",
+                "note": "All the pieces are sixths now."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 3,
+                "caption": "3/6"
+              },
+              {
+                "d": 6,
+                "n": 2,
+                "caption": "2/6"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "1/6"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Add the pieces, keep their size.",
+          "text": "The coloured pieces now arrive in three groups: three sixths, two sixths, and one sixth. Count the selected pieces: three plus two plus one is six. Keep the denominator six because every piece is still a sixth. Adding the denominators would invent smaller pieces that we never cut. Our total is six sixths.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/6 + 2/6 + 1/6",
+                "note": "Add 3 + 2 + 1, not 6 + 6 + 6."
+              },
+              {
+                "expression": "3/6 + 2/6 + 1/6 = 6/6",
+                "note": "Keep the common denominator."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "6/6",
+                "groups": [
+                  3,
+                  5,
+                  6
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Six sixths fill exactly one whole.",
+          "text": "Every piece in the strip is coloured, so six sixths equals one. Check the original calculation using size: one half and one third make five sixths, which is just short of a whole. The final sixth fills the gap exactly. A shared denominator helped us combine three fractions without changing any of their values.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 1/3 + 1/6 = 6/6",
+                "note": "All six parts are selected."
+              },
+              {
+                "expression": "6/6 = 1",
+                "note": "The result is one whole."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 2/3 + 1/4 + 1/12. Which result is correct?",
+          "options": [
+            "5/6",
+            "1",
+            "7/12",
+            "4/9",
+            "13/12",
+            "3/4"
+          ],
+          "answer": 1,
+          "explanation": "Use twelfths: 8/12 + 3/12 + 1/12 = 12/12 = 1.",
+          "calculation": {
+            "expression": "2/3 + 1/4 + 1/12",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 1/3 + 1/4 + 1/6 and simplify. Enter only the numerator of your answer.",
+          "answer": 3,
+          "unit": "",
+          "explanation": "4/12 + 3/12 + 2/12 = 9/12 = 3/4. The numerator is 3.",
+          "calculation": {
+            "expression": "1/3 + 1/4 + 1/6",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Subtracting in stages",
+      "shape": "calculation",
+      "accent": "#008e80",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Remove two amounts from seven eighths.",
+          "text": "Start with seven eighths. We want to take away one quarter, then one eighth. Subtraction moves from left to right when there are no brackets. Before taking anything away, make the pieces the same size. Eighths work for both denominators. A quarter is two eighths, not one eighth, because it covers two of the smaller pieces.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "7/8 − 1/4 − 1/8",
+                "note": "Work from left to right."
+              },
+              {
+                "expression": "1/4 = 2/8",
+                "note": "Rename the quarter as eighths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 7,
+                "caption": "7/8"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "First take away the quarter.",
+          "text": "Two coloured eighths fade away. They represent the quarter we are subtracting. Seven eighths minus two eighths leaves five eighths. The denominator remains eight because we are removing pieces, not changing their size. Keep the second subtraction visible. There is still one more eighth to remove, so five eighths is only an intermediate result.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "7/8 − 2/8 − 1/8",
+                "note": "The quarter removes two pieces."
+              },
+              {
+                "expression": "7/8 − 2/8 = 5/8",
+                "note": "One subtraction still remains."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 7,
+                "caption": "5/8",
+                "removeFrom": 5
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Now remove one more eighth.",
+          "text": "Start with the five eighths left after the first subtraction. Remove one more coloured piece. Five minus one leaves four, so the answer is four eighths. You can also combine the amounts removed: two eighths plus one eighth is three eighths. Taking three eighths from seven eighths gives the same four eighths.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/8 − 1/8 = 4/8",
+                "note": "Remove the final eighth."
+              },
+              {
+                "expression": "7/8 − 3/8 = 4/8",
+                "note": "Check by combining what was removed."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 5,
+                "caption": "4/8",
+                "removeFrom": 4
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Four eighths are the same as one half.",
+          "text": "Divide the numerator and denominator of four eighths by four. The simplest form is one half. The strip confirms it: exactly half is still coloured. Check by adding the removed parts back. One half plus one quarter plus one eighth makes seven eighths, our starting amount. This reverse check helps catch a missed subtraction.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "4/8 = 1/2",
+                "note": "Divide both numbers by 4."
+              },
+              {
+                "expression": "1/2 + 1/4 + 1/8 = 7/8",
+                "note": "Adding back checks the subtraction."
+              }
+            ],
+            "bars": [
+              {
+                "d": 8,
+                "n": 4,
+                "caption": "1/2"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 11/12 − 1/3 − 1/4.",
+          "options": [
+            "1/4",
+            "5/12",
+            "1/3",
+            "1/2",
+            "2/3",
+            "1/12"
+          ],
+          "answer": 2,
+          "explanation": "11/12 − 4/12 − 3/12 = 4/12 = 1/3.",
+          "calculation": {
+            "expression": "11/12 − 1/3 − 1/4",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 9/10 − 1/5 − 1/10. Simplify and enter only the numerator.",
+          "answer": 3,
+          "unit": "",
+          "explanation": "9/10 − 2/10 − 1/10 = 6/10 = 3/5. The numerator is 3.",
+          "calculation": {
+            "expression": "9/10 − 1/5 − 1/10",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Addition and subtraction together",
+      "shape": "calculation",
+      "accent": "#c06924",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Keep every sign with its fraction.",
+          "text": "Calculate five sixths plus three quarters minus one half. All three terms need a common denominator. Twelve is divisible by six, four, and two. Notice the signs: the first two amounts are added, but the last is taken away. Copying the minus sign correctly matters just as much as converting the numbers correctly.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 + 3/4 − 1/2",
+                "note": "Twelve works for all three denominators."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6"
+              },
+              {
+                "d": 4,
+                "n": 3,
+                "caption": "3/4"
+              },
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Rewrite everything as twelfths.",
+          "text": "Multiply both numbers of five sixths by two to get ten twelfths. Multiply three quarters by three over three to get nine twelfths. Multiply one half by six over six to get six twelfths. Each conversion uses the same factor on top and bottom, so every amount keeps its original value.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 = 10/12",
+                "note": "Multiply by 2/2."
+              },
+              {
+                "expression": "3/4 = 9/12",
+                "note": "Multiply by 3/3."
+              },
+              {
+                "expression": "1/2 = 6/12",
+                "note": "Multiply by 6/6."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 10,
+                "caption": "10/12"
+              },
+              {
+                "d": 12,
+                "n": 9,
+                "caption": "9/12"
+              },
+              {
+                "d": 12,
+                "n": 6,
+                "caption": "6/12"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "The sum can be larger than one.",
+          "text": "Add ten twelfths and nine twelfths first. Nineteen twelfths needs more than one whole, so the strip extends past its first whole boundary. Now remove six twelfths. Nineteen minus six is thirteen. Our answer is thirteen twelfths. A numerator larger than the denominator is allowed; it means the value is greater than one.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "10/12 + 9/12 = 19/12",
+                "note": "Combine the positive amounts first."
+              },
+              {
+                "expression": "19/12 − 6/12 = 13/12",
+                "note": "Then subtract six twelfths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 19,
+                "caption": "13/12",
+                "removeFrom": 13
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "One whole and one extra twelfth.",
+          "text": "Thirteen and twelve have no common factor greater than one, so thirteen twelfths is already simplified. Split it into twelve twelfths plus one twelfth. That is one whole and one twelfth, a mixed number. Both forms describe the same final amount. Keep improper fractions while calculating and choose the final form requested by the question.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "13/12 = 12/12 + 1/12",
+                "note": "Separate one complete whole."
+              },
+              {
+                "expression": "13/12 = 1 + 1/12",
+                "note": "Improper and mixed forms have equal value."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 13,
+                "caption": "13/12"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 3/4 + 5/6 − 1/3. Give the simplest fraction.",
+          "options": [
+            "7/6",
+            "1",
+            "5/12",
+            "5/4",
+            "4/3",
+            "11/12"
+          ],
+          "answer": 3,
+          "explanation": "9/12 + 10/12 − 4/12 = 15/12 = 5/4.",
+          "calculation": {
+            "expression": "3/4 + 5/6 − 1/3",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 2/3 + 3/4 − 1/6. Simplify and enter only the denominator.",
+          "answer": 4,
+          "unit": "",
+          "explanation": "8/12 + 9/12 − 2/12 = 15/12 = 5/4. The denominator is 4.",
+          "calculation": {
+            "expression": "2/3 + 3/4 − 1/6",
+            "component": "denominator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Calculating with mixed numbers",
+      "shape": "calculation",
+      "accent": "#b45087",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Turn mixed numbers into improper fractions.",
+          "text": "Work out one and one half plus two and two thirds minus three quarters. Convert the mixed numbers before combining them. One and one half is three halves: one times two plus one gives three. Two and two thirds is eight thirds: two times three plus two gives eight. Keep each original denominator.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1 + 1/2 = 3/2",
+                "note": "One whole contains two halves."
+              },
+              {
+                "expression": "2 + 2/3 = 8/3",
+                "note": "Two wholes contain six thirds."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 3,
+                "caption": "3/2"
+              },
+              {
+                "d": 3,
+                "n": 8,
+                "caption": "8/3"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Use twelfths for the whole calculation.",
+          "text": "Our new expression is three halves plus eight thirds minus three quarters. Twelve is a common denominator. Three halves becomes eighteen twelfths. Eight thirds becomes thirty-two twelfths. Three quarters becomes nine twelfths. Even with large numerators, the rule is unchanged: multiply top and bottom by the same factor and keep the operation signs.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/2 + 8/3 − 3/4",
+                "note": "Keep the same plus and minus signs."
+              },
+              {
+                "expression": "18/12 + 32/12 − 9/12",
+                "note": "All three amounts are in twelfths."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Combine the numerators carefully.",
+          "text": "Add eighteen and thirty-two to get fifty. Then subtract nine to get forty-one. The denominator stays twelve throughout. Forty-one twelfths is our result, and forty-one and twelve have no common factor greater than one. Do not add the denominators or subtract the whole-number parts separately now; the improper fractions already include those wholes.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "18/12 + 32/12 = 50/12",
+                "note": "18 + 32 = 50."
+              },
+              {
+                "expression": "50/12 − 9/12 = 41/12",
+                "note": "50 − 9 = 41."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 41,
+                "caption": "41/12"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Convert the answer back if needed.",
+          "text": "Three complete wholes account for thirty-six twelfths. Subtract thirty-six from forty-one and five twelfths remain. The mixed answer is three and five twelfths. Estimate the starting calculation: one and a half plus about two and two thirds, minus three quarters, should be a little more than three. Our exact answer fits that estimate.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "41/12 = 36/12 + 5/12",
+                "note": "Three wholes use 36 twelfths."
+              },
+              {
+                "expression": "41/12 = 3 + 5/12",
+                "note": "The remainder is five twelfths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 41,
+                "caption": "3 + 5/12"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 1 2/3 + 2 1/4 − 5/6. Choose the simplest improper fraction.",
+          "options": [
+            "25/12",
+            "37/12",
+            "43/12",
+            "49/12",
+            "35/12",
+            "41/12"
+          ],
+          "answer": 1,
+          "explanation": "5/3 + 9/4 − 5/6 = 20/12 + 27/12 − 10/12 = 37/12.",
+          "calculation": {
+            "expression": "5/3 + 9/4 − 5/6",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 2 1/2 − 3/4 + 1 1/3. Write an improper fraction in simplest form and enter its numerator.",
+          "answer": 37,
+          "unit": "",
+          "explanation": "5/2 − 3/4 + 4/3 = 30/12 − 9/12 + 16/12 = 37/12. The numerator is 37.",
+          "calculation": {
+            "expression": "5/2 − 3/4 + 4/3",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Multiplying three fractions",
+      "shape": "calculation",
+      "accent": "#247dc0",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "multiply",
+          "headline": "A fraction of a fraction is a product.",
+          "text": "Calculate three quarters times two thirds times five sixths. Multiplication means taking a fraction of an amount. First consider two thirds of three quarters. The grid divides one whole into four columns and three rows. Three columns show three quarters. Two rows show two thirds. Their overlap represents the product of the first two fractions.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 × 2/3 × 5/6",
+                "note": "Multiply, rather than match denominators."
+              },
+              {
+                "expression": "3/4 × 2/3 = 6/12",
+                "note": "The overlap covers 6 of 12 cells."
+              }
+            ],
+            "grid": {
+              "cols": 4,
+              "rows": 3,
+              "selectedCols": 3,
+              "selectedRows": 2,
+              "caption": "6/12 = 1/2"
+            }
+          }
+        },
+        {
+          "mode": "multiply",
+          "headline": "Multiply all tops and all bottoms.",
+          "text": "For three fractions, multiply the three numerators together: three times two times five is thirty. Multiply the three denominators together: four times three times six is seventy-two. The unsimplified product is thirty over seventy-two. Unlike addition, multiplication does not need equal denominators. The grid helps explain why the denominators are multiplied.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 × 2/3 × 5/6 = 30/72",
+                "note": "Top: 3 × 2 × 5. Bottom: 4 × 3 × 6."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Simplify the first product to make less work.",
+          "text": "There is a shorter route. Three quarters times two thirds equals six twelfths, which simplifies to one half. Now multiply one half by five sixths. One times five is five, and two times six is twelve. The final product is five twelfths. Simplifying an intermediate result keeps later arithmetic smaller without changing the answer.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 × 2/3 = 1/2",
+                "note": "Simplify 6/12 before continuing."
+              },
+              {
+                "expression": "1/2 × 5/6 = 5/12",
+                "note": "Then multiply by the third fraction."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 5,
+                "caption": "5/12"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Check whether the size makes sense.",
+          "text": "All three factors are positive and less than one. Taking part of a part must make the amount smaller. Five twelfths is smaller than three quarters, two thirds, and five sixths, so the size is sensible. We can also simplify thirty over seventy-two by dividing both numbers by six. It gives the same five twelfths.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "30/72 = 5/12",
+                "note": "Divide both numbers by 6."
+              },
+              {
+                "expression": "3/4 × 2/3 × 5/6 = 5/12",
+                "note": "Both calculation routes agree."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 5,
+                "caption": "5/12"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 2/3 × 3/5 × 5/8.",
+          "options": [
+            "1/8",
+            "2/15",
+            "3/8",
+            "5/12",
+            "1/4",
+            "2/3"
+          ],
+          "answer": 4,
+          "explanation": "The product is 30/120. Divide both numbers by 30 to get 1/4.",
+          "calculation": {
+            "expression": "2/3 × 3/5 × 5/8",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 5/6 × 3/10 × 4/5. Simplify and enter only the denominator.",
+          "answer": 5,
+          "unit": "",
+          "explanation": "60/300 = 1/5. The denominator is 5.",
+          "calculation": {
+            "expression": "5/6 × 3/10 × 4/5",
+            "component": "denominator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Cancel before multiplying",
+      "shape": "calculation",
+      "accent": "#a36a20",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Large products can hide a simple answer.",
+          "text": "Our expression is eight fifteenths times nine sixteenths times five sixths. Multiplying immediately would give three hundred sixty over one thousand four hundred forty. Those numbers are correct but awkward. We can divide a numerator and a denominator by a shared factor before multiplying. Only use this shortcut across factors in a product.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "8/15 × 9/16 × 5/6",
+                "note": "Look for shared factors across top and bottom."
+              },
+              {
+                "expression": "8/15 × 9/16 × 5/6 = 360/1440",
+                "note": "We can avoid these large numbers."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "cancel",
+          "headline": "Cancel the eight and the five.",
+          "text": "Divide the numerator eight and the denominator sixteen by eight. They become one and two. Next divide the numerator five and the denominator fifteen by five. They become one and three. We have removed matching factors from the top and bottom of the entire product. The value stays the same because each change divides both totals equally.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "8/15 × 9/16 × 5/6",
+                "note": "8 and 16 share a factor of 8."
+              },
+              {
+                "expression": "1/15 × 9/2 × 5/6",
+                "note": "5 and 15 share a factor of 5."
+              },
+              {
+                "expression": "1/3 × 9/2 × 1/6",
+                "note": "The product is unchanged."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "cancel",
+          "headline": "Finish cancelling, then multiply.",
+          "text": "Nine on top and three on the bottom share a factor of three. Replace them by three and one. Now three on top and six on the bottom share a factor of three. Replace them by one and two. The remaining product is one times one times one over one times two times two. That is one quarter.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/3 × 9/2 × 1/6 = 1/1 × 3/2 × 1/6",
+                "note": "Divide 9 and 3 by 3."
+              },
+              {
+                "expression": "1/1 × 1/2 × 1/2 = 1/4",
+                "note": "Divide 3 and 6 by 3, then multiply."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 1,
+                "caption": "1/4"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Cancellation works for products, not sums.",
+          "text": "Check our result by simplifying the large fraction: three hundred sixty divided by one thousand four hundred forty is one quarter. Cancellation produced the same answer with less work. Remember its limit: you cannot cancel a number across an addition or subtraction sign. First complete a sum in brackets, then treat its result as a factor.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "360/1440 = 1/4",
+                "note": "Both methods produce one quarter."
+              },
+              {
+                "expression": "8/15 × 9/16 × 5/6 = 1/4",
+                "note": "Cancel common factors only in products."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 1,
+                "caption": "1/4"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Use cancellation to calculate 14/15 × 5/21 × 9/10.",
+          "options": [
+            "1/3",
+            "3/5",
+            "2/5",
+            "1/7",
+            "2/7",
+            "1/5"
+          ],
+          "answer": 5,
+          "explanation": "Cancel common factors or simplify 630/3150. The result is 1/5.",
+          "calculation": {
+            "expression": "14/15 × 5/21 × 9/10",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 16/21 × 7/8 × 3/10. Simplify and enter only the numerator.",
+          "answer": 1,
+          "unit": "",
+          "explanation": "Cancel 16 with 8, 7 with 21, and 3 with the remaining 3. The result is 2/10 = 1/5.",
+          "calculation": {
+            "expression": "16/21 × 7/8 × 3/10",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Dividing by a fraction",
+      "shape": "calculation",
+      "accent": "#7961ca",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "plan",
+          "headline": "Division asks how many groups fit.",
+          "text": "Five sixths divided by two thirds asks how many groups of two thirds fit into five sixths. Rewrite two thirds as four sixths so you can see the group size. One complete group uses four shaded sixths. One shaded sixth remains. That leftover piece is one quarter of a group, because each group contains four sixths.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 ÷ 2/3",
+                "note": "How many groups of 2/3 fit?"
+              },
+              {
+                "expression": "2/3 = 4/6",
+                "note": "Each group contains four sixths."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6",
+                "group": 4,
+                "groupLabel": "2/3"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Keep the first fraction; flip the divisor.",
+          "text": "The reciprocal of two thirds is three halves. Switch division to multiplication and use that reciprocal. Five sixths stays five sixths. The new calculation is five sixths times three halves. Only the divisor is inverted. Flipping both fractions, or keeping division after flipping, would solve a different calculation.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/6 ÷ 2/3 = 5/6 × 3/2",
+                "note": "Only the divisor becomes its reciprocal."
+              },
+              {
+                "expression": "5/6 × 3/2 = 15/12",
+                "note": "Now use ordinary multiplication."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "The answer counts one and a quarter groups.",
+          "text": "Simplify fifteen twelfths by dividing both numbers by three. The result is five quarters, or one and one quarter. This matches the group diagram: one full group and one quarter of another. Although the original amount is less than one whole, the answer is greater than one because we are counting groups smaller than a whole.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "15/12 = 5/4",
+                "note": "Divide top and bottom by 3."
+              },
+              {
+                "expression": "5/4 = 1 + 1/4",
+                "note": "One complete group, plus a quarter group."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 5,
+                "caption": "5/4"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Multiply back to check a division.",
+          "text": "Multiply our answer five quarters by the divisor two thirds. Ten twelfths simplifies to five sixths, the starting amount. That is a useful check for division: answer times divisor should equal the dividend. Also compare sizes. Dividing by a positive fraction smaller than one increases the numerical value, so five quarters is a reasonable answer.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "5/4 × 2/3 = 10/12 = 5/6",
+                "note": "Answer × divisor = starting amount."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 7/8 ÷ 7/12.",
+          "options": [
+            "2/3",
+            "3/2",
+            "7/8",
+            "49/96",
+            "1/2",
+            "7/12"
+          ],
+          "answer": 1,
+          "explanation": "7/8 × 12/7 = 12/8 = 3/2. Flip only 7/12.",
+          "calculation": {
+            "expression": "7/8 ÷ 7/12",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 4/5 ÷ 2/3. Simplify and enter only the numerator.",
+          "answer": 6,
+          "unit": "",
+          "explanation": "4/5 × 3/2 = 12/10 = 6/5. The numerator is 6.",
+          "calculation": {
+            "expression": "4/5 ÷ 2/3",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "More than one division",
+      "shape": "calculation",
+      "accent": "#5265ec",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "order",
+          "headline": "Consecutive divisions go from left to right.",
+          "text": "Calculate three quarters divided by one half, then divided by three halves. Two division signs have the same priority, so start on the left. First divide three quarters by one half. Do not combine the two divisors with a new division inside imaginary brackets. Changing the grouping can change the answer.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 ÷ 1/2 ÷ 3/2",
+                "note": "Start with the left-hand division."
+              },
+              {
+                "expression": "( 3/4 ÷ 1/2 ) ÷ 3/2",
+                "note": "These brackets show the original order."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Complete the first division.",
+          "text": "The reciprocal of one half is two. Multiply three quarters by two to get six quarters, which simplifies to three halves. This is the intermediate result. Keep the last division sign and its divisor attached. We still need to divide the three halves we found by the final three halves.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 ÷ 1/2 = 3/4 × 2/1",
+                "note": "Use the reciprocal of one half."
+              },
+              {
+                "expression": "3/4 × 2/1 = 3/2",
+                "note": "Carry 3/2 into the next division."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 3,
+                "caption": "3/2"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Use the next reciprocal, then simplify.",
+          "text": "Now divide three halves by three halves. Replace the second three halves with its reciprocal, two thirds, and multiply. The product is six sixths, which equals one. Dividing a nonzero amount by itself gives one. We used two reciprocals in two steps, and each one belonged to its own divisor.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/2 ÷ 3/2 = 3/2 × 2/3",
+                "note": "Flip the second divisor."
+              },
+              {
+                "expression": "3/2 × 2/3 = 6/6 = 1",
+                "note": "Equal nonzero amounts divide to one."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "1"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "A chain can become one product.",
+          "text": "There is an equivalent compact method. Keep the first fraction, and multiply by the reciprocal of each later divisor. Three quarters times two times two thirds is one. This agrees with our left-to-right work. The first fraction was never inverted. When multiplication and division occur together without brackets, process them from left to right.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 ÷ 1/2 ÷ 3/2 = 3/4 × 2/1 × 2/3",
+                "note": "Invert each divisor, not the starting fraction."
+              },
+              {
+                "expression": "3/4 × 2/1 × 2/3 = 1",
+                "note": "The full chain gives one."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 4,
+                "caption": "1"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 2/3 ÷ 4/9 ÷ 3/2 from left to right.",
+          "options": [
+            "1/2",
+            "2/3",
+            "1",
+            "3/2",
+            "9/4",
+            "4/9"
+          ],
+          "answer": 2,
+          "explanation": "2/3 × 9/4 = 3/2. Then 3/2 × 2/3 = 1.",
+          "calculation": {
+            "expression": "2/3 ÷ 4/9 ÷ 3/2",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 5/6 ÷ 5/12 ÷ 4/3. Simplify and enter only the denominator.",
+          "answer": 2,
+          "unit": "",
+          "explanation": "The first division gives 2. Then 2 × 3/4 = 3/2. The denominator is 2.",
+          "calculation": {
+            "expression": "5/6 ÷ 5/12 ÷ 4/3",
+            "component": "denominator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Choosing the right order",
+      "shape": "calculation",
+      "accent": "#008e80",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "order",
+          "headline": "Multiplication comes before addition.",
+          "text": "Consider one half plus two thirds times three quarters minus one sixth. This time we cannot simply calculate every sign from left to right. Multiplication and division come before addition and subtraction. Identify the product in the middle: two thirds times three quarters. Leave the first half and the final subtraction untouched until that product is complete.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 2/3 × 3/4 − 1/6",
+                "note": "Find the multiplication before adding."
+              },
+              {
+                "expression": "2/3 × 3/4 = 1/2",
+                "note": "Compute only the product first."
+              }
+            ],
+            "grid": {
+              "cols": 3,
+              "rows": 4,
+              "selectedCols": 2,
+              "selectedRows": 3,
+              "caption": "6/12 = 1/2"
+            }
+          }
+        },
+        {
+          "mode": "calculate",
+          "headline": "Replace the product with its result.",
+          "text": "Two thirds times three quarters equals six twelfths, or one half. Put this result back into the original expression. It now reads one half plus one half minus one sixth. We have reduced a four-term-looking calculation to three quantities. Rewriting the entire expression after each step helps prevent dropping a term or changing a sign.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 2/3 × 3/4 − 1/6",
+                "note": "Replace just the multiplication."
+              },
+              {
+                "expression": "1/2 + 1/2 − 1/6",
+                "note": "The plus and minus signs stay in place."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 3,
+                "caption": "3/6"
+              },
+              {
+                "d": 6,
+                "n": 3,
+                "caption": "3/6"
+              },
+              {
+                "d": 6,
+                "n": 1,
+                "caption": "1/6"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "convert",
+          "headline": "Now combine the remaining sixths.",
+          "text": "Each half is three sixths. Our remaining expression becomes three sixths plus three sixths minus one sixth. Add the two halves to make six sixths, then remove one sixth. Five sixths remain. Six is the common denominator for this stage. We only needed that common denominator after finishing the multiplication.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/6 + 3/6 − 1/6",
+                "note": "Use sixths for addition and subtraction."
+              },
+              {
+                "expression": "6/6 − 1/6 = 5/6",
+                "note": "Take one sixth away from the whole."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 6,
+                "caption": "5/6",
+                "removeFrom": 5
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Use an order checklist every time.",
+          "text": "The result is five sixths. Follow this order for any longer expression: brackets first; multiplication and division next, from left to right; addition and subtraction last, from left to right. Simplify when useful and check the size at the end. Here one half plus another half makes one whole, so removing a sixth should leave just under one.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "1/2 + 2/3 × 3/4 − 1/6 = 5/6",
+                "note": "Brackets → multiply/divide → add/subtract."
+              }
+            ],
+            "bars": [
+              {
+                "d": 6,
+                "n": 5,
+                "caption": "5/6"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate 1/3 + 3/4 × 2/3 − 1/6.",
+          "options": [
+            "1/3",
+            "1/2",
+            "5/6",
+            "2/3",
+            "7/12",
+            "1"
+          ],
+          "answer": 3,
+          "explanation": "Multiply first: 3/4 × 2/3 = 1/2. Then 2/6 + 3/6 − 1/6 = 4/6 = 2/3.",
+          "calculation": {
+            "expression": "1/3 + 3/4 × 2/3 − 1/6",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate 3/4 − 1/2 × 2/3 + 1/6. Simplify and enter only the numerator.",
+          "answer": 7,
+          "unit": "",
+          "explanation": "Multiply first to get 1/3. Then 9/12 − 4/12 + 2/12 = 7/12. The numerator is 7.",
+          "calculation": {
+            "expression": "3/4 − 1/2 × 2/3 + 1/6",
+            "component": "numerator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The four-operation challenge",
+      "shape": "calculation",
+      "accent": "#c06924",
+      "checkpointRevision": 1,
+      "legacyQuestionIndex": 0,
+      "cues": [
+        {
+          "mode": "brackets",
+          "headline": "One expression uses all four operations.",
+          "text": "Our final challenge is three quarters plus one sixth in brackets, divided by five sixths minus one half in brackets, then multiplied by two elevenths. It includes addition, subtraction, division, and multiplication. Start with the two brackets. They each become one fraction. Do not cancel a number inside a sum with a number outside its bracket.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "( 3/4 + 1/6 ) ÷ ( 5/6 − 1/2 ) × 2/11",
+                "note": "Resolve both brackets before dividing."
+              }
+            ]
+          }
+        },
+        {
+          "mode": "brackets",
+          "headline": "Solve each bracket with equal pieces.",
+          "text": "For the first bracket, use twelfths. Three quarters is nine twelfths and one sixth is two twelfths, so their sum is eleven twelfths. For the second bracket, use sixths. Five sixths minus three sixths is two sixths, or one third. We now have eleven twelfths divided by one third, then multiplied by two elevenths.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "3/4 + 1/6 = 9/12 + 2/12 = 11/12",
+                "note": "The first bracket adds two amounts."
+              },
+              {
+                "expression": "5/6 − 1/2 = 5/6 − 3/6 = 1/3",
+                "note": "The second bracket subtracts an amount."
+              },
+              {
+                "expression": "11/12 ÷ 1/3 × 2/11",
+                "note": "Now work from left to right."
+              }
+            ],
+            "bars": [
+              {
+                "d": 12,
+                "n": 11,
+                "caption": "11/12"
+              },
+              {
+                "d": 6,
+                "n": 2,
+                "caption": "1/3"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "divide",
+          "headline": "Divide, then multiply the remaining factor.",
+          "text": "The reciprocal of one third is three. Eleven twelfths times three is thirty-three twelfths, or eleven quarters. Now multiply eleven quarters by two elevenths. Cancel the eleven on top with the eleven on the bottom. The remaining two quarters simplifies to one half. Each sign was used exactly once, in the correct order.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "11/12 ÷ 1/3 = 11/12 × 3/1 = 11/4",
+                "note": "Flip the divisor and simplify."
+              },
+              {
+                "expression": "11/4 × 2/11 = 2/4 = 1/2",
+                "note": "Cancel 11, then simplify the result."
+              }
+            ],
+            "bars": [
+              {
+                "d": 4,
+                "n": 2,
+                "caption": "1/2"
+              }
+            ]
+          }
+        },
+        {
+          "mode": "simplify",
+          "headline": "Explain the route, not just the answer.",
+          "text": "The final answer is one half. Before the checkpoint, explain the route aloud: find common denominators inside brackets, finish the brackets, multiply by the reciprocal for division, cancel common factors in products, and simplify. Longer fraction calculations use the same small rules in a careful order. Write intermediate steps so each move can be checked.",
+          "seconds": 40,
+          "model": {
+            "steps": [
+              {
+                "expression": "( 3/4 + 1/6 ) ÷ ( 5/6 − 1/2 ) × 2/11",
+                "note": "All four operations, in the right order."
+              },
+              {
+                "expression": "11/12 × 3/1 × 2/11 = 1/2",
+                "note": "Your complete result is one half."
+              }
+            ],
+            "bars": [
+              {
+                "d": 2,
+                "n": 1,
+                "caption": "1/2"
+              }
+            ]
+          }
+        }
+      ],
+      "questions": [
+        {
+          "type": "choice",
+          "prompt": "Calculate (2/3 + 1/6) ÷ (3/4 − 1/4) × 3/5.",
+          "options": [
+            "1/2",
+            "5/6",
+            "3/2",
+            "2/3",
+            "1",
+            "5/3"
+          ],
+          "answer": 4,
+          "explanation": "The brackets give 5/6 and 1/2. Then 5/6 × 2/1 × 3/5 = 1.",
+          "calculation": {
+            "expression": "(2/3 + 1/6) ÷ (3/4 − 1/4) × 3/5",
+            "component": "fraction"
+          }
+        },
+        {
+          "type": "number",
+          "prompt": "Calculate (1/2 + 1/3) ÷ (3/4 − 1/4) × 3/10. Simplify and enter only the numerator.",
+          "answer": 1,
+          "unit": "",
+          "explanation": "The brackets give 5/6 and 1/2. Then 5/6 × 2 × 3/10 = 1/2. The numerator is 1.",
+          "calculation": {
+            "expression": "(1/2 + 1/3) ÷ (3/4 − 1/4) × 3/10",
+            "component": "numerator"
+          }
+        }
+      ]
+    }
+  ]
+}

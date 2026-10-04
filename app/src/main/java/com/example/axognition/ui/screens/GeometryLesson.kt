@@ -11,6 +11,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.view.inputmethod.InputMethodManager
+import android.view.MotionEvent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.material3.*
@@ -174,7 +175,42 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
         AndroidView(
             modifier = Modifier.fillMaxWidth().weight(1f),
             factory = {
-                WebView(it).apply {
+                object : WebView(it) {
+                    private var stylusErasing = false
+
+                    // Forward Android stylus buttons as well as the browser's pen events.
+                    // Some WebView versions do not expose the side button in PointerEvent.buttons.
+                    private fun updateStylusButton(event: MotionEvent) {
+                        val erasing = (0 until event.pointerCount).any { pointer ->
+                            event.getToolType(pointer) == MotionEvent.TOOL_TYPE_ERASER ||
+                                event.getToolType(pointer) == MotionEvent.TOOL_TYPE_STYLUS &&
+                                event.buttonState and (MotionEvent.BUTTON_STYLUS_PRIMARY or
+                                    MotionEvent.BUTTON_STYLUS_SECONDARY) != 0
+                        }
+                        if (stylusErasing != erasing) {
+                            stylusErasing = erasing
+                            evaluateJavascript("window.geometryStylusEraser=$erasing;", null)
+                        }
+                    }
+
+                    override fun onTouchEvent(event: MotionEvent): Boolean {
+                        // Keep native parents from intercepting a handwriting stroke.
+                        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                            parent?.requestDisallowInterceptTouchEvent(true)
+                        }
+                        updateStylusButton(event)
+                        val handled = super.onTouchEvent(event)
+                        if (event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                            parent?.requestDisallowInterceptTouchEvent(false)
+                        }
+                        return handled
+                    }
+
+                    override fun onGenericMotionEvent(event: MotionEvent): Boolean {
+                        updateStylusButton(event)
+                        return super.onGenericMotionEvent(event)
+                    }
+                }.apply {
                     setBackgroundColor(background.toArgb())
                     settings.javaScriptEnabled = true
                     settings.useWideViewPort = true

@@ -2,7 +2,6 @@ package com.example.axognition
 
 import com.example.axognition.ui.tr
 
-import android.content.res.Configuration
 import android.content.Context
 import com.example.axognition.ui.AppLanguage
 import android.os.Bundle
@@ -10,19 +9,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -36,18 +28,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.rememberTextMeasurer
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
@@ -58,6 +44,8 @@ import com.example.axognition.ui.theme.AxognitionTheme
 import com.example.axognition.ui.AssistantChatButton
 import com.example.axognition.ui.AssistantChatPanel
 import com.example.axognition.ui.ChildLoginScreen
+import com.example.axognition.ui.AppNavigationMenu
+import com.example.axognition.ui.DashboardScreen
 import com.example.axognition.ui.WakeWordAssistant
 import com.example.axognition.ui.VoiceListeningMode
 import com.example.axognition.ui.VoiceAssistantBubble
@@ -71,11 +59,10 @@ import androidx.compose.ui.graphics.TransformOrigin
 import com.example.axognition.data.ChildAuthApi
 import com.example.axognition.data.ChildSession
 import com.example.axognition.data.ChildSessionStore
+import com.example.axognition.data.AssistantConversationStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyGridState
 
 // Dashboard feature screens (remains in ui.screens)
 import com.example.axognition.ui.screens.BooksScreen
@@ -133,12 +120,6 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-data class DashboardItem(
-    val id: Int,
-    val title: String,
-    val icon: ImageVector
-)
-
 sealed class Screen(val route: String) {
     object Dashboard : Screen("dashboard")
     object Detail : Screen("detail")
@@ -194,30 +175,21 @@ private fun AuthenticatedMainApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val isDashboard = navBackStackEntry?.destination?.route == Screen.Dashboard.route
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    var lecturePlayerOpen by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     var assistantOpen by rememberSaveable { mutableStateOf(false) }
+    var assistantFullScreen by rememberSaveable { mutableStateOf(false) }
     var voiceListeningMode by rememberSaveable { mutableStateOf(VoiceListeningMode.OFF) }
     var chatAudioBusy by remember { mutableStateOf(false) }
     val chatContext = LocalContext.current
     val chatPreferences = remember(childSession.childId) {
         chatContext.getSharedPreferences("assistant_chat_${childSession.childId}", Context.MODE_PRIVATE)
     }
-    val chatMessages = remember(childSession.childId) {
-        mutableStateListOf<ChatMessage>().apply {
-            runCatching {
-                val saved = org.json.JSONArray(chatPreferences.getString("messages", "[]"))
-                for (index in 0 until saved.length()) {
-                    val message = saved.getJSONObject(index)
-                    add(ChatMessage(message.getString("text"), message.getBoolean("fromStudent")))
-                }
-            }
-        }
-    }
+    val conversationStore = remember(childSession.childId) { AssistantConversationStore(chatPreferences) }
+    val activeConversation = conversationStore.selected
+    val chatMessages = activeConversation.messages
     val appendChatMessage: (ChatMessage) -> Unit = { message ->
-        chatMessages.add(message)
-        val saved = org.json.JSONArray()
-        chatMessages.forEach { saved.put(org.json.JSONObject().put("text", it.text).put("fromStudent", it.fromStudent)) }
-        chatPreferences.edit().putString("messages", saved.toString()).apply()
+        conversationStore.append(activeConversation.id, message)
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -254,79 +226,26 @@ private fun AuthenticatedMainApp(
     }
     ModalNavigationDrawer(
         drawerState = drawerState,
+        // Handwritten calculations contain horizontal strokes, not menu gestures.
+        gesturesEnabled = !lecturePlayerOpen,
         drawerContent = {
-            ModalDrawerSheet {
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = tr("Axognition Menu"),
-                    modifier = Modifier.padding(16.dp),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
-                HorizontalDivider()
-
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = tr("Profile")) },
-                    label = { Text(tr("Profile")) },
-                    selected = false,
-                    onClick = {
+            ModalDrawerSheet(
+                modifier = Modifier.widthIn(max = 340.dp),
+                drawerContainerColor = MaterialTheme.colorScheme.surface
+            ) {
+                AppNavigationMenu(
+                    childName = childSession.displayName,
+                    currentRoute = navBackStackEntry?.destination?.route,
+                    darkMode = darkMode,
+                    onDarkModeChanged = onDarkModeChanged,
+                    onNavigate = { route ->
                         scope.launch { drawerState.close() }
-                        navController.navigate("panel_profile")
-                    }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = tr("Performance")) },
-                    label = { Text(tr("Performance")) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("panel_performance")
-                    }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Favorite, contentDescription = tr("Health")) },
-                    label = { Text(tr("Health")) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("panel_health")
-                    }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.DateRange, contentDescription = tr("Calendar")) },
-                    label = { Text(tr("Calendar")) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("panel_calendar")
-                    }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.CheckCircle, contentDescription = tr("Tasks")) },
-                    label = { Text(tr("Today's Tasks")) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("panel_tasks")
-                    }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.AccessTime, contentDescription = tr("Time")) },
-                    label = { Text(tr("Time")) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("panel_time")
-                    }
-                )
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = tr("Settings")) },
-                    label = { Text(tr("Settings")) },
-                    selected = false,
-                    onClick = {
-                        scope.launch { drawerState.close() }
-                        navController.navigate("panel_settings")
-                    }
+                        navController.navigate(route) {
+                            launchSingleTop = true
+                            if (route == Screen.Dashboard.route) popUpTo(Screen.Dashboard.route)
+                        }
+                    },
+                    onClose = { scope.launch { drawerState.close() } }
                 )
             }
         }
@@ -335,7 +254,8 @@ private fun AuthenticatedMainApp(
             modifier = Modifier.fillMaxSize(),
             topBar = {
                 if (isDashboard) TopAppBar(
-                    title = { Text(tr("${childSession.displayName}'s Axognition")) },
+                    title = { Text("Axognition", fontWeight = FontWeight.Bold) },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                     navigationIcon = {
                         IconButton(onClick = {
                             scope.launch { drawerState.open() }
@@ -343,6 +263,14 @@ private fun AuthenticatedMainApp(
                             Icon(
                                 imageVector = Icons.Default.Menu,
                                 contentDescription = tr("Open Navigation Drawer")
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { onDarkModeChanged(!darkMode) }) {
+                            Icon(
+                                if (darkMode) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                contentDescription = tr(if (darkMode) "Switch to light mode" else "Switch to dark mode")
                             )
                         }
                     }
@@ -404,7 +332,10 @@ private fun AuthenticatedMainApp(
                     HomeworksScreen(onBack = { navController.popBackStack() })
                 }
                 composable("${Screen.Detail.route}/Lectures") {
-                    LecturesScreen(onBack = { navController.popBackStack() })
+                    LecturesScreen(
+                        onBack = { navController.popBackStack() },
+                        onPlayerOpenChanged = { lecturePlayerOpen = it }
+                    )
                 }
                 composable("${Screen.Detail.route}/Map") {
                     MapScreen(onBack = { navController.popBackStack() })
@@ -419,6 +350,7 @@ private fun AuthenticatedMainApp(
         }
     }
         WakeWordAssistant(
+            conversationId = activeConversation.id,
             listeningMode = voiceListeningMode,
             suspended = chatAudioBusy,
             conversation = { chatMessages.toList() },
@@ -509,11 +441,24 @@ private fun AuthenticatedMainApp(
                 messages = chatMessages,
                 onMessage = appendChatMessage,
                 onDismiss = { assistantOpen = false },
+                fullScreen = assistantFullScreen,
+                onOpenFullScreen = { assistantFullScreen = true },
+                onExitFullScreen = { assistantFullScreen = false },
                 listeningMode = voiceListeningMode,
                 onListeningModeChange = { voiceListeningMode = it },
                 onVoiceInput = listenNow,
                 onAudioBusyChange = { chatAudioBusy = it },
-                voiceStatus = voiceBubble
+                voiceStatus = voiceBubble,
+                conversationId = activeConversation.id,
+                conversations = conversationStore.conversations,
+                onSelectConversation = { id ->
+                    dismissVoice()
+                    conversationStore.select(id)
+                },
+                onNewConversation = {
+                    dismissVoice()
+                    conversationStore.create()
+                }
             )
         }
     }
@@ -610,139 +555,5 @@ private fun VoiceResponseBubble(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun DashboardScreen(childName: String, modifier: Modifier = Modifier, onItemClick: (String) -> Unit) {
-    var items by remember {
-        mutableStateOf(
-            listOf(
-                DashboardItem(1, "Lectures", Icons.Default.Book),
-                DashboardItem(2, "Homeworks", Icons.Default.List),
-                DashboardItem(3, "Practice", Icons.Default.Create),
-                DashboardItem(4, "Test", Icons.Default.CheckCircle),
-                DashboardItem(5, "Courses", Icons.Default.LibraryBooks),
-                DashboardItem(6, "Books", Icons.Default.MenuBook),
-                DashboardItem(7, "Exersies", Icons.Default.FitnessCenter),
-                DashboardItem(8, "Games", Icons.Default.PlayArrow),
-                DashboardItem(9, "Call-Messages", Icons.Default.Message),
-                DashboardItem(10, "Map", Icons.Default.LocationOn)
-            )
-        )
-    }
-
-    val lazyGridState = rememberLazyGridState()
-    val haptic = LocalHapticFeedback.current
-
-    val reorderableLazyGridState = rememberReorderableLazyGridState(lazyGridState) { from, to ->
-        items = items.toMutableList().apply {
-            add(to.index, removeAt(from.index))
-        }
-        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-    }
-
-    val configuration = LocalConfiguration.current
-    val columnCount = if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 5 else 3
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = tr("Welcome back, $childName"),
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 4.dp)
-        )
-
-        Text(
-            text = tr("Long-press and drag cards to rearrange"),
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(columnCount),
-            state = lazyGridState,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(
-                items = items,
-                key = { it.id }
-            ) { item ->
-                ReorderableItem(reorderableLazyGridState, key = item.id) { isDragging ->
-                    val elevation = if (isDragging) 12.dp else 2.dp
-
-                    val scale by animateFloatAsState(
-                        targetValue = if (isDragging) 0.92f else 1f,
-                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                        label = "cardScale"
-                    )
-
-                    val currentModifier = Modifier
-                        .fillMaxWidth()
-                        .longPressDraggableHandle()
-                        .scale(scale)
-
-                    DashboardCard(
-                        item = item,
-                        elevation = elevation,
-                        modifier = currentModifier
-                    ) {
-                        onItemClick(item.title)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun DashboardCard(
-    item: DashboardItem,
-    elevation: androidx.compose.ui.unit.Dp,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .height(110.dp)
-            .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = elevation)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Icon(
-                imageVector = item.icon,
-                contentDescription = tr(item.title),
-                modifier = Modifier.size(36.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = tr(item.title),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
-        }
-    }
-}
-
-@Preview(showBackground = true, widthDp = 800, heightDp = 600)
-@Composable
-fun DashboardPreview() {
-    AxognitionTheme(darkTheme = false) {
-        MainApp(darkMode = false, onDarkModeChanged = {})
     }
 }

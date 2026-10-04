@@ -176,6 +176,7 @@ function resetAttempt(){
   if(!sessionId){sessionId=activityId();eventSequence=0;}
   trackActivity('reset');
   chapter=0;cue=0;seconds=0;questionIndex=0;inCheckpoint=false;questionAnswers={};attemptedAnswers={};answers={};completedSlides={};completedAt=null;attemptStarted=false;reviewing=false;generation++;
+  calculationPad.reset();
   save();return true;
 }
 function finalizeAttempt(){
@@ -563,6 +564,88 @@ function beginLesson(review) {
   renderCue();
   save();
 }
+// Scratch work stays in memory per question. It is not an answer or an analytics event.
+const calculationPad=(()=> {
+  const canvas=$('calculationCanvas'),ctx=canvas?.getContext?.('2d');
+  if(!ctx)return {open(){},reset(){}};
+  const paper=canvas.parentElement;
+  const work=new Map();
+  let operations=[],key='',tool='pen',pointer=null,last=null,lastPenAt=0;
+  let width=0,height=0,ratio=1;
+  function draw(op) {
+    ctx.globalCompositeOperation=op.erase?'destination-out':'source-over';
+    ctx.strokeStyle=ctx.fillStyle=getComputedStyle(canvas).getPropertyValue('--ink').trim();
+    ctx.lineWidth=op.thickness;ctx.lineCap=ctx.lineJoin='round';
+    const x=op.to.x*width,y=op.to.y*height;
+    if(op.from) {
+      ctx.beginPath();ctx.moveTo(op.from.x*width,op.from.y*height);ctx.lineTo(x,y);ctx.stroke();
+    } else {
+      ctx.beginPath();ctx.arc(x,y,op.thickness/2,0,Math.PI*2);ctx.fill();
+    }
+  }
+  function redraw() {
+    ctx.clearRect(0,0,width,height);
+    operations.forEach(draw);
+    ctx.globalCompositeOperation='source-over';
+  }
+  function resize() {
+    const rect=canvas.getBoundingClientRect();
+    if(rect.width<1||rect.height<1)return;
+    width=rect.width;height=rect.height;ratio=Math.min(devicePixelRatio||1,3);
+    canvas.width=Math.round(width*ratio);canvas.height=Math.round(height*ratio);
+    ctx.setTransform(ratio,0,0,ratio,0,0);redraw();
+  }
+  function select(selected) {
+    tool=selected;
+    $('padPen').setAttribute('aria-pressed',String(tool==='pen'));
+    $('padEraser').setAttribute('aria-pressed',String(tool==='eraser'));
+    canvas.classList.toggle('erasing',tool==='eraser');
+  }
+  function append(event) {
+    const rect=canvas.getBoundingClientRect();
+    const point={x:Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width)),
+      y:Math.max(0,Math.min(1,(event.clientY-rect.top)/rect.height))};
+    // Pen barrel button and flipped eraser: Pointer Events + Android fallback.
+    const erase=tool==='eraser'||event.pointerType==='pen'&&
+      (Boolean(event.buttons&34)||event.button===2||event.button===5||window.geometryStylusEraser===true);
+    const thickness=Number($('padThickness').value);
+    const op={from:last,to:point,thickness:erase?Math.max(18,thickness*4):thickness,erase};
+    operations.push(op);draw(op);last=point;
+    canvas.classList.toggle('erasing',erase);
+  }
+  function finish(event) {
+    if(pointer!==null&&(!event||event.pointerId===pointer)) {
+      if(canvas.hasPointerCapture(pointer))canvas.releasePointerCapture(pointer);
+      pointer=null;last=null;canvas.classList.toggle('erasing',tool==='eraser');
+    }
+  }
+  canvas.addEventListener('pointerdown',event=> {
+    if(event.pointerType==='pen')lastPenAt=Date.now();
+    if(pointer!==null||event.pointerType==='touch'&&Date.now()-lastPenAt<700)return;
+    event.preventDefault();pointer=event.pointerId;last=null;
+    canvas.setPointerCapture(pointer);append(event);
+  });
+  canvas.addEventListener('pointermove',event=> {
+    if(event.pointerType==='pen')lastPenAt=Date.now();
+    if(event.pointerId!==pointer)return;
+    event.preventDefault();
+    const samples=event.getCoalescedEvents?.();
+    (samples?.length?samples:[event]).forEach(append);
+  });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(name=>canvas.addEventListener(name,finish));
+  canvas.addEventListener('contextmenu',event=>event.preventDefault());
+  $('padPen').onclick=()=>select('pen');
+  $('padEraser').onclick=()=>select('eraser');
+  $('padClear').onclick=()=>{finish();operations=[];work.set(key,operations);redraw();};
+  $('padThickness').oninput=()=>{$('padThicknessValue').textContent=$('padThickness').value+' px';};
+  new ResizeObserver(resize).observe(paper);
+  new MutationObserver(redraw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)finish();});
+  return {
+    open(questionKey){finish();key=questionKey;if(!work.has(key))work.set(key,[]);operations=work.get(key);resize();},
+    reset(){finish();work.clear();operations=[];redraw();}
+  };
+})();
 function showQuestion(index) {
   if(currentResult()&&!reviewing)return;
   setPlaying(false);
@@ -574,6 +657,8 @@ function showQuestion(index) {
   updateNext();
   $('answers').replaceChildren();
   $('feedback').textContent='';
+  $('feedback').className='';
+  calculationPad.open(generation+':'+chapter+':'+questionIndex);
   let solved=attempted(chapter,questionIndex);
   $('continue').hidden=!solved;
   $('continue').textContent=questionIndex<questions.length-1?g('Next question →'):g('Complete checkpoint →');
@@ -589,8 +674,11 @@ function showQuestion(index) {
     trackActivity('answer_submitted',{question:questionIndex,answer:value});
     lastAttemptAt=performance.now();
     if(button)button.classList.add(correct?'correct':'incorrect');
+    const field=$('answers').querySelector('input');
+    if(field){field.classList.add(correct?'correct':'incorrect');field.setAttribute('aria-invalid',String(!correct));}
     const right=q.type==='choice'?q.options[q.answer]:q.answer+(q.unit?' '+g(q.unit):'');
-    const feedback=(correct?g('Exactly. '):g('Correct answer: ')+right+'. ')+q.explanation;
+    const feedback=(correct?g('Exactly. '):g('Incorrect. ')+g('Correct answer: ')+right+'. ')+q.explanation;
+    $('feedback').className=correct?'answer-correct':'answer-incorrect';
     $('feedback').textContent=feedback;
     $('caption').textContent=feedback;
     speak(feedback);
@@ -638,8 +726,13 @@ function showQuestion(index) {
   }
   if(solved) {
     if(q.type==='choice')$('answers').children[q.answer].classList.add('correct');
-    else $('answers').children[0].children[0].value=String(q.answer);
-    $('feedback').textContent=(questionAnswers[chapter]?.[questionIndex]?g('Exactly. '):g('Correct answer: ')+(q.type==='choice'?q.options[q.answer]:q.answer+(q.unit?' '+g(q.unit):''))+'. ')+q.explanation;
+    else {
+      const field=$('answers').querySelector('input');
+      field.value=String(q.answer);field.classList.add('correct');field.setAttribute('aria-invalid','false');
+    }
+    const correct=questionAnswers[chapter]?.[questionIndex]===true;
+    $('feedback').className=correct?'answer-correct':'answer-incorrect';
+    $('feedback').textContent=(correct?g('Exactly. '):g('Incorrect. ')+g('Correct answer: ')+(q.type==='choice'?q.options[q.answer]:q.answer+(q.unit?' '+g(q.unit):''))+'. ')+q.explanation;
     document.querySelectorAll('#answers button, #answers input').forEach(element=>element.disabled=true);
   }
   speak(q.prompt);

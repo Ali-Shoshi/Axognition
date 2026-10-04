@@ -60,8 +60,6 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -75,6 +73,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -96,6 +95,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.example.axognition.data.AssistantApi
+import com.example.axognition.data.AssistantConversation
 import com.example.axognition.ui.createAppTextToSpeech
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.Dispatchers
@@ -135,6 +135,13 @@ fun AssistantChatPanel(
     onVoiceInput: () -> Unit,
     onAudioBusyChange: (Boolean) -> Unit,
     voiceStatus: VoiceAssistantBubble?,
+    fullScreen: Boolean = false,
+    onOpenFullScreen: () -> Unit = {},
+    onExitFullScreen: () -> Unit = {},
+    conversationId: String = "default",
+    conversations: List<AssistantConversation> = emptyList(),
+    onSelectConversation: (String) -> Unit = {},
+    onNewConversation: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -147,21 +154,25 @@ fun AssistantChatPanel(
         sizePreferences.edit().putFloat("width_$orientation", savedWidth).putFloat("height_$orientation", savedHeight).apply()
     }
     var panelSize by remember { mutableStateOf(IntSize.Zero) }
-    var draft by remember { mutableStateOf("") }
-    var isSending by remember { mutableStateOf(false) }
+    val drafts = remember { mutableStateMapOf<String, String>() }
+    val draft = drafts[conversationId].orEmpty()
+    val updateDraft by rememberUpdatedState<(String) -> Unit>({ drafts[conversationId] = it })
+    val sendingConversations = remember { mutableStateMapOf<String, Boolean>() }
+    val isSending = sendingConversations[conversationId] == true
     var isListening by remember { mutableStateOf(false) }
     var speechRecognitionAvailable by remember { mutableStateOf(true) }
-    val listState = rememberLazyListState()
+    val listState = androidx.compose.runtime.key(conversationId) { rememberLazyListState() }
     val scope = rememberCoroutineScope()
     var speaker by remember { mutableStateOf<TextToSpeech?>(null) }
     var isSpeechReady by remember { mutableStateOf(false) }
     var recognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
     var isReading by remember { mutableStateOf(false) }
     val audioBusyCallback by rememberUpdatedState(onAudioBusyChange)
-    LaunchedEffect(isSending, isListening, isReading) {
-        audioBusyCallback(isSending || isListening || isReading)
+    val anySending = sendingConversations.values.any { it }
+    LaunchedEffect(anySending, isListening, isReading) {
+        audioBusyCallback(anySending || isListening || isReading)
     }
-    LaunchedEffect(listeningMode, expanded) {
+    LaunchedEffect(listeningMode, expanded, conversationId) {
         recognizer?.cancel()
         isListening = false
         speaker?.stop()
@@ -202,13 +213,13 @@ fun AssistantChatPanel(
                     override fun onResults(results: android.os.Bundle?) {
                         results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                             ?.firstOrNull()
-                            ?.let { draft = it }
+                            ?.let { updateDraft(it) }
                         isListening = false
                     }
                     override fun onPartialResults(partialResults: android.os.Bundle?) {
                         partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                             ?.firstOrNull()
-                            ?.let { draft = it }
+                            ?.let { updateDraft(it) }
                     }
                     override fun onEvent(eventType: Int, params: android.os.Bundle?) = Unit
                 })
@@ -240,7 +251,7 @@ fun AssistantChatPanel(
         }
     }
 
-    LaunchedEffect(messages.size, voiceStatus?.text) {
+    LaunchedEffect(conversationId, messages.size, voiceStatus?.text) {
         if (messages.isNotEmpty()) {
             val streaming = voiceStatus?.isAnswer == true &&
                 !(messages.lastOrNull()?.fromStudent == false && messages.lastOrNull()?.text == voiceStatus.text)
@@ -285,7 +296,13 @@ fun AssistantChatPanel(
         })
 
         if (expanded || expansion > 0f) {
-        Card(
+        AssistantChatWindow(
+            fullScreen = fullScreen,
+            onBack = onExitFullScreen,
+            conversations = conversations,
+            selectedConversationId = conversationId,
+            onSelectConversation = onSelectConversation,
+            onNewConversation = onNewConversation,
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .width(savedWidth.coerceIn(minOf(320f, (maxWidth.value - 32f).coerceAtLeast(1f)), (maxWidth.value - 32f).coerceAtLeast(1f)).dp)
@@ -319,15 +336,13 @@ fun AssistantChatPanel(
                     scaleY = buttonPixels / panelSize.height.coerceAtLeast(1) * (1f - expansion) + expansion
                     alpha = expansion
                 },
-            shape = RoundedCornerShape(28.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 16.dp)
         ) {
             Column(
                 Modifier
-                    .then(if (messages.isEmpty()) Modifier.fillMaxWidth() else Modifier.fillMaxSize())
+                    .then(if (messages.isEmpty() && !fullScreen) Modifier.fillMaxWidth() else Modifier.fillMaxSize())
                     .padding(18.dp)
             ) {
-                if (messages.isNotEmpty()) {
+                if (!fullScreen) {
                     Row(
                         modifier = Modifier.pointerInput(Unit) {
                             detectDragGestures(
@@ -340,11 +355,11 @@ fun AssistantChatPanel(
                         },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
+                        Surface(onClick = onOpenFullScreen, shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
                             Icon(
                                 Icons.Default.SmartToy,
-                                contentDescription = tr("Drag assistant chat"),
-                                modifier = Modifier.padding(9.dp),
+                                contentDescription = tr("Open full-screen AI chat"),
+                                modifier = Modifier.padding(12.dp),
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
@@ -358,70 +373,49 @@ fun AssistantChatPanel(
                         }
                     }
                     Spacer(Modifier.height(14.dp))
+                }
+                if (messages.isNotEmpty() || fullScreen) {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        items(messages) { message ->
-                            Box(Modifier.fillMaxWidth(), contentAlignment = if (message.fromStudent) Alignment.CenterEnd else Alignment.CenterStart) {
-                                Surface(
-                                    color = if (message.fromStudent) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
-                                    contentColor = if (message.fromStudent) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary,
-                                    shape = RoundedCornerShape(18.dp)
+                        if (messages.isEmpty()) {
+                            item {
+                                Column(
+                                    Modifier.fillMaxWidth().padding(vertical = 28.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Row(
-                                        modifier = Modifier.padding(start = 14.dp, top = 7.dp, bottom = 7.dp, end = 5.dp),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(message.text, modifier = Modifier.weight(1f))
-                                        if (!message.fromStudent) {
-                                            IconButton(onClick = {
-                                                isReading = true
-                                                scope.launch {
-                                                    kotlinx.coroutines.delay(200)
-                                                    if (isReading && speaker?.speakInAppLanguage(message.text, "assistant-response-${message.hashCode()}") != TextToSpeech.SUCCESS) isReading = false
-                                                }
-                                            }, enabled = isSpeechReady, modifier = Modifier.size(40.dp)) {
-                                                Icon(Icons.Default.VolumeUp, contentDescription = tr("Read this response aloud"))
-                                            }
+                                    Icon(Icons.Default.AutoAwesome, null, Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary)
+                                    Text(tr("What would you like to learn?"), style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+                                    Text(tr("Ask a question or speak to your learning assistant."), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                                }
+                            }
+                        }
+                        items(messages) { message ->
+                            AssistantMessageBubble(
+                                message = message,
+                                readAloudEnabled = isSpeechReady,
+                                onReadAloud = if (message.fromStudent) null else {
+                                    {
+                                        isReading = true
+                                        scope.launch {
+                                            kotlinx.coroutines.delay(200)
+                                            if (isReading && speaker?.speakInAppLanguage(message.text, "assistant-response-${message.hashCode()}") != TextToSpeech.SUCCESS) isReading = false
                                         }
                                     }
                                 }
-                            }
+                            )
                         }
                         if (voiceStatus?.isAnswer == true &&
                             !(messages.lastOrNull()?.fromStudent == false && messages.lastOrNull()?.text == voiceStatus.text)) {
                             item {
-                                Surface(color = MaterialTheme.colorScheme.primary,
-                                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                                    shape = RoundedCornerShape(18.dp)) {
-                                    Text(voiceStatus.text, modifier = Modifier.padding(14.dp))
-                                }
+                                AssistantMessageBubble(ChatMessage(voiceStatus.text, fromStudent = false))
                             }
                         }
                     }
                     Spacer(Modifier.height(10.dp))
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        tr("Ask a question…"),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier
-                            .weight(1f)
-                            .pointerInput(Unit) {
-                                detectDragGestures { change, dragAmount ->
-                                    change.consume()
-                                    dragPanel(dragAmount)
-                                }
-                            }
-                    )
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = tr("Shrink assistant"))
-                    }
-                    }
-                    Spacer(Modifier.height(8.dp))
                 }
                 if (voiceStatus?.isQuestion == true) {
                     val transcriptScroll = rememberScrollState()
@@ -445,7 +439,7 @@ fun AssistantChatPanel(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = draft,
-                        onValueChange = { draft = it },
+                        onValueChange = updateDraft,
                         modifier = Modifier.weight(1f),
                         placeholder = { Text(tr("Ask a question…")) },
                         singleLine = false,
@@ -485,18 +479,20 @@ fun AssistantChatPanel(
                         onClick = {
                             val question = draft.trim()
                             if (question.isNotEmpty()) {
+                                val targetConversationId = conversationId
+                                val saveMessage = onMessage
                                 val history = messages.map { AssistantApi.HistoryMessage(it.text, it.fromStudent) }
-                                onMessage(ChatMessage(question, fromStudent = true))
-                                draft = ""
-                                isSending = true
+                                saveMessage(ChatMessage(question, fromStudent = true))
+                                updateDraft("")
+                                sendingConversations[targetConversationId] = true
                                 scope.launch {
                                     val response = runCatching {
                                         withContext(Dispatchers.IO) { AssistantApi.sendQuestion(question, history) }
                                     }.getOrElse { error ->
                                         tr("I could not reach the learning assistant. ${tr(error.message ?: "Please try again.")}")
                                     }
-                                    onMessage(ChatMessage(response, fromStudent = false))
-                                    isSending = false
+                                    saveMessage(ChatMessage(response, fromStudent = false))
+                                    sendingConversations.remove(targetConversationId)
                                 }
                             }
                         },
@@ -528,22 +524,24 @@ fun AssistantChatPanel(
                         VoiceModeSelector(listeningMode, onListeningModeChange)
                     }
                     Spacer(Modifier.width(4.dp))
-                    IconButton(onClick = { resizePanel(0.9f) }, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.Remove, contentDescription = tr("Make AI chat smaller"))
-                    }
-                    IconButton(onClick = { resizePanel(1.1f) }, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.Add, contentDescription = tr("Make AI chat bigger"))
-                    }
-                    Box(
-                        Modifier.size(40.dp).pointerInput(Unit) {
-                            detectDragGestures { change, amount ->
-                                change.consume()
-                                resizeByDrag(amount)
-                            }
-                        },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.OpenInFull, contentDescription = tr("Drag to resize AI chat"))
+                    if (!fullScreen) {
+                        IconButton(onClick = { resizePanel(0.9f) }, modifier = Modifier.size(40.dp)) {
+                            Icon(Icons.Default.Remove, contentDescription = tr("Make AI chat smaller"))
+                        }
+                        IconButton(onClick = { resizePanel(1.1f) }, modifier = Modifier.size(40.dp)) {
+                            Icon(Icons.Default.Add, contentDescription = tr("Make AI chat bigger"))
+                        }
+                        Box(
+                            Modifier.size(40.dp).pointerInput(Unit) {
+                                detectDragGestures { change, amount ->
+                                    change.consume()
+                                    resizeByDrag(amount)
+                                }
+                            },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(Icons.Default.OpenInFull, contentDescription = tr("Drag to resize AI chat"))
+                        }
                     }
                 }
                 Text(
@@ -558,6 +556,37 @@ fun AssistantChatPanel(
             }
         }
     }
+    }
+}
+
+/** Short messages fit their text; long messages leave space on the opposite side. */
+@Composable
+private fun AssistantMessageBubble(
+    message: ChatMessage,
+    readAloudEnabled: Boolean = false,
+    onReadAloud: (() -> Unit)? = null
+) {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        Surface(
+            modifier = Modifier
+                .align(if (message.fromStudent) Alignment.CenterEnd else Alignment.CenterStart)
+                .widthIn(max = maxWidth * 0.85f),
+            color = if (message.fromStudent) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primary,
+            contentColor = if (message.fromStudent) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onPrimary,
+            shape = RoundedCornerShape(18.dp)
+        ) {
+            Row(
+                Modifier.padding(start = 14.dp, end = if (onReadAloud == null) 14.dp else 5.dp, top = 10.dp, bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(message.text, Modifier.weight(1f, fill = false))
+                if (onReadAloud != null) {
+                    IconButton(onClick = onReadAloud, enabled = readAloudEnabled, modifier = Modifier.size(40.dp)) {
+                        Icon(Icons.Default.VolumeUp, contentDescription = tr("Read this response aloud"))
+                    }
+                }
+            }
+        }
     }
 }
 
