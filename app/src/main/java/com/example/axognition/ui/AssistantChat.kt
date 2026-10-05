@@ -8,7 +8,6 @@ import android.content.pm.PackageManager
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.speech.tts.TextToSpeech
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -96,9 +95,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.example.axognition.data.AssistantApi
 import com.example.axognition.data.AssistantConversation
-import com.example.axognition.ui.createAppTextToSpeech
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
@@ -163,20 +165,35 @@ fun AssistantChatPanel(
     var speechRecognitionAvailable by remember { mutableStateOf(true) }
     val listState = androidx.compose.runtime.key(conversationId) { rememberLazyListState() }
     val scope = rememberCoroutineScope()
-    var speaker by remember { mutableStateOf<TextToSpeech?>(null) }
-    var isSpeechReady by remember { mutableStateOf(false) }
     var recognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
     var isReading by remember { mutableStateOf(false) }
+    var pendingRead by remember { mutableStateOf<Job?>(null) }
+    val speaker = remember(context) {
+        OfflineSpeechPlayer(
+            context,
+            onEnded = { _, _ -> isReading = false },
+            role = OfflineVoiceRole.ASSISTANT
+        )
+    }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
     val audioBusyCallback by rememberUpdatedState(onAudioBusyChange)
+    fun stopReadAloud() {
+        pendingRead?.cancel()
+        pendingRead = null
+        speaker.stop()
+        isReading = false
+    }
+    fun stopPanelAudio() {
+        stopReadAloud()
+        recognizer?.cancel()
+        isListening = false
+    }
     val anySending = sendingConversations.values.any { it }
     LaunchedEffect(anySending, isListening, isReading) {
         audioBusyCallback(anySending || isListening || isReading)
     }
-    LaunchedEffect(listeningMode, expanded, conversationId) {
-        recognizer?.cancel()
-        isListening = false
-        speaker?.stop()
-        isReading = false
+    LaunchedEffect(listeningMode, expanded, conversationId, AppLanguage.code) {
+        stopPanelAudio()
     }
 
     val recognitionIntent = remember(AppLanguage.code) {
@@ -188,6 +205,7 @@ fun AssistantChatPanel(
     }
 
     fun beginListening() {
+        stopReadAloud()
         recognizer?.startListening(recognitionIntent)
     }
 
@@ -232,21 +250,17 @@ fun AssistantChatPanel(
         }
     }
 
-    DisposableEffect(context) {
-        val textToSpeech = createAppTextToSpeech(context) { status ->
-            isSpeechReady = status == TextToSpeech.SUCCESS
+    DisposableEffect(speaker, lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                stopPanelAudio()
+            }
         }
-        textToSpeech.setOnUtteranceProgressListener(object : android.speech.tts.UtteranceProgressListener() {
-            override fun onStart(id: String) = Unit
-            override fun onDone(id: String) { scope.launch { isReading = false } }
-            @Deprecated("Android callback")
-            override fun onError(id: String) { scope.launch { isReading = false } }
-        })
-        speaker = textToSpeech
+        lifecycle.addObserver(observer)
         onDispose {
-            textToSpeech.stop()
-            textToSpeech.shutdown()
-            speaker = null
+            lifecycle.removeObserver(observer)
+            stopPanelAudio()
+            speaker.close()
             audioBusyCallback(false)
         }
     }
@@ -298,11 +312,11 @@ fun AssistantChatPanel(
         if (expanded || expansion > 0f) {
         AssistantChatWindow(
             fullScreen = fullScreen,
-            onBack = onExitFullScreen,
+            onBack = { stopPanelAudio(); onExitFullScreen() },
             conversations = conversations,
             selectedConversationId = conversationId,
-            onSelectConversation = onSelectConversation,
-            onNewConversation = onNewConversation,
+            onSelectConversation = { id -> stopPanelAudio(); onSelectConversation(id) },
+            onNewConversation = { stopPanelAudio(); onNewConversation() },
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .width(savedWidth.coerceIn(minOf(320f, (maxWidth.value - 32f).coerceAtLeast(1f)), (maxWidth.value - 32f).coerceAtLeast(1f)).dp)
@@ -368,7 +382,7 @@ fun AssistantChatPanel(
                             Text(tr("Learning assistant"), fontWeight = FontWeight.Bold)
                             Text(tr("Hold and drag here to move"), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
                         }
-                        IconButton(onClick = onDismiss) {
+                        IconButton(onClick = { stopPanelAudio(); onDismiss() }) {
                             Icon(Icons.Default.Close, contentDescription = tr("Close assistant"))
                         }
                     }
@@ -396,13 +410,16 @@ fun AssistantChatPanel(
                         items(messages) { message ->
                             AssistantMessageBubble(
                                 message = message,
-                                readAloudEnabled = isSpeechReady,
+                                readAloudEnabled = true,
                                 onReadAloud = if (message.fromStudent) null else {
                                     {
+                                        stopPanelAudio()
                                         isReading = true
-                                        scope.launch {
+                                        pendingRead = scope.launch {
                                             kotlinx.coroutines.delay(200)
-                                            if (isReading && speaker?.speakInAppLanguage(message.text, "assistant-response-${message.hashCode()}") != TextToSpeech.SUCCESS) isReading = false
+                                            if (isReading && !speaker.speak(
+                                                    message.text, "assistant-response-${message.hashCode()}", AppLanguage.code
+                                                )) isReading = false
                                         }
                                     }
                                 }
@@ -450,8 +467,7 @@ fun AssistantChatPanel(
                     ElevatedButton(
                         onClick = {
                             if (listeningMode != VoiceListeningMode.OFF) {
-                                speaker?.stop()
-                                isReading = false
+                                stopReadAloud()
                                 scope.launch {
                                     kotlinx.coroutines.delay(200)
                                     onVoiceInput()

@@ -3,8 +3,6 @@ package com.example.axognition.ui.screens
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -32,9 +30,8 @@ import com.example.axognition.data.LectureOutbox
 import com.example.axognition.data.LectureSync
 import com.example.axognition.ui.theme.LocalAxognitionDarkTheme
 import com.example.axognition.ui.AppLanguage
-import com.example.axognition.ui.configureNaturalAppVoice
-import com.example.axognition.ui.createAppTextToSpeech
-import com.example.axognition.ui.speakInAppLanguage
+import com.example.axognition.ui.OfflineSpeechPlayer
+import com.example.axognition.ui.OfflineVoiceRole
 import com.example.axognition.ui.tr
 import org.json.JSONObject
 
@@ -60,19 +57,17 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
     val language = AppLanguage.code
     var speechStatus by remember { mutableStateOf("Preparing narration…") }
     val bridge = remember(lessonId) { GeometrySpeechBridge(progressStore, lessonId, context.applicationContext) }
-    val speech = remember {
-        createAppTextToSpeech(context) { result ->
-            bridge.initialized = result == TextToSpeech.SUCCESS
-            speechStatus = if (bridge.initialized) "" else "Voice unavailable. You can still use captions."
-        }
-    }
-    LaunchedEffect(speechStatus, language) {
-        if (bridge.initialized) {
-            bridge.ready = speech.configureNaturalAppVoice()
-            speechStatus = if (bridge.ready) "" else "Install a voice for the selected language for narration. Captions are available."
-        }
-    }
     var web by remember { mutableStateOf<WebView?>(null) }
+    val speech = remember(lessonId) {
+        OfflineSpeechPlayer(context,
+            onStatus = { if (!bridge.disposed) speechStatus = it },
+            onStarted = { id, duration -> web?.evaluateJavascript(
+                "window.geometryVoiceStarted?.(${JSONObject.quote(id)},$duration);", null) },
+            onEnded = { id, ok -> web?.evaluateJavascript(
+                "window.geometryVoiceEnd?.(${JSONObject.quote(id)},$ok);", null) },
+            role = OfflineVoiceRole.LECTURE
+        )
+    }
     var leaving by remember { mutableStateOf(false) }
     var showLeaveConfirmation by remember { mutableStateOf(false) }
     val confirmLeaveLesson: () -> Unit = {
@@ -91,6 +86,8 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
     // already open. The initial factory load uses the same language, so this
     // effect is only observable on a subsequent language change.
     LaunchedEffect(language) {
+        bridge.language = language
+        speech.warmUp(language)
         web?.let { view ->
             speech.stop()
             view.loadUrl("$url?theme=${if (darkTheme) "dark" else "light"}&lang=$language")
@@ -109,20 +106,6 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
             } }
         }
         bridge.finishAction = { web?.post { if (!bridge.disposed) currentOnBack() } }
-        speech.configureNaturalAppVoice()
-        speech.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) = Unit
-            override fun onDone(utteranceId: String?) = report(utteranceId, true)
-            @Deprecated("Called by older speech engines")
-            override fun onError(utteranceId: String?) = report(utteranceId, false)
-            override fun onError(utteranceId: String?, errorCode: Int) = report(utteranceId, false)
-            private fun report(id: String?, ok: Boolean) {
-                val view = web ?: return
-                view.post { if (!bridge.disposed) view.evaluateJavascript(
-                    "window.geometryVoiceEnd && window.geometryVoiceEnd(${JSONObject.quote(id ?: "")}, $ok);", null
-                ) }
-            }
-        })
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
                 speech.stop()
@@ -137,8 +120,7 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
         onDispose {
             bridge.disposed = true
             owner.lifecycle.removeObserver(observer)
-            speech.stop()
-            speech.shutdown()
+            speech.close()
             web?.removeJavascriptInterface("GeometryVoice")
             web?.destroy()
         }
@@ -193,6 +175,9 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
                         }
                     }
 
+                    // WebView's own handler retains click/accessibility support; this override
+                    // adds only parent-scroll arbitration and always delegates the event.
+                    @SuppressLint("ClickableViewAccessibility")
                     override fun onTouchEvent(event: MotionEvent): Boolean {
                         // Keep native parents from intercepting a handwriting stroke.
                         if (event.actionMasked == MotionEvent.ACTION_DOWN) {
@@ -229,7 +214,7 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
                         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
                             request.url.toString().substringBefore('#').substringBefore('?') != url
                     }
-                    addJavascriptInterface(bridge, "GeometryVoice")
+                    installLectureBridge(bridge)
                     web = this
                     loadUrl("$url?theme=${if (darkTheme) "dark" else "light"}&lang=$language")
                 }
@@ -247,10 +232,9 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
 private class GeometrySpeechBridge(private val progress: LectureProgressStore, private val lessonId: String, private val context: Context) {
     private val childId = ChildSessionStore.load(context)?.childId
     var progressResponse: ((String, String) -> Unit)? = null
-    @Volatile var initialized = false
-    @Volatile var ready = false
     @Volatile var disposed = false
-    var speech: TextToSpeech? = null
+    @Volatile var language = AppLanguage.code
+    var speech: OfflineSpeechPlayer? = null
     var hideKeyboardAction: (() -> Unit)? = null
     var finishAction: (() -> Unit)? = null
     @Volatile private var rate = 1f
@@ -307,10 +291,14 @@ private class GeometrySpeechBridge(private val progress: LectureProgressStore, p
 
     @JavascriptInterface
     fun speak(text: String, id: String): Boolean {
-        if (!ready || disposed) return false
-        return speech?.speakInAppLanguage(text.take(3500), id, 0.96f * rate) == TextToSpeech.SUCCESS
+        if (disposed) return false
+        return speech?.speak(text, id, language, rate) == true
     }
 
     @JavascriptInterface
     fun stop() { speech?.stop() }
+}
+
+private fun WebView.installLectureBridge(bridge: GeometrySpeechBridge) {
+    addJavascriptInterface(bridge, "GeometryVoice")
 }

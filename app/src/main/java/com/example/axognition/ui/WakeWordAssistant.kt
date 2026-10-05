@@ -7,11 +7,10 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
@@ -117,38 +116,42 @@ internal class VoiceController(
     private var expectingQuestion = false
     private var retryDelay = 450L
     private var disposed = false
-    private var ttsReady = false
+    private val speechLanguage = AppLanguage.code
     private var answerText = ""
     private var spokenThrough = 0
     private var savedAnswer = false
     private var responseComplete = false
     private var speechFailed = false
     private var playbackWatchdog: Job? = null
+    private var playbackDeadlineMs = 0L
     private val utterances = mutableMapOf<String, Pair<Int, Int>>()
-    private val speaker: TextToSpeech = createAppTextToSpeech(context) { status ->
-        main.post { if (!disposed) ttsReady = status == TextToSpeech.SUCCESS }
-    }.apply {
-        setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(id: String) { main.post {
-                if (utterances.containsKey(id)) bubble = bubble?.copy(isSpeaking = true)
-            } }
-            override fun onRangeStart(id: String, start: Int, end: Int, frame: Int) { main.post {
-                val offset = utterances[id]?.first ?: return@post
+    private val speaker: OfflineSpeechPlayer = OfflineSpeechPlayer(
+        context,
+        onStarted = { id, durationMs ->
+            if (utterances.containsKey(id)) {
+                bubble = bubble?.copy(isSpeaking = true)
+                // Normalized math can take longer to read than its short written form.
+                playbackDeadlineMs = maxOf(playbackDeadlineMs,
+                    SystemClock.elapsedRealtime() + durationMs + 15_000L)
+            }
+        },
+        onRange = { id, start, end ->
+            utterances[id]?.first?.let { offset ->
                 val first = (offset + start).coerceIn(0, answerText.length)
                 val last = (offset + end).coerceIn(first, answerText.length)
                 spokenThrough = maxOf(spokenThrough, first)
                 bubble = bubble?.copy(readThrough = last, currentStart = first, currentEnd = last, isSpeaking = true)
-            } }
-            override fun onDone(id: String) { main.post {
+            }
+        },
+        onEnded = { id, success ->
+            if (success) {
                 val range = utterances.remove(id)
                 if (range != null) {
                     spokenThrough = maxOf(spokenThrough, range.second)
                     bubble = bubble?.copy(readThrough = spokenThrough, currentStart = -1, currentEnd = -1)
                 }
                 if (id == "finish-$generation") finishAnswer()
-            } }
-            @Deprecated("Android callback")
-            override fun onError(id: String) { main.post {
+            } else {
                 if (utterances.remove(id) != null || id == "finish-$generation") {
                     speaker.stop()
                     utterances.clear()
@@ -156,9 +159,10 @@ internal class VoiceController(
                     bubble = bubble?.copy(isSpeaking = false)
                     if (responseComplete) finishAnswer()
                 }
-            } }
-        })
-    }
+            }
+        },
+        role = OfflineVoiceRole.ASSISTANT
+    )
 
     fun configure(mode: VoiceListeningMode) {
         cancelTurn()
@@ -198,6 +202,7 @@ internal class VoiceController(
         answerJob = null
         playbackWatchdog?.cancel()
         playbackWatchdog = null
+        playbackDeadlineMs = 0L
         speaker.stop()
         utterances.clear()
         if (!savedAnswer && spokenThrough > 0) {
@@ -447,13 +452,18 @@ internal class VoiceController(
         scheduleListening(350, interruptOnly = true)
         var count = 0
         val chunker = StreamingSpeechChunker { chunk, offset ->
-            if (token == generation && ttsReady && !speechFailed) {
+            if (token == generation && !speechFailed) {
                 val id = "answer-$token-${count++}"
                 utterances[id] = offset to offset + chunk.length
-                val result = speaker.speakInAppLanguage(
-                    chunk, id, queueMode = TextToSpeech.QUEUE_ADD, preferNetwork = false, naturalize = false
+                val accepted = speaker.speak(
+                    chunk, id, speechLanguage, queueMode = SpeechQueueMode.ADD
                 )
-                if (result != TextToSpeech.SUCCESS) utterances.remove(id)
+                if (!accepted) {
+                    speaker.stop()
+                    utterances.clear()
+                    speechFailed = true
+                    bubble = bubble?.copy(isSpeaking = false)
+                }
             }
         }
         answerJob = scope.launch {
@@ -465,7 +475,7 @@ internal class VoiceController(
                             if (token != generation || disposed) return@post
                             answerText = partial
                             bubble = (bubble ?: VoiceAssistantBubble(partial)).copy(text = partial, isAnswer = true)
-                            if (ttsReady) chunker.accept(partial)
+                            chunker.accept(partial)
                         }
                     }
                 }
@@ -473,25 +483,31 @@ internal class VoiceController(
                 answerText = answer
                 responseComplete = true
                 bubble = (bubble ?: VoiceAssistantBubble(answer)).copy(text = answer, isAnswer = true)
-                withTimeoutOrNull(5_000) { while (!ttsReady) delay(50) }
                 if (token != generation) return@launch
                 chunker.accept(answer, final = true)
                 android.util.Log.i("AXO_VOICE", "Answer received chars=${answer.length} speechQueued=${utterances.size}")
-                if (utterances.isEmpty() || !ttsReady) {
+                if (utterances.isEmpty() || speechFailed) {
                     finishAnswer()
                 } else {
-                    val queued = speaker.playSilentUtterance(1, TextToSpeech.QUEUE_ADD, "finish-$token")
-                    if (queued != TextToSpeech.SUCCESS) {
+                    val queued = speaker.enqueueSilence(1, "finish-$token")
+                    if (!queued) {
                         speaker.stop()
                         utterances.clear()
                         finishAnswer()
                     } else {
+                        playbackDeadlineMs = maxOf(playbackDeadlineMs, SystemClock.elapsedRealtime() +
+                            (answer.length * 160L + 15_000L).coerceAtLeast(30_000L))
                         playbackWatchdog = scope.launch {
-                            delay((answer.length * 160L + 15_000L).coerceAtLeast(30_000L))
-                            if (token == generation && !savedAnswer) {
+                            while (token == generation && !savedAnswer) {
+                                val remaining = playbackDeadlineMs - SystemClock.elapsedRealtime()
+                                if (remaining > 0) {
+                                    delay(remaining)
+                                    continue
+                                }
                                 speaker.stop()
                                 utterances.clear()
                                 finishAnswer()
+                                break
                             }
                         }
                     }
@@ -534,7 +550,7 @@ internal class VoiceController(
         configure(VoiceListeningMode.OFF)
         recognizer?.destroy()
         recognizer = null
-        speaker.shutdown()
+        speaker.close()
     }
 }
 

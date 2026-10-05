@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.io.File
 
 plugins {
     alias(libs.plugins.android.application)
@@ -48,9 +49,28 @@ android {
         compose = true
         buildConfig = true
     }
+    sourceSets.getByName("main").assets.directories += rootProject.file("offline-tts/assets").path
+    androidResources {
+        noCompress += "onnx"
+    }
+}
+
+// Keep large, checksum-verified model downloads out of Git. They are bundled in
+// the APK, so the installed app needs no connection or external TTS service.
+tasks.named("preBuild") {
+    val offlineTtsDirectory = rootProject.file("offline-tts").absolutePath
+    doFirst {
+        val directory = File(offlineTtsDirectory)
+        check(listOf("sherpa-onnx-1.13.8.aar", "assets/tts/lecture/en/model.onnx", "assets/tts/lecture/sq/model.onnx",
+            "assets/tts/assistant/en/model.onnx", "assets/tts/assistant/sq/model.onnx", "assets/tts/espeak-ng-data/phontab")
+            .all { directory.resolve(it).isFile }) {
+            "Offline narration files are missing. Run: powershell -ExecutionPolicy Bypass -File scripts/setup-offline-tts.ps1"
+        }
+    }
 }
 
 dependencies {
+    implementation(files(rootProject.file("offline-tts/sherpa-onnx-1.13.8.aar")))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

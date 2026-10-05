@@ -1,0 +1,43 @@
+{
+  "runtime": {
+    "name": "sherpa-onnx-1.13.8.aar",
+    "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.8/sherpa-onnx-1.13.8.aar",
+    "sha256": "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
+  },
+  "voices": [
+    {
+      "role": "lecture",
+      "language": "en",
+      "name": "vits-piper-en_US-ljspeech-medium-int8.tar.bz2",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-ljspeech-medium-int8.tar.bz2",
+      "sha256": "24dc3bd77dd48c291e52c297878d3437c9492f245d823d7f6a06c4bbb67f4b6b"
+    },
+    {
+      "role": "assistant",
+      "language": "sq",
+      "name": "vits-piper-sq_AL-edon-medium-int8.tar.bz2",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-sq_AL-edon-medium-int8.tar.bz2",
+      "sha256": "b951fc1866256dc0258abf9844fb0a3a8263615056e65ddbd6b766676816dd26"
+    },
+    {
+      "role": "assistant",
+      "language": "en",
+      "name": "vits-piper-en_US-norman-medium-int8.tar.bz2",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-en_US-norman-medium-int8.tar.bz2",
+      "sha256": "cb481a514bc213ccf3899391c0f27fdcc4e4b814ec30496f28089a027b5aa01b"
+    },
+    {
+      "role": "lecture",
+      "language": "sq",
+      "format": "piper-onnx",
+      "name": "sq_AL-arta-medium.onnx",
+      "url": "https://huggingface.co/edonseki/folsh.ai/resolve/96a0ec37123333cb36fec91c5ce1b769081cfca6/arta/sq_AL-arta-medium.onnx",
+      "sha256": "5f03253a2f248754595a259fd1bb366fb5c3259b8dd1e299142c2f253a861fb8",
+      "config": {
+        "name": "sq_AL-arta-medium.onnx.json",
+        "url": "https://huggingface.co/edonseki/folsh.ai/resolve/96a0ec37123333cb36fec91c5ce1b769081cfca6/arta/sq_AL-arta-medium.onnx.json",
+        "sha256": "9c7cde3f7c6f55d09e348d7e8581c5cd3b53516489dbde3ebb02741f00d1d722"
+      }
+    }
+  ]
+}

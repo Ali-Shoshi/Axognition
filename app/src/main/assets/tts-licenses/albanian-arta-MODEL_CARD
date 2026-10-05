@@ -1,0 +1,8 @@
+# ⚠️ Voice License Notice (AGPL-3.0)
+
+While the main repository and its primary voice are licensed under **CC0** (Public Domain), the specific voice model and configuration files located in this folder are licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+**Read the full license here:** [https://www.gnu.org/licenses/agpl-3.0.html](https://www.gnu.org/licenses/agpl-3.0.html)
+
+### What this means:
+Please ensure you check each voice's specific license restrictions before using them in your projects. By using, modifying, distributing, or interacting with *this specific voice model* over a network (e.g., via a web API), you must strictly comply with the terms of the AGPL-3.0 license.

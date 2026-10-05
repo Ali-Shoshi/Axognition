@@ -25,3 +25,6 @@ server/.env
 
 # Local development-service data
 minio-data/
+
+# Downloaded speech runtime and model weights (recreated by the setup script).
+/offline-tts/

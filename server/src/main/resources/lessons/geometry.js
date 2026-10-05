@@ -457,9 +457,19 @@ window.geometryVoiceEnd=(id,ok)=> {
   speaking=false;
   clearTimeout(voiceTimer);
   $('voiceState').textContent=ok?g('Explore the model'):g('Read along');
-  if(!ok)$('notice').textContent=g('Narration is unavailable. Captions remain available; check that an English voice is installed.');
+  if(!ok) {
+    window.GeometryVoice?.stop?.();
+    $('notice').textContent=g('Narration is unavailable. Captions remain available; try Replay.');
+  }
 }
 ;
+window.geometryVoiceStarted=(id,durationMs)=> {
+  if(Number(id)!==token || !speaking)return;
+  $('voiceState').textContent=g('Speaking…');
+  clearTimeout(voiceTimer);
+  // Include the actual audio duration, including the selected playback speed.
+  voiceTimer=setTimeout(()=>window.geometryVoiceEnd(id,false),Math.max(15000,Number(durationMs)+15000));
+};
 function speak(text) {
   stopVoice();
   lastSpeechText = text;
@@ -472,6 +482,7 @@ function speak(text) {
   $('voiceState').textContent=g('Speaking…');
   voiceTimer=setTimeout(()=>window.geometryVoiceEnd(id,false),90000 / Math.min(voiceSpeed, 1));
   if(window.GeometryVoice) {
+    $('voiceState').textContent=g('Preparing narration…');
     GeometryVoice.setRate?.(voiceSpeed);
     if(!GeometryVoice.speak(text,String(id)))window.geometryVoiceEnd(id,false);
   }
