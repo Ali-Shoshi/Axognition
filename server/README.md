@@ -1,5 +1,14 @@
 # ktor-sample
 
+## Learning assistant
+
+Typed chat and voice replies send the complete history of the selected conversation,
+without a fixed message-count cutoff. Follow-ups use that conversation's topics, facts
+and corrections. Replies answer directly in one short, conversational sentence,
+adding a second only when needed and aiming for 25 words or fewer. Requests for more
+detail, steps or examples receive only the extra explanation requested. New conversations start
+with their own context.
+
 ## Lecture progress and analytics
 
 All mathematics lectures save individual progress and activity on the server.

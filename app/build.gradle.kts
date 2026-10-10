@@ -6,6 +6,13 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+// Ship the lesson player with its native speech bridge so installing an APK
+// cannot leave it running an older server copy of the narration controls.
+val bundleLessons by tasks.registering(Sync::class) {
+    from(rootProject.file("server/src/main/resources/lessons"))
+    into(layout.buildDirectory.dir("generated/lessonAssets/lessons"))
+}
+
 val mapsApiKey = providers.gradleProperty("MAPS_API_KEY").orNull
     ?: providers.environmentVariable("MAPS_API_KEY").orNull
     ?: Properties().run {
@@ -50,6 +57,7 @@ android {
         buildConfig = true
     }
     sourceSets.getByName("main").assets.directories += rootProject.file("offline-tts/assets").path
+    sourceSets.getByName("main").assets.directories += layout.buildDirectory.dir("generated/lessonAssets").get().asFile.path
     androidResources {
         noCompress += "onnx"
     }
@@ -58,6 +66,7 @@ android {
 // Keep large, checksum-verified model downloads out of Git. They are bundled in
 // the APK, so the installed app needs no connection or external TTS service.
 tasks.named("preBuild") {
+    dependsOn(bundleLessons)
     val offlineTtsDirectory = rootProject.file("offline-tts").absolutePath
     doFirst {
         val directory = File(offlineTtsDirectory)

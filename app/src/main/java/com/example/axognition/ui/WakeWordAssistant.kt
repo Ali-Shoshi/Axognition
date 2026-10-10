@@ -29,7 +29,9 @@ data class VoiceAssistantBubble(
     val readThrough: Int = 0,
     val currentStart: Int = -1,
     val currentEnd: Int = -1,
-    val isSpeaking: Boolean = false
+    val isSpeaking: Boolean = false,
+    val question: String = "",
+    val isComplete: Boolean = false
 ) {
     val isListening: Boolean get() = !isAnswer && !isQuestion && text == "Listening…"
 }
@@ -124,11 +126,19 @@ internal class VoiceController(
     private var speechFailed = false
     private var playbackWatchdog: Job? = null
     private var playbackDeadlineMs = 0L
+    private var questionSentAtMs = 0L
+    private var firstAnswerTextAtMs = 0L
+    private var firstSpeechReported = false
     private val utterances = mutableMapOf<String, Pair<Int, Int>>()
     private val speaker: OfflineSpeechPlayer = OfflineSpeechPlayer(
         context,
         onStarted = { id, durationMs ->
             if (utterances.containsKey(id)) {
+                if (!firstSpeechReported) {
+                    firstSpeechReported = true
+                    val now = SystemClock.elapsedRealtime()
+                    android.util.Log.i("AXO_VOICE", "First speech questionMs=${now - questionSentAtMs} textMs=${now - firstAnswerTextAtMs}")
+                }
                 bubble = bubble?.copy(isSpeaking = true)
                 // Normalized math can take longer to read than its short written form.
                 playbackDeadlineMs = maxOf(playbackDeadlineMs,
@@ -163,6 +173,12 @@ internal class VoiceController(
         },
         role = OfflineVoiceRole.ASSISTANT
     )
+
+    init {
+        // Load this controller's voice while the student is still choosing or
+        // speaking a question, rather than waiting for the first answer chunk.
+        speaker.warmUp(speechLanguage)
+    }
 
     fun configure(mode: VoiceListeningMode) {
         cancelTurn()
@@ -444,9 +460,12 @@ internal class VoiceController(
         stopListening()
         cancelTurn()
         val token = generation
+        questionSentAtMs = SystemClock.elapsedRealtime()
+        firstAnswerTextAtMs = 0L
+        firstSpeechReported = false
         val previous = history().map { AssistantApi.HistoryMessage(it.text, it.fromStudent) }
         save(ChatMessage(question, true))
-        bubble = VoiceAssistantBubble("Thinking…")
+        bubble = VoiceAssistantBubble("Thinking…", question = question)
         val cancellation = AssistantApi.RequestCancellation()
         request = cancellation
         scheduleListening(350, interruptOnly = true)
@@ -455,9 +474,7 @@ internal class VoiceController(
             if (token == generation && !speechFailed) {
                 val id = "answer-$token-${count++}"
                 utterances[id] = offset to offset + chunk.length
-                val accepted = speaker.speak(
-                    chunk, id, speechLanguage, queueMode = SpeechQueueMode.ADD
-                )
+                val accepted = speaker.speakStreamingChunk(chunk, id, speechLanguage)
                 if (!accepted) {
                     speaker.stop()
                     utterances.clear()
@@ -473,6 +490,10 @@ internal class VoiceController(
                         cancellation.check()
                         main.post {
                             if (token != generation || disposed) return@post
+                            if (firstAnswerTextAtMs == 0L) {
+                                firstAnswerTextAtMs = SystemClock.elapsedRealtime()
+                                android.util.Log.i("AXO_VOICE", "First answer text questionMs=${firstAnswerTextAtMs - questionSentAtMs}")
+                            }
                             answerText = partial
                             bubble = (bubble ?: VoiceAssistantBubble(partial)).copy(text = partial, isAnswer = true)
                             chunker.accept(partial)
@@ -538,7 +559,7 @@ internal class VoiceController(
             save(ChatMessage(answerText, false))
             savedAnswer = true
         }
-        bubble = bubble?.copy(isSpeaking = false, currentStart = -1, currentEnd = -1)
+        bubble = bubble?.copy(isSpeaking = false, currentStart = -1, currentEnd = -1, isComplete = true)
         if (selection == VoiceListeningMode.CONVERSATION) bubble = idleBubble()
         expectingQuestion = session.active
         // Brief drain interval prevents the microphone picking up the end of playback.
@@ -554,7 +575,7 @@ internal class VoiceController(
     }
 }
 
-/** Emits complete sentences, or a readable phrase when the first sentence is long. */
+/** Start with a short opening; queue longer phrases while that opening plays. */
 internal class StreamingSpeechChunker(
     private val onChunk: (text: String, responseOffset: Int) -> Unit
 ) {
@@ -564,12 +585,18 @@ internal class StreamingSpeechChunker(
     fun accept(fullText: String, final: Boolean = false) {
         while (emittedThrough < fullText.length) {
             val remaining = fullText.substring(emittedThrough)
+            val opening = emittedThrough == 0
+            val limit = if (opening) 48 else 96
             val sentenceBoundary = sentenceEnd.findAll(remaining)
-                .firstOrNull { it.range.last + 1 >= 24 }?.let { it.range.last + 1 }
+                .firstOrNull {
+                    val end = it.range.last + 1
+                    end <= limit && (final || end < remaining.length || it.value.last().isWhitespace())
+                }?.let { it.range.last + 1 }
             val rawLength = when {
                 sentenceBoundary != null -> sentenceBoundary
-                remaining.length >= 96 -> remaining.lastIndexOf(' ', startIndex = 84)
-                    .takeIf { it >= 48 }?.plus(1) ?: return
+                remaining.length >= limit -> remaining.take(limit).indexOfLast { it.isWhitespace() }
+                    .takeIf { it >= if (opening) 24 else 48 }?.plus(1)
+                    ?: if (final) remaining.length else return
                 final -> remaining.length
                 else -> return
             }

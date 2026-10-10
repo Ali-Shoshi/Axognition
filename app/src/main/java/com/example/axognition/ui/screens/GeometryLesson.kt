@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -55,16 +56,16 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
     val owner = LocalLifecycleOwner.current
     val url = BuildConfig.AXOGNITION_SERVER_URL.trimEnd('/') + "/lessons/$lessonId.html"
     val language = AppLanguage.code
-    var speechStatus by remember { mutableStateOf("Preparing narration…") }
     val bridge = remember(lessonId) { GeometrySpeechBridge(progressStore, lessonId, context.applicationContext) }
     var web by remember { mutableStateOf<WebView?>(null) }
     val speech = remember(lessonId) {
         OfflineSpeechPlayer(context,
-            onStatus = { if (!bridge.disposed) speechStatus = it },
             onStarted = { id, duration -> web?.evaluateJavascript(
                 "window.geometryVoiceStarted?.(${JSONObject.quote(id)},$duration);", null) },
             onEnded = { id, ok -> web?.evaluateJavascript(
                 "window.geometryVoiceEnd?.(${JSONObject.quote(id)},$ok);", null) },
+            onRange = { id, start, end -> web?.evaluateJavascript(
+                "window.geometryVoiceRange?.(${JSONObject.quote(id)},$start,$end);", null) },
             role = OfflineVoiceRole.LECTURE
         )
     }
@@ -149,11 +150,6 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
                 web?.loadUrl("$url?theme=${if (darkTheme) "dark" else "light"}&lang=$language")
             }) { Text(tr("Reload")) }
         }
-        if (speechStatus.isNotEmpty()) Text(
-            tr(speechStatus),
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.labelSmall
-        )
         AndroidView(
             modifier = Modifier.fillMaxWidth().weight(1f),
             factory = {
@@ -205,6 +201,24 @@ internal fun GuidedMathLesson(lessonId: String, onBack: () -> Unit) {
                     settings.allowFileAccess = false
                     settings.allowContentAccess = false
                     webViewClient = object : WebViewClient() {
+                        override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
+                            val origin = android.net.Uri.parse(url)
+                            val target = request.url
+                            if (request.method != "GET" || target.scheme != origin.scheme ||
+                                target.host != origin.host || target.port != origin.port) return null
+                            val path = target.path ?: return null
+                            if (!path.matches(Regex("/lessons/[a-zA-Z0-9.-]+\\.(html|css|js|json)"))) return null
+                            val mime = when (path.substringAfterLast('.')) {
+                                "html" -> "text/html"
+                                "css" -> "text/css"
+                                "js" -> "text/javascript"
+                                else -> "application/json"
+                            }
+                            return runCatching {
+                                WebResourceResponse(mime, "UTF-8", context.assets.open(path.removePrefix("/")))
+                            }.getOrNull()
+                        }
+
                         override fun onPageFinished(view: WebView, loadedUrl: String) {
                             view.evaluateJavascript(
                                 "window.geometrySetTheme?.($currentDarkTheme);" +
@@ -294,6 +308,9 @@ private class GeometrySpeechBridge(private val progress: LectureProgressStore, p
         if (disposed) return false
         return speech?.speak(text, id, language, rate) == true
     }
+
+    @JavascriptInterface
+    fun prefetch(text: String) { if (!disposed) speech?.prefetch(text, language) }
 
     @JavascriptInterface
     fun stop() { speech?.stop() }

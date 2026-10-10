@@ -229,6 +229,7 @@ function tickPreparation() {
 }
 function beginPreparation(durationMs) {
   if(preparing)return;
+  window.GeometryVoice?.prefetch?.(current().cues[cue].text);
   preparing=true;preparationRemaining=durationMs;
   preparationLast=document.hidden?null:performance.now();
   $('welcome').hidden=true;
@@ -445,9 +446,38 @@ function save() {
     return false;
   }
 }
+let captionWords=[], highlightedCaptionWords=[];
+function clearCaptionHighlight() {
+  highlightedCaptionWords.forEach(word=>word.element.classList.remove('is-current'));
+  highlightedCaptionWords=[];
+}
+function setCaption(text) {
+  clearCaptionHighlight();
+  captionWords=[];
+  const fragment=document.createDocumentFragment();
+  for(const match of text.matchAll(/\S+|\s+/gu)) {
+    if(/^\s+$/u.test(match[0]))fragment.append(document.createTextNode(match[0]));
+    else {
+      const element=document.createElement('span');
+      element.className='caption-word';
+      element.textContent=match[0];
+      captionWords.push({element,start:match.index,end:match.index+match[0].length});
+      fragment.append(element);
+    }
+  }
+  $('caption').replaceChildren(fragment);
+}
+window.geometryVoiceRange=(id,start,end)=> {
+  if(Number(id)!==token || !speaking || $('caption').textContent!==lastSpeechText ||
+      !Number.isInteger(start) || !Number.isInteger(end) || start<0 || end<=start || end>lastSpeechText.length)return;
+  clearCaptionHighlight();
+  highlightedCaptionWords=captionWords.filter(word=>word.start<end && word.end>start);
+  highlightedCaptionWords.forEach(word=>word.element.classList.add('is-current'));
+};
 function stopVoice() {
   token++;
   speaking=false;
+  clearCaptionHighlight();
   clearTimeout(voiceTimer);
   if(window.GeometryVoice)GeometryVoice.stop();
   else if(window.speechSynthesis)speechSynthesis.cancel();
@@ -455,6 +485,7 @@ function stopVoice() {
 window.geometryVoiceEnd=(id,ok)=> {
   if(Number(id)!==token)return;
   speaking=false;
+  clearCaptionHighlight();
   clearTimeout(voiceTimer);
   $('voiceState').textContent=ok?g('Explore the model'):g('Read along');
   if(!ok) {
@@ -473,6 +504,7 @@ window.geometryVoiceStarted=(id,durationMs)=> {
 function speak(text) {
   stopVoice();
   lastSpeechText = text;
+  if($('caption').textContent===text && !captionWords.length)setCaption(text);
   if(muted) {
     $('voiceState').textContent=g('Captions on');
     return;
@@ -490,6 +522,12 @@ function speak(text) {
     const utterance=new SpeechSynthesisUtterance(text);
     utterance.lang=lessonLanguage === 'sq' ? 'sq-AL' : 'en-US';
     utterance.rate=.92 * voiceSpeed;
+    utterance.onboundary=event=> {
+      if(event.name!=='word')return;
+      const start=event.charIndex;
+      const length=event.charLength || text.slice(start).match(/^\S+/u)?.[0].length || 0;
+      window.geometryVoiceRange(id,start,start+length);
+    };
     utterance.onend=()=>window.geometryVoiceEnd(id,true);
     utterance.onerror=()=>window.geometryVoiceEnd(id,false);
     speechSynthesis.speak(utterance);
@@ -516,7 +554,7 @@ function renderCue(narrate=true) {
   applyLessonTheme();
   $('heading').textContent=c.title;
   $('headline').textContent=s.headline;
-  $('caption').textContent=s.text;
+  setCaption(s.text);
   $('mode').textContent=( {
     outline:g('MEET THE SHAPE'),perimeter:g('TRACE THE BOUNDARY'),area:g('COVER THE INSIDE'),split:g('SPLIT & DISCOVER'),rearrange:g('MOVE THE PIECES'),compare:g('MAKE A CONNECTION')
   }
@@ -532,6 +570,8 @@ function renderCue(narrate=true) {
   renderShape();
   if(started) {beginVisit();trackActivity('slide_entered',{revisit:Boolean(completedSlides[chapter+':'+cue])||allCheckpointsComplete()});}
   if(playing&&narrate)speak(s.text);
+  const nextCue=cue<3?c.cues[cue+1]:lesson.chapters[chapter+1]?.cues[0];
+  if(nextCue)window.GeometryVoice?.prefetch?.(nextCue.text);
 }
 function move(ch,sc,play=playing) {
   if(currentResult()&&!reviewing)return;
@@ -677,7 +717,7 @@ function showQuestion(index) {
   const q=questions[questionIndex];
   beginVisit();trackActivity('question_shown',{question:questionIndex,revisit:solved});
   $('question').textContent=q.prompt;
-  $('caption').textContent=q.prompt;
+  setCaption(q.prompt);
   $('speaker').textContent=g('THINK IT THROUGH');
   function check(value,button) {
     if(solved||currentResult()||!Number.isFinite(value))return;
@@ -691,7 +731,7 @@ function showQuestion(index) {
     const feedback=(correct?g('Exactly. '):g('Incorrect. ')+g('Correct answer: ')+right+'. ')+q.explanation;
     $('feedback').className=correct?'answer-correct':'answer-incorrect';
     $('feedback').textContent=feedback;
-    $('caption').textContent=feedback;
+    setCaption(feedback);
     speak(feedback);
     solved=true;
     attemptedAnswers[chapter] ||= [];

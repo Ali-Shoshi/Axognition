@@ -168,9 +168,7 @@ fun Application.configureRouting() {
                 return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message is too long"))
             }
 
-            val history = request.history
-                .filter { it.role in setOf("user", "assistant") && it.content.isNotBlank() }
-                .takeLast(12)
+            val history = assistantConversationHistory(request.history)
             val reply = runCatching { LmStudioClient.answer(message, history, request.language) }
                 .getOrElse { error ->
                     application.log.warn("LM Studio chat request failed", error)
@@ -191,9 +189,7 @@ fun Application.configureRouting() {
             if (message.length > 4_000) {
                 return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message is too long"))
             }
-            val history = request.history
-                .filter { it.role in setOf("user", "assistant") && it.content.isNotBlank() }
-                .takeLast(12)
+            val history = assistantConversationHistory(request.history)
 
             call.respondTextWriter(ContentType.parse("application/x-ndjson")) {
                 runCatching {

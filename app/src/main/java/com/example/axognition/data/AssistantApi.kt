@@ -11,6 +11,17 @@ import java.net.URL
 object AssistantApi {
     data class HistoryMessage(val text: String, val fromStudent: Boolean)
 
+    /** Both typed and spoken questions include the selected chat's entire history. */
+    internal fun requestBody(question: String, history: List<HistoryMessage>, language: String): JSONObject {
+        val historyJson = JSONArray()
+        history.filter { it.text.isNotBlank() }.forEach { message ->
+            historyJson.put(JSONObject()
+                .put("role", if (message.fromStudent) "user" else "assistant")
+                .put("content", message.text))
+        }
+        return JSONObject().put("message", question).put("history", historyJson).put("language", language)
+    }
+
     class RequestCancellation {
         private val cancelled = java.util.concurrent.atomic.AtomicBoolean(false)
         @Volatile private var connection: HttpURLConnection? = null
@@ -42,16 +53,7 @@ object AssistantApi {
 
         return try {
             connection.outputStream.bufferedWriter(Charsets.UTF_8).use { writer ->
-                val historyJson = JSONArray()
-                history.takeLast(12).forEach { message ->
-                    historyJson.put(
-                        JSONObject()
-                            .put("role", if (message.fromStudent) "user" else "assistant")
-                            .put("content", message.text)
-                    )
-                }
-                writer.write(JSONObject().put("message", question).put("history", historyJson)
-                    .put("language", AppLanguage.code).toString())
+                writer.write(requestBody(question, history, AppLanguage.code).toString())
             }
             val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader(Charsets.UTF_8)
@@ -86,16 +88,7 @@ object AssistantApi {
             cancellation.attach(connection)
             cancellation.check()
             connection.outputStream.bufferedWriter(Charsets.UTF_8).use { writer ->
-                val historyJson = JSONArray()
-                history.takeLast(12).forEach { message ->
-                    historyJson.put(
-                        JSONObject()
-                            .put("role", if (message.fromStudent) "user" else "assistant")
-                            .put("content", message.text)
-                    )
-                }
-                writer.write(JSONObject().put("message", question).put("history", historyJson)
-                    .put("language", AppLanguage.code).toString())
+                writer.write(requestBody(question, history, AppLanguage.code).toString())
             }
             check(connection.responseCode == 200) {
                 val errorBody = connection.errorStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()

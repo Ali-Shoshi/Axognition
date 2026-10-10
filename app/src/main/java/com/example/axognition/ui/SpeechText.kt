@@ -4,8 +4,11 @@ package com.example.axognition.ui
  * Turns notation into words that neural and installed TTS engines pronounce naturally.
  * Captions keep their original text; this is only used for spoken output.
  */
-internal fun naturalizeSpeechForTts(text: String, language: String): String {
-    if (text.isBlank()) return text
+internal fun naturalizeSpeechForTts(text: String, language: String): String =
+    naturalizeSpeechWithRanges(text, language).text
+
+internal fun naturalizeSpeechWithRanges(text: String, language: String): MappedSpeechText {
+    if (text.isBlank()) return MappedSpeechText.original(text)
     val albanian = language == "sq"
     val times = if (albanian) " herë " else " times "
     val equals = if (albanian) " është e barabartë me " else " equals "
@@ -17,7 +20,7 @@ internal fun naturalizeSpeechForTts(text: String, language: String): String {
     val dividedBy = if (albanian) " pjesëtuar me " else " divided by "
     val then = if (albanian) ", pastaj " else ", then "
 
-    return text
+    return MappedSpeechText.original(text)
         .replace(Regex("(?<=[\\d)])\\s*-\\s*(?=[\\d(])"), " minus ")
         .replace(Regex("(?<=\\d)\\s*cm²(?![A-Za-z])"), squareCentimetres)
         .replace(Regex("(?<=\\d)\\s*m²(?![A-Za-z])"), squareMetres)

@@ -275,6 +275,14 @@ footer,
   font-size:clamp(14px,1.4vw,18px);
   line-height:1.55
 }
+.caption-word.is-current {
+  color:var(--on-control);
+  background:var(--control);
+  border-radius:3px;
+  box-shadow:0 0 0 2px var(--control);
+  -webkit-box-decoration-break:clone;
+  box-decoration-break:clone;
+}
 footer {
   display:flex;
   align-items:center;
@@ -465,10 +473,8 @@ dialog small {
   color:var(--muted);
   margin-top:16px
 }
-#notice {
-  color:var(--warning);
-  font-size:12px;
-  margin:0
+#notice, #voiceState {
+  display:none
 }
 #explorer {
   position:absolute;

@@ -2,12 +2,18 @@
 
 ## Enable the changes
 
-1. Restart the server with `server/run-server.bat`. Flyway applies migration V10
+1. Restart the server with `server/run-server.bat` for backend changes. Flyway applies migration V10
    automatically using the existing PostgreSQL connection.
 2. Rebuild/install the Android app. Sign in as a child, then open either lecture.
    The old APK cannot upload activity because it lacks the native sync bridge.
 3. Existing local answers/slides are imported on the next start. Historical
    timestamps, attempts and durations were never collected and cannot be recovered.
+
+The Android APK bundles the lesson HTML, CSS, JavaScript and JSON and serves them
+under the existing lesson URL in the WebView. Rebuilding/installing the app applies
+lesson player changes even when the server has an older copy. Progress and activity
+still sync with the server through the authenticated native bridge. Browser previews
+continue to use the server's lesson files.
 
 Standalone browser previews have no child session and keep progress locally.
 The authenticated Android app collects and syncs activity for each child.
@@ -27,6 +33,16 @@ The authenticated Android app collects and syncs activity for each child.
 - Starts, resumes and retries show a 15-second preparation screen with posture,
   scoring and retry rules. The timer pauses while hidden. Perfect-score reviews
   skip preparation and start at the first teaching slide.
+- Narration prepares the first slide during the countdown and the next slide while
+  the current slide is open. Audio generation uses small parts and starts playback
+  before the entire slide is generated; foreground speech takes priority over
+  prefetch work. Slide completion is reported only after the final audio part.
+  Sync and narration status labels are hidden so changing them does not resize
+  the lesson viewport.
+- Lecture captions highlight the current spoken word using estimated timing
+  within each audio part. Spoken fractions and units map back to the original
+  caption notation. Highlighting clears on pause, mute, replay, completion and
+  slide changes; the highlight changes color without changing text layout.
 - Retrying clears every answer and slide and emits a generation reset before
   the new session. Results remain in history. The chapter menu, lecture cards
   and unit cards show scores and completed attempt counts, including during a

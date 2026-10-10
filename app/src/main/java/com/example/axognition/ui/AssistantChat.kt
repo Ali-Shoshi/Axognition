@@ -100,7 +100,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
@@ -108,17 +107,20 @@ import kotlin.math.roundToInt
 data class ChatMessage(val text: String, val fromStudent: Boolean)
 
 @Composable
-fun AssistantChatButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun AssistantChatButton(onClick: () -> Unit, modifier: Modifier = Modifier, speaking: Boolean = false) {
     Surface(
         modifier = modifier.size(56.dp),
         onClick = onClick,
         shape = CircleShape,
-        color = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = androidx.compose.foundation.BorderStroke(
+            2.dp, if (speaking) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        ),
         shadowElevation = 8.dp
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(Icons.Default.SmartToy, contentDescription = tr("Open learning assistant"))
+            Icon(Icons.Default.SmartToy, contentDescription = tr("Open learning assistant"), modifier = Modifier.size(32.dp))
         }
     }
 }
@@ -167,7 +169,6 @@ fun AssistantChatPanel(
     val scope = rememberCoroutineScope()
     var recognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
     var isReading by remember { mutableStateOf(false) }
-    var pendingRead by remember { mutableStateOf<Job?>(null) }
     val speaker = remember(context) {
         OfflineSpeechPlayer(
             context,
@@ -175,11 +176,12 @@ fun AssistantChatPanel(
             role = OfflineVoiceRole.ASSISTANT
         )
     }
+    LaunchedEffect(speaker, AppLanguage.code) {
+        speaker.warmUp(AppLanguage.code)
+    }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     val audioBusyCallback by rememberUpdatedState(onAudioBusyChange)
     fun stopReadAloud() {
-        pendingRead?.cancel()
-        pendingRead = null
         speaker.stop()
         isReading = false
     }
@@ -415,12 +417,9 @@ fun AssistantChatPanel(
                                     {
                                         stopPanelAudio()
                                         isReading = true
-                                        pendingRead = scope.launch {
-                                            kotlinx.coroutines.delay(200)
-                                            if (isReading && !speaker.speak(
-                                                    message.text, "assistant-response-${message.hashCode()}", AppLanguage.code
-                                                )) isReading = false
-                                        }
+                                        if (!speaker.readAloud(
+                                                message.text, "assistant-response-${message.hashCode()}", AppLanguage.code
+                                            )) isReading = false
                                     }
                                 }
                             )
