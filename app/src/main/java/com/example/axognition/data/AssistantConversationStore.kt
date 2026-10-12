@@ -26,6 +26,9 @@ class AssistantConversationStore(private val preferences: SharedPreferences) {
         private set
     val selected: AssistantConversation get() = conversations.first { it.id == selectedId }
 
+    /** Read at submission time: captured UI message lists can be out of date. */
+    fun messages(id: String): List<ChatMessage> = conversations.firstOrNull { it.id == id }?.messages.orEmpty()
+
     init {
         val saved = preferences.getString("conversations", null)
         if (saved != null) {

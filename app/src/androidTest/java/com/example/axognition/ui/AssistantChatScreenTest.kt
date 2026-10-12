@@ -20,6 +20,31 @@ import java.util.UUID
 class AssistantChatScreenTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun sentQuestionStaysClearedWhileReplyArrivesAndNextDraftIsPreserved() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        AppLanguage.initialize(context)
+        val messages = mutableStateListOf<ChatMessage>()
+        compose.setContent {
+            MaterialTheme {
+                AssistantChatPanel(
+                    expanded = true, anchor = Offset.Zero, onMove = {}, messages = messages,
+                    onMessage = { messages.add(it) }, onDismiss = {}, listeningMode = VoiceListeningMode.OFF,
+                    onListeningModeChange = {}, onVoiceInput = {}, onAudioBusyChange = {},
+                    voiceStatus = null, fullScreen = true
+                )
+            }
+        }
+        compose.onNode(hasSetTextAction()).performTextInput("Sa ben 2 plus 2?")
+        compose.onNodeWithContentDescription(tr("Send question")).performClick()
+        compose.onNode(hasSetTextAction()).assert(hasText(""))
+        compose.onNode(hasSetTextAction()).performTextInput("Next question")
+        compose.waitUntil(45_000) { messages.any { !it.fromStudent } }
+        compose.onNode(hasSetTextAction()).assertTextContains("Next question")
+        assertEquals("Sa ben 2 plus 2?", messages.first().text)
+        assertEquals(2, messages.size)
+        assertFalse(com.example.axognition.shared.AssistantLanguage.detected(messages.last().text) == "en")
+    }
+
     @Test fun pickerPreservesExistingHistoryDraftsAndRoutesLateRepliesToOriginalConversation() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         AppLanguage.initialize(context)

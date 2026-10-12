@@ -2,10 +2,22 @@
 
 ## Learning assistant
 
+Each typed or spoken question includes a fresh JPEG of the current app window
+(up to 1600 pixels on its longest side). The screenshot is sent only with that
+question; it is not saved in conversation history or to files. The local vision
+model uses it for relevant visible work, ignores it for unrelated questions, and
+asks for clarification if the referenced problem cannot be read. If capture is
+unavailable, the question continues with text context. Use a vision-capable model
+in LM Studio; text-only models cannot interpret these screen images.
+
 Typed chat and voice replies send the complete history of the selected conversation,
 without a fixed message-count cutoff. Follow-ups use that conversation's topics, facts
-and corrections. Replies answer directly in one short, conversational sentence,
-adding a second only when needed and aiming for 25 words or fewer. Requests for more
+and corrections. Recall questions repeat relevant original student statements near
+the question so earlier incorrect assistant replies do not override those facts.
+Direct English recall questions about simple personal assertions (such as names or
+preferences) use the latest original student statement from that conversation.
+Ordinary replies stop after one complete sentence; openings longer than 25 words
+are rewritten briefly before display or speech. Requests for more
 detail, steps or examples receive only the extra explanation requested. New conversations start
 with their own context.
 

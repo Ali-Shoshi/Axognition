@@ -2,6 +2,7 @@ package com.example.axognition.data
 
 import com.example.axognition.BuildConfig
 import com.example.axognition.ui.AppLanguage
+import com.example.axognition.shared.AssistantLanguage
 import org.json.JSONObject
 import org.json.JSONArray
 import java.net.HttpURLConnection
@@ -10,16 +11,20 @@ import java.net.URL
 /** The Android app calls Ktor only; Ktor keeps the LM Studio address private. */
 object AssistantApi {
     data class HistoryMessage(val text: String, val fromStudent: Boolean)
+    data class ScreenImage(val mimeType: String, val base64: String)
 
     /** Both typed and spoken questions include the selected chat's entire history. */
-    internal fun requestBody(question: String, history: List<HistoryMessage>, language: String): JSONObject {
+    internal fun requestBody(question: String, history: List<HistoryMessage>, language: String, screenImage: ScreenImage? = null): JSONObject {
         val historyJson = JSONArray()
         history.filter { it.text.isNotBlank() }.forEach { message ->
             historyJson.put(JSONObject()
                 .put("role", if (message.fromStudent) "user" else "assistant")
                 .put("content", message.text))
         }
-        return JSONObject().put("message", question).put("history", historyJson).put("language", language)
+        val replyLanguage = AssistantLanguage.replyLanguage(question, history.filter { it.fromStudent }.map { it.text }, language)
+        return JSONObject().put("message", question).put("history", historyJson).put("language", replyLanguage).apply {
+            if (screenImage != null) put("screenImage", JSONObject().put("mimeType", screenImage.mimeType).put("base64", screenImage.base64))
+        }
     }
 
     class RequestCancellation {
@@ -42,7 +47,7 @@ object AssistantApi {
         }
     }
 
-    fun sendQuestion(question: String, history: List<HistoryMessage> = emptyList()): String {
+    fun sendQuestion(question: String, history: List<HistoryMessage> = emptyList(), screenImage: ScreenImage? = null): String {
         val connection = URL("${BuildConfig.AXOGNITION_SERVER_URL.trimEnd('/')}/assistant/chat")
             .openConnection() as HttpURLConnection
         connection.requestMethod = "POST"
@@ -53,7 +58,7 @@ object AssistantApi {
 
         return try {
             connection.outputStream.bufferedWriter(Charsets.UTF_8).use { writer ->
-                writer.write(requestBody(question, history, AppLanguage.code).toString())
+                writer.write(requestBody(question, history, AppLanguage.code, screenImage).toString())
             }
             val body = (if (connection.responseCode in 200..299) connection.inputStream else connection.errorStream)
                 ?.bufferedReader(Charsets.UTF_8)
@@ -73,6 +78,7 @@ object AssistantApi {
         question: String,
         history: List<HistoryMessage> = emptyList(),
         cancellation: RequestCancellation = RequestCancellation(),
+        screenImage: ScreenImage? = null,
         onPartialAnswer: (String) -> Unit
     ): String {
         val connection = URL("${BuildConfig.AXOGNITION_SERVER_URL.trimEnd('/')}/assistant/chat/stream")
@@ -88,7 +94,7 @@ object AssistantApi {
             cancellation.attach(connection)
             cancellation.check()
             connection.outputStream.bufferedWriter(Charsets.UTF_8).use { writer ->
-                writer.write(requestBody(question, history, AppLanguage.code).toString())
+                writer.write(requestBody(question, history, AppLanguage.code, screenImage).toString())
             }
             check(connection.responseCode == 200) {
                 val errorBody = connection.errorStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }.orEmpty()

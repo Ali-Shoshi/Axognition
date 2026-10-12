@@ -30,7 +30,8 @@ class AssistantConversationTest {
             assertEquals(listOf("system", "user", "assistant", "user", "assistant", "user"),
                 messages.map { it["role"]!!.jsonPrimitive.content })
             assertEquals(history.map { it.content }, messages.subList(1, messages.lastIndex).map { it["content"]!!.jsonPrimitive.content })
-            assertEquals("What is it for my triangle?", messages.last()["content"]!!.jsonPrimitive.content)
+            assertTrue(messages.last()["content"]!!.jsonPrimitive.content.endsWith("What is it for my triangle?"))
+            assertTrue(messages.last()["content"]!!.jsonPrimitive.content.contains(history.first().content))
         }
     }
 

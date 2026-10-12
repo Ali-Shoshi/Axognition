@@ -44,13 +44,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
@@ -87,6 +86,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -94,6 +95,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import com.example.axognition.data.AssistantApi
+import com.example.axognition.shared.AssistantLanguage
 import com.example.axognition.data.AssistantConversation
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -107,7 +109,12 @@ import kotlin.math.roundToInt
 data class ChatMessage(val text: String, val fromStudent: Boolean)
 
 @Composable
-fun AssistantChatButton(onClick: () -> Unit, modifier: Modifier = Modifier, speaking: Boolean = false) {
+fun AssistantChatButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    speaking: Boolean = false,
+    contentDescription: String = tr("Open learning assistant")
+) {
     Surface(
         modifier = modifier.size(56.dp),
         onClick = onClick,
@@ -120,7 +127,7 @@ fun AssistantChatButton(onClick: () -> Unit, modifier: Modifier = Modifier, spea
         shadowElevation = 8.dp
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(Icons.Default.SmartToy, contentDescription = tr("Open learning assistant"), modifier = Modifier.size(32.dp))
+            Icon(Icons.Default.SmartToy, contentDescription = contentDescription, modifier = Modifier.size(32.dp))
         }
     }
 }
@@ -146,9 +153,16 @@ fun AssistantChatPanel(
     conversations: List<AssistantConversation> = emptyList(),
     onSelectConversation: (String) -> Unit = {},
     onNewConversation: () -> Unit = {},
+    captureScreen: suspend () -> AssistantApi.ScreenImage? = { null },
+    onAssistantBoundsChanged: (android.graphics.Rect?) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val reportBounds by rememberUpdatedState(onAssistantBoundsChanged)
+    DisposableEffect(expanded) {
+        if (!expanded) reportBounds(null)
+        onDispose { reportBounds(null) }
+    }
     val expansion by animateFloatAsState(if (expanded) 1f else 0f, tween(420, easing = FastOutSlowInEasing), label = "assistantExpansion")
     val orientation = LocalConfiguration.current.orientation
     val sizePreferences = remember { context.getSharedPreferences("assistant_window", android.content.Context.MODE_PRIVATE) }
@@ -168,6 +182,7 @@ fun AssistantChatPanel(
     val listState = androidx.compose.runtime.key(conversationId) { rememberLazyListState() }
     val scope = rememberCoroutineScope()
     var recognizer by remember { mutableStateOf<SpeechRecognizer?>(null) }
+    val dictation = remember { QuestionDictation() }
     var isReading by remember { mutableStateOf(false) }
     val speaker = remember(context) {
         OfflineSpeechPlayer(
@@ -187,6 +202,7 @@ fun AssistantChatPanel(
     }
     fun stopPanelAudio() {
         stopReadAloud()
+        dictation.cancel()
         recognizer?.cancel()
         isListening = false
     }
@@ -207,8 +223,41 @@ fun AssistantChatPanel(
     }
 
     fun beginListening() {
-        stopReadAloud()
-        recognizer?.startListening(recognitionIntent)
+        stopPanelAudio()
+        val current = recognizer ?: return
+        // Freeze the destination chat now; a later callback must never edit a different chat.
+        val attempt = dictation.begin(updateDraft)
+        isListening = true
+        current.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(params: android.os.Bundle?) = Unit
+            override fun onBeginningOfSpeech() = Unit
+            override fun onRmsChanged(rmsdB: Float) = Unit
+            override fun onBufferReceived(buffer: ByteArray?) = Unit
+            override fun onEndOfSpeech() = Unit
+            override fun onError(error: Int) {
+                if (!attempt.active) return
+                // Engines sometimes provide useful partial speech followed by NO_MATCH.
+                attempt.finish()
+                isListening = false
+            }
+            override fun onResults(results: android.os.Bundle?) {
+                if (!attempt.active) return
+                attempt.finish(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty())
+                isListening = false
+            }
+            override fun onPartialResults(results: android.os.Bundle?) {
+                attempt.partial(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty())
+            }
+            override fun onEvent(eventType: Int, params: android.os.Bundle?) = Unit
+        })
+        scope.launch {
+            // Let the background wake listener release the microphone first.
+            kotlinx.coroutines.delay(150)
+            if (attempt.active) runCatching { current.startListening(recognitionIntent) }.onFailure {
+                attempt.finish()
+                isListening = false
+            }
+        }
     }
 
     val microphonePermission = rememberLauncherForActivityResult(
@@ -222,30 +271,10 @@ fun AssistantChatPanel(
             speechRecognitionAvailable = false
             onDispose { }
         } else {
-            val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
-                setRecognitionListener(object : RecognitionListener {
-                    override fun onReadyForSpeech(params: android.os.Bundle?) { isListening = true }
-                    override fun onBeginningOfSpeech() { isListening = true }
-                    override fun onRmsChanged(rmsdB: Float) = Unit
-                    override fun onBufferReceived(buffer: ByteArray?) = Unit
-                    override fun onEndOfSpeech() = Unit
-                    override fun onError(error: Int) { isListening = false }
-                    override fun onResults(results: android.os.Bundle?) {
-                        results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                            ?.firstOrNull()
-                            ?.let { updateDraft(it) }
-                        isListening = false
-                    }
-                    override fun onPartialResults(partialResults: android.os.Bundle?) {
-                        partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                            ?.firstOrNull()
-                            ?.let { updateDraft(it) }
-                    }
-                    override fun onEvent(eventType: Int, params: android.os.Bundle?) = Unit
-                })
-            }
+            val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context)
             recognizer = speechRecognizer
             onDispose {
+                dictation.cancel()
                 speechRecognizer.destroy()
                 recognizer = null
             }
@@ -351,6 +380,14 @@ fun AssistantChatPanel(
                     scaleX = buttonPixels / panelSize.width.coerceAtLeast(1) * (1f - expansion) + expansion
                     scaleY = buttonPixels / panelSize.height.coerceAtLeast(1) * (1f - expansion) + expansion
                     alpha = expansion
+                }
+                .onGloballyPositioned { coordinates ->
+                    if (expanded) {
+                        val bounds = coordinates.boundsInWindow()
+                        reportBounds(android.graphics.Rect(
+                            kotlin.math.floor(bounds.left).toInt(), kotlin.math.floor(bounds.top).toInt(),
+                            kotlin.math.ceil(bounds.right).toInt(), kotlin.math.ceil(bounds.bottom).toInt()))
+                    }
                 },
         ) {
             Column(
@@ -371,14 +408,10 @@ fun AssistantChatPanel(
                         },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Surface(onClick = onOpenFullScreen, shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
-                            Icon(
-                                Icons.Default.SmartToy,
-                                contentDescription = tr("Open full-screen AI chat"),
-                                modifier = Modifier.padding(12.dp),
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                        }
+                        AssistantChatButton(
+                            onClick = onOpenFullScreen,
+                            contentDescription = tr("Open full-screen AI chat")
+                        )
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(tr("Learning assistant"), fontWeight = FontWeight.Bold)
@@ -403,13 +436,13 @@ fun AssistantChatPanel(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(12.dp)
                                 ) {
-                                    Icon(Icons.Default.AutoAwesome, null, Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary)
+                                    Icon(Icons.Default.SmartToy, null, Modifier.size(32.dp), tint = MaterialTheme.colorScheme.onSurface)
                                     Text(tr("What would you like to learn?"), style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
                                     Text(tr("Ask a question or speak to your learning assistant."), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
                                 }
                             }
                         }
-                        items(messages) { message ->
+                        itemsIndexed(messages) { index, message ->
                             AssistantMessageBubble(
                                 message = message,
                                 readAloudEnabled = true,
@@ -418,7 +451,9 @@ fun AssistantChatPanel(
                                         stopPanelAudio()
                                         isReading = true
                                         if (!speaker.readAloud(
-                                                message.text, "assistant-response-${message.hashCode()}", AppLanguage.code
+                                                message.text, "assistant-response-${message.hashCode()}",
+                                                AssistantLanguage.detected(message.text) ?: AssistantLanguage.replyLanguage(
+                                                    "", messages.take(index).filter { it.fromStudent }.map { it.text }, AppLanguage.code)
                                             )) isReading = false
                                     }
                                 }
@@ -473,7 +508,14 @@ fun AssistantChatPanel(
                                 }
                             } else if (isListening) {
                                 recognizer?.stopListening()
-                                isListening = false
+                                val attempt = dictation.currentAttempt
+                                scope.launch {
+                                    kotlinx.coroutines.delay(1_500)
+                                    if (attempt?.active == true) {
+                                        attempt.finish()
+                                        isListening = false
+                                    }
+                                }
                             } else if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
                                 beginListening()
                             } else {
@@ -494,15 +536,17 @@ fun AssistantChatPanel(
                         onClick = {
                             val question = draft.trim()
                             if (question.isNotEmpty()) {
+                                stopPanelAudio()
                                 val targetConversationId = conversationId
                                 val saveMessage = onMessage
                                 val history = messages.map { AssistantApi.HistoryMessage(it.text, it.fromStudent) }
-                                saveMessage(ChatMessage(question, fromStudent = true))
-                                updateDraft("")
                                 sendingConversations[targetConversationId] = true
+                                drafts[targetConversationId] = ""
                                 scope.launch {
                                     val response = runCatching {
-                                        withContext(Dispatchers.IO) { AssistantApi.sendQuestion(question, history) }
+                                        val screenImage = captureScreen()
+                                        saveMessage(ChatMessage(question, fromStudent = true))
+                                        withContext(Dispatchers.IO) { AssistantApi.sendQuestion(question, history, screenImage) }
                                     }.getOrElse { error ->
                                         tr("I could not reach the learning assistant. ${tr(error.message ?: "Please try again.")}")
                                     }

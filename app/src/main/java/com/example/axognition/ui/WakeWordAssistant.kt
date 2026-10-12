@@ -20,6 +20,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.axognition.data.AssistantApi
+import com.example.axognition.shared.AssistantLanguage
 import kotlinx.coroutines.*
 
 data class VoiceAssistantBubble(
@@ -43,6 +44,7 @@ fun WakeWordAssistant(
     conversationId: String = "default",
     conversation: () -> List<ChatMessage>,
     onMessage: (ChatMessage) -> Unit,
+    captureScreen: suspend () -> AssistantApi.ScreenImage? = { null },
     content: @Composable (VoiceAssistantBubble?, () -> Unit, () -> Unit) -> Unit
 ) {
     val context = LocalContext.current
@@ -50,12 +52,13 @@ fun WakeWordAssistant(
     val scope = rememberCoroutineScope()
     val latestHistory by rememberUpdatedState(conversation)
     val latestMessage by rememberUpdatedState(onMessage)
+    val latestCapture by rememberUpdatedState(captureScreen)
     var bubble by remember { mutableStateOf<VoiceAssistantBubble?>(null) }
     var foreground by remember { mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) }
     var permissionRevision by remember { mutableIntStateOf(0) }
     var permissionPrompted by remember(listeningMode) { mutableStateOf(false) }
     val controller = remember(context, AppLanguage.code) {
-        VoiceController(context, scope, { latestHistory() }, { latestMessage(it) }, { bubble = it })
+        VoiceController(context, scope, { latestHistory() }, { latestMessage(it) }, { bubble = it }, captureScreen = { latestCapture() })
     }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         permissionRevision++
@@ -99,7 +102,8 @@ internal class VoiceController(
     private val history: () -> List<ChatMessage>,
     private val save: (ChatMessage) -> Unit,
     private val publish: (VoiceAssistantBubble?) -> Unit,
-    private val prepareRecognitionIntent: (Intent) -> Unit = {}
+    private val prepareRecognitionIntent: (Intent) -> Unit = {},
+    private val captureScreen: suspend () -> AssistantApi.ScreenImage? = { null }
 ) {
     private val main = Handler(Looper.getMainLooper())
     private val session = VoiceConversation()
@@ -455,7 +459,7 @@ internal class VoiceController(
         }
     }
 
-    private fun ask(question: String) {
+    internal fun ask(question: String) {
         android.util.Log.i("AXO_VOICE", "Sending question chars=${question.length}")
         stopListening()
         cancelTurn()
@@ -464,17 +468,18 @@ internal class VoiceController(
         firstAnswerTextAtMs = 0L
         firstSpeechReported = false
         val previous = history().map { AssistantApi.HistoryMessage(it.text, it.fromStudent) }
-        save(ChatMessage(question, true))
-        bubble = VoiceAssistantBubble("Thinking…", question = question)
+        val turnLanguage = AssistantLanguage.replyLanguage(question, previous.filter { it.fromStudent }.map { it.text }, AppLanguage.code)
+        speaker.warmUp(turnLanguage)
+        android.util.Log.i("AXO_VOICE", "Reply language=$turnLanguage")
+        android.util.Log.i("AXO_VOICE", "Conversation context messages=${previous.size} studentTurns=${previous.count { it.fromStudent }}")
         val cancellation = AssistantApi.RequestCancellation()
         request = cancellation
-        scheduleListening(350, interruptOnly = true)
         var count = 0
         val chunker = StreamingSpeechChunker { chunk, offset ->
             if (token == generation && !speechFailed) {
                 val id = "answer-$token-${count++}"
                 utterances[id] = offset to offset + chunk.length
-                val accepted = speaker.speakStreamingChunk(chunk, id, speechLanguage)
+                val accepted = speaker.speakStreamingChunk(chunk, id, turnLanguage)
                 if (!accepted) {
                     speaker.stop()
                     utterances.clear()
@@ -485,8 +490,13 @@ internal class VoiceController(
         }
         answerJob = scope.launch {
             try {
+                val screenImage = captureScreen()
+                if (token != generation || disposed) return@launch
+                save(ChatMessage(question, true))
+                bubble = VoiceAssistantBubble("Thinking…", question = question)
+                scheduleListening(350, interruptOnly = true)
                 val answer = withContext(Dispatchers.IO) {
-                    AssistantApi.streamQuestion(question, previous, cancellation) { partial ->
+                    AssistantApi.streamQuestion(question, previous, cancellation, screenImage) { partial ->
                         cancellation.check()
                         main.post {
                             if (token != generation || disposed) return@post

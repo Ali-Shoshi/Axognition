@@ -21,6 +21,7 @@ tasks.register<JavaExec>("createChildAccount") {
 
 kotlin {
     jvmToolchain(21)
+    sourceSets.main { kotlin.srcDir("../common/src/main/kotlin") }
 }
 tasks.test {
     inputs.property("lectureDatabaseTests", providers.environmentVariable("LECTURE_DB_TESTS").orElse("false"))

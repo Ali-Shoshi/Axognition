@@ -57,6 +57,7 @@ android {
         buildConfig = true
     }
     sourceSets.getByName("main").assets.directories += rootProject.file("offline-tts/assets").path
+    sourceSets.getByName("main").kotlin.directories += rootProject.file("common/src/main/kotlin").path
     sourceSets.getByName("main").assets.directories += layout.buildDirectory.dir("generated/lessonAssets").get().asFile.path
     androidResources {
         noCompress += "onnx"

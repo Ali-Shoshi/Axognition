@@ -18,6 +18,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -39,8 +41,11 @@ internal fun FloatingAssistantButton(
     onMoveEnd: () -> Unit,
     onOpenChat: () -> Unit,
     onDismiss: () -> Unit,
+    onAssistantBoundsChanged: (android.graphics.Rect?) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val reportBounds by rememberUpdatedState(onAssistantBoundsChanged)
+    DisposableEffect(Unit) { onDispose { reportBounds(null) } }
     BoxWithConstraints(modifier.fillMaxSize()) {
         val containerWidth = maxWidth
         val containerHeight = maxHeight
@@ -87,6 +92,12 @@ internal fun FloatingAssistantButton(
             Modifier.width(groupWidth).height(56.dp)
                 .offset { IntOffset((displayedPosition.x - questionWidthPx).roundToInt(), displayedPosition.y.roundToInt()) }
                 .testTag("assistantPill")
+                .onGloballyPositioned { coordinates ->
+                    val bounds = coordinates.boundsInWindow()
+                    reportBounds(android.graphics.Rect(
+                        kotlin.math.floor(bounds.left).toInt(), kotlin.math.floor(bounds.top).toInt(),
+                        kotlin.math.ceil(bounds.right).toInt(), kotlin.math.ceil(bounds.bottom).toInt()))
+                }
         ) {
             if (bubble != null) {
                 Surface(

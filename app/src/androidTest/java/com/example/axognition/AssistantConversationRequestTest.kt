@@ -18,6 +18,15 @@ class AssistantConversationRequestTest {
             assertEquals(if (message.fromStudent) "user" else "assistant", sent.getJSONObject(index).getString("role"))
         }
         assertEquals("What did I ask first?", body.getString("message"))
-        assertEquals("sq", body.getString("language"))
+        assertEquals("en", body.getString("language"))
+    }
+
+    @Test fun albanianQuestionsOverrideEnglishInterfaceAndOldAssistantReplies() {
+        val history = listOf(AssistantApi.HistoryMessage("Çfarë është një thyesë?", true),
+            AssistantApi.HistoryMessage("A fraction represents part of a whole.", false))
+        assertEquals("sq", AssistantApi.requestBody("Cfare eshte nje thyese?", history, "en").getString("language"))
+        assertEquals("sq", AssistantApi.requestBody("2+2?", history, "en").getString("language"))
+        assertEquals("en", AssistantApi.requestBody("What is a fraction?", history, "sq").getString("language"))
+        assertEquals("en", AssistantApi.requestBody("Çfarë është një thyesë? Përgjigju anglisht.", history, "sq").getString("language"))
     }
 }

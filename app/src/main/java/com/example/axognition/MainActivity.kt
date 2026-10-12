@@ -36,6 +36,7 @@ import com.example.axognition.ui.DashboardScreen
 import com.example.axognition.ui.WakeWordAssistant
 import com.example.axognition.ui.VoiceListeningMode
 import com.example.axognition.ui.ChatMessage
+import com.example.axognition.ui.AssistantScreenCapture
 import com.example.axognition.data.ChildAuthApi
 import com.example.axognition.data.ChildSession
 import com.example.axognition.data.ChildSessionStore
@@ -162,6 +163,8 @@ private fun AuthenticatedMainApp(
     var voiceListeningMode by rememberSaveable { mutableStateOf(VoiceListeningMode.OFF) }
     var chatAudioBusy by remember { mutableStateOf(false) }
     val chatContext = LocalContext.current
+    val screenCapture = remember(chatContext) { AssistantScreenCapture.from(chatContext) }
+    val captureScreen: suspend () -> com.example.axognition.data.AssistantApi.ScreenImage? = { screenCapture?.capture() }
     val chatPreferences = remember(childSession.childId) {
         chatContext.getSharedPreferences("assistant_chat_${childSession.childId}", Context.MODE_PRIVATE)
     }
@@ -333,8 +336,9 @@ private fun AuthenticatedMainApp(
             conversationId = activeConversation.id,
             listeningMode = voiceListeningMode,
             suspended = chatAudioBusy,
-            conversation = { chatMessages.toList() },
-            onMessage = appendChatMessage
+            conversation = { conversationStore.messages(activeConversation.id) },
+            onMessage = appendChatMessage,
+            captureScreen = captureScreen
         ) { voiceBubble, dismissVoice, listenNow ->
             if (!assistantOpen) FloatingAssistantButton(
                 anchor = assistantButtonPosition ?: defaultButtonPosition,
@@ -343,6 +347,7 @@ private fun AuthenticatedMainApp(
                 onMoveEnd = { assistantButtonPosition?.let(::saveAssistantButtonPosition) },
                 onOpenChat = { assistantOpen = true },
                 onDismiss = dismissVoice,
+                onAssistantBoundsChanged = { screenCapture?.setAssistantBounds(it) },
                 modifier = Modifier.zIndex(2f)
             )
             AssistantChatPanel(
@@ -361,6 +366,8 @@ private fun AuthenticatedMainApp(
                 onVoiceInput = listenNow,
                 onAudioBusyChange = { chatAudioBusy = it },
                 voiceStatus = voiceBubble,
+                captureScreen = captureScreen,
+                onAssistantBoundsChanged = { screenCapture?.setAssistantBounds(it) },
                 conversationId = activeConversation.id,
                 conversations = conversationStore.conversations,
                 onSelectConversation = { id ->

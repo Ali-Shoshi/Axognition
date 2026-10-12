@@ -72,7 +72,7 @@ data class BookResponse(
 data class AssistantHistoryMessage(val role: String, val content: String)
 
 @Serializable
-data class AssistantChatRequest(val message: String, val history: List<AssistantHistoryMessage> = emptyList(), val language: String = "en")
+data class AssistantChatRequest(val message: String, val history: List<AssistantHistoryMessage> = emptyList(), val language: String = "en", val screenImage: AssistantScreenImage? = null)
 
 @Serializable
 data class AssistantChatResponse(val reply: String)
@@ -160,6 +160,9 @@ fun Application.configureRouting() {
 
         post("/assistant/chat") {
             val request = call.receive<AssistantChatRequest>()
+            assistantScreenImageError(request.screenImage)?.let {
+                return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to it))
+            }
             val message = request.message.trim()
             if (message.isBlank()) {
                 return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message must not be blank"))
@@ -169,7 +172,7 @@ fun Application.configureRouting() {
             }
 
             val history = assistantConversationHistory(request.history)
-            val reply = runCatching { LmStudioClient.answer(message, history, request.language) }
+            val reply = runCatching { LmStudioClient.answer(message, history, request.language, request.screenImage) }
                 .getOrElse { error ->
                     application.log.warn("LM Studio chat request failed", error)
                     return@post call.respond(
@@ -182,6 +185,9 @@ fun Application.configureRouting() {
 
         post("/assistant/chat/stream") {
             val request = call.receive<AssistantChatRequest>()
+            assistantScreenImageError(request.screenImage)?.let {
+                return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to it))
+            }
             val message = request.message.trim()
             if (message.isBlank()) {
                 return@post call.respond(HttpStatusCode.BadRequest, mapOf("error" to "message must not be blank"))
@@ -193,7 +199,7 @@ fun Application.configureRouting() {
 
             call.respondTextWriter(ContentType.parse("application/x-ndjson")) {
                 runCatching {
-                    LmStudioClient.streamAnswer(message, history, request.language) { delta ->
+                    LmStudioClient.streamAnswer(message, history, request.language, request.screenImage) { delta ->
                         write(kotlinx.serialization.json.Json.encodeToString(AssistantStreamEvent(delta = delta)))
                         write("\n")
                         flush()
